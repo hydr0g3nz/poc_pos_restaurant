@@ -144,18 +144,3 @@ type MetricsService interface {
 	// Timing records timing information
 	Timing(name string, duration time.Duration, tags map[string]string)
 }
-
-// NotificationService interface for push notifications
-type NotificationService interface {
-	// SendPushNotification sends push notification to user
-	SendPushNotification(ctx context.Context, userID int, title, body string, data map[string]interface{}) error
-
-	// SendBulkNotification sends notification to multiple users
-	SendBulkNotification(ctx context.Context, userIDs []int, title, body string, data map[string]interface{}) error
-
-	// RegisterDevice registers device for push notifications
-	RegisterDevice(ctx context.Context, userID int, deviceToken, platform string) error
-
-	// UnregisterDevice removes device from notifications
-	UnregisterDevice(ctx context.Context, deviceToken string) error
-}

@@ -9,12 +9,14 @@ import (
 type PaymentMethod string
 
 const (
+	PaymentMethodCash       PaymentMethod = "cash"
 	PaymentMethodCreditCard PaymentMethod = "credit_card"
+	PaymentMethodWallet     PaymentMethod = "wallet"
 )
 
 func (p PaymentMethod) Valid() bool {
 	switch p {
-	case PaymentMethodCreditCard:
+	case PaymentMethodCash, PaymentMethodCreditCard, PaymentMethodWallet:
 		return true
 	default:
 		return false
