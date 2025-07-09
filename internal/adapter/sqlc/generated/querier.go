@@ -9,20 +9,29 @@ import (
 )
 
 type Querier interface {
-	// TODO: Update this query when menu_items table is created
-	CheckCategoryHasMenuItems(ctx context.Context) (bool, error)
+	CheckCategoryHasMenuItems(ctx context.Context, categoryID int32) (bool, error)
+	CountMenuItemsByCategory(ctx context.Context, categoryID int32) (int64, error)
 	CreateCategory(ctx context.Context, name string) (*Category, error)
+	CreateMenuItem(ctx context.Context, arg CreateMenuItemParams) (*MenuItem, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (*User, error)
 	DeleteCategory(ctx context.Context, id int32) error
+	DeleteMenuItem(ctx context.Context, id int32) error
 	DeleteUser(ctx context.Context, id int32) error
 	GetCategoryByID(ctx context.Context, id int32) (*Category, error)
 	GetCategoryByName(ctx context.Context, name string) (*Category, error)
+	GetMenuItemByID(ctx context.Context, id int32) (*MenuItem, error)
+	GetMenuItemsByIDs(ctx context.Context, dollar_1 []int32) ([]*MenuItem, error)
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	GetUserByID(ctx context.Context, id int32) (*User, error)
 	ListCategories(ctx context.Context) ([]*Category, error)
+	ListMenuItems(ctx context.Context, arg ListMenuItemsParams) ([]*MenuItem, error)
+	ListMenuItemsByCategory(ctx context.Context, arg ListMenuItemsByCategoryParams) ([]*MenuItem, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]*User, error)
 	ListUsersByRole(ctx context.Context, arg ListUsersByRoleParams) ([]*User, error)
+	SearchMenuItems(ctx context.Context, arg SearchMenuItemsParams) ([]*MenuItem, error)
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (*Category, error)
+	UpdateMenuItem(ctx context.Context, arg UpdateMenuItemParams) (*MenuItem, error)
+	UpdateMenuItemStatus(ctx context.Context, arg UpdateMenuItemStatusParams) (*MenuItem, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (*User, error)
 	UpdateUserLastLogin(ctx context.Context, id int32) error
 }

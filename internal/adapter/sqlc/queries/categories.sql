@@ -27,5 +27,7 @@ SELECT * FROM categories
 ORDER BY name ASC;
 
 -- name: CheckCategoryHasMenuItems :one
--- TODO: Update this query when menu_items table is created
-SELECT false as has_items;
+SELECT EXISTS(
+    SELECT 1 FROM menu_items 
+    WHERE category_id = $1
+) as has_items;

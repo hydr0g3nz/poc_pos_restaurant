@@ -60,6 +60,17 @@ type Category struct {
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 }
 
+type MenuItem struct {
+	ID          int32            `json:"id"`
+	CategoryID  int32            `json:"category_id"`
+	Name        string           `json:"name"`
+	Description pgtype.Text      `json:"description"`
+	Price       pgtype.Numeric   `json:"price"`
+	IsActive    pgtype.Bool      `json:"is_active"`
+	CreatedAt   pgtype.Timestamp `json:"created_at"`
+	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
+}
+
 type User struct {
 	ID            int32            `json:"id"`
 	Email         string           `json:"email"`

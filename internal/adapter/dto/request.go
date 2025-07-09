@@ -106,3 +106,38 @@ type CategoriesListResponse struct {
 	Categories []*CategoryResponse `json:"categories"`
 	Total      int                 `json:"total"`
 }
+
+// CreateMenuItemRequest represents menu item creation request DTO
+type CreateMenuItemRequest struct {
+	CategoryID  int     `json:"category_id" validate:"required,gt=0"`
+	Name        string  `json:"name" validate:"required,min=1,max=100"`
+	Description string  `json:"description,omitempty"`
+	Price       float64 `json:"price" validate:"required,gte=0"`
+}
+
+// UpdateMenuItemRequest represents menu item update request DTO
+type UpdateMenuItemRequest struct {
+	CategoryID  int     `json:"category_id" validate:"required,gt=0"`
+	Name        string  `json:"name" validate:"required,min=1,max=100"`
+	Description string  `json:"description,omitempty"`
+	Price       float64 `json:"price" validate:"required,gte=0"`
+}
+
+// MenuItemResponse represents menu item data in responses
+type MenuItemResponse struct {
+	ID          int               `json:"id"`
+	CategoryID  int               `json:"category_id"`
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	Price       float64           `json:"price"`
+	CreatedAt   time.Time         `json:"created_at"`
+	Category    *CategoryResponse `json:"category,omitempty"`
+}
+
+// MenuItemListResponse represents menu items list response
+type MenuItemListResponse struct {
+	Items  []*MenuItemResponse `json:"items"`
+	Total  int                 `json:"total"`
+	Limit  int                 `json:"limit"`
+	Offset int                 `json:"offset"`
+}

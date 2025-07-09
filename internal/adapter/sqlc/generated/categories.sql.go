@@ -10,12 +10,14 @@ import (
 )
 
 const checkCategoryHasMenuItems = `-- name: CheckCategoryHasMenuItems :one
-SELECT false as has_items
+SELECT EXISTS(
+    SELECT 1 FROM menu_items 
+    WHERE category_id = $1
+) as has_items
 `
 
-// TODO: Update this query when menu_items table is created
-func (q *Queries) CheckCategoryHasMenuItems(ctx context.Context) (bool, error) {
-	row := q.db.QueryRow(ctx, checkCategoryHasMenuItems)
+func (q *Queries) CheckCategoryHasMenuItems(ctx context.Context, categoryID int32) (bool, error) {
+	row := q.db.QueryRow(ctx, checkCategoryHasMenuItems, categoryID)
 	var has_items bool
 	err := row.Scan(&has_items)
 	return has_items, err

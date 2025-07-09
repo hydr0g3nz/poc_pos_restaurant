@@ -83,8 +83,7 @@ func (r *categoryRepository) List(ctx context.Context) ([]*entity.Category, erro
 }
 
 func (r *categoryRepository) HasMenuItems(ctx context.Context, categoryID int) (bool, error) {
-	result, err := r.queries.CheckCategoryHasMenuItems(ctx)
-	// result, err := r.queries.CheckCategoryHasMenuItems(ctx, int32(categoryID))
+	result, err := r.queries.CheckCategoryHasMenuItems(ctx, int32(categoryID))
 	if err != nil {
 		return false, err
 	}
