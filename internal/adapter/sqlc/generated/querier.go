@@ -9,12 +9,20 @@ import (
 )
 
 type Querier interface {
+	// TODO: Update this query when menu_items table is created
+	CheckCategoryHasMenuItems(ctx context.Context) (bool, error)
+	CreateCategory(ctx context.Context, name string) (*Category, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (*User, error)
+	DeleteCategory(ctx context.Context, id int32) error
 	DeleteUser(ctx context.Context, id int32) error
+	GetCategoryByID(ctx context.Context, id int32) (*Category, error)
+	GetCategoryByName(ctx context.Context, name string) (*Category, error)
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	GetUserByID(ctx context.Context, id int32) (*User, error)
+	ListCategories(ctx context.Context) ([]*Category, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]*User, error)
 	ListUsersByRole(ctx context.Context, arg ListUsersByRoleParams) ([]*User, error)
+	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (*Category, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (*User, error)
 	UpdateUserLastLogin(ctx context.Context, id int32) error
 }

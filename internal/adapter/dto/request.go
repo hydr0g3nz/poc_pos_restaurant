@@ -83,3 +83,26 @@ type UsersListResponse struct {
 	Limit  int             `json:"limit"`
 	Offset int             `json:"offset"`
 }
+
+// CreateCategoryRequest represents category creation request DTO
+type CreateCategoryRequest struct {
+	Name string `json:"name" validate:"required,min=1,max=100"`
+}
+
+// UpdateCategoryRequest represents category update request DTO
+type UpdateCategoryRequest struct {
+	Name string `json:"name" validate:"required,min=1,max=100"`
+}
+
+// CategoryResponse represents category data in responses
+type CategoryResponse struct {
+	ID        int       `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// CategoriesListResponse represents categories list response
+type CategoriesListResponse struct {
+	Categories []*CategoryResponse `json:"categories"`
+	Total      int                 `json:"total"`
+}

@@ -41,12 +41,15 @@ func main() {
 
 	// Setup repositories
 	userRepo := sqlcRepo.NewUserRepository(db)
+	categoryRepo := sqlcRepo.NewCategoryRepository(db)
 
 	// Setup use cases
 	userUsecase := usecase.NewUserUsecase(userRepo, logger, cfg)
+	categoryUsecase := usecase.NewCategoryUsecase(categoryRepo, logger, cfg)
 
 	// Setup controllers
 	userController := controller.NewUserController(userUsecase)
+	categoryController := controller.NewCategoryController(categoryUsecase)
 
 	// Setup fiber server
 	app := infrastructure.NewFiber(infrastructure.ServerConfig{
@@ -58,6 +61,7 @@ func main() {
 	// Register routes
 	api := app.Group("/api/v1")
 	userController.RegisterRoutes(api)
+	categoryController.RegisterRoutes(api)
 
 	// Graceful shutdown
 	go func() {
