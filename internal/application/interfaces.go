@@ -86,11 +86,3 @@ type QRCodeUsecase interface {
 	ScanQRCode(ctx context.Context, qrCode string) (*QRCodeScanResponse, error)
 	CreateOrderFromQRCode(ctx context.Context, qrCode string) (*OrderResponse, error)
 }
-
-// Request/Response DTOs will be in separate files
-// internal/application/dto/category_dto.go
-// internal/application/dto/menu_item_dto.go
-// internal/application/dto/table_dto.go
-// internal/application/dto/order_dto.go
-// internal/application/dto/payment_dto.go
-// internal/application/dto/revenue_dto.go
