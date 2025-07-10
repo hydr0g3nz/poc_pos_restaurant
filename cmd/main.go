@@ -47,6 +47,7 @@ func main() {
 	tableRepo := sqlcRepo.NewTableRepository(db)
 	orderRepo := sqlcRepo.NewOrderRepository(db)
 	orderItemRepo := sqlcRepo.NewOrderItemRepository(db)
+	paymentRepo := sqlcRepo.NewPaymentRepository(db)
 
 	// Setup domain services
 	orderService := service.NewOrderService(orderRepo, orderItemRepo, tableRepo, menuItemRepo)
@@ -56,12 +57,15 @@ func main() {
 	categoryUsecase := usecase.NewCategoryUsecase(categoryRepo, logger, cfg)
 	menuItemUsecase := usecase.NewMenuItemUsecase(menuItemRepo, categoryRepo, logger, cfg)
 	orderUsecase := usecase.NewOrderUsecase(orderRepo, orderItemRepo, tableRepo, menuItemRepo, orderService, logger, cfg)
+	paymentUsecase := usecase.NewPaymentUsecase(paymentRepo, orderRepo, orderService, logger, cfg)
 	tableUsecase := (usecase.TableUsecase)(nil)
+
 	// Setup controllers
 	userController := controller.NewUserController(userUsecase)
 	categoryController := controller.NewCategoryController(categoryUsecase)
 	menuItemController := controller.NewMenuItemController(menuItemUsecase)
 	orderController := controller.NewOrderController(orderUsecase)
+	paymentController := controller.NewPaymentController(paymentUsecase)
 	tableController := controller.NewTableController(tableUsecase)
 
 	// Setup fiber server
@@ -77,7 +81,9 @@ func main() {
 	categoryController.RegisterRoutes(api)
 	menuItemController.RegisterRoutes(api)
 	orderController.RegisterRoutes(api)
+	paymentController.RegisterRoutes(api)
 	tableController.RegisterRoutes(api)
+
 	// Graceful shutdown
 	go func() {
 		logger.Info("Server starting", "port", cfg.Server.Port)

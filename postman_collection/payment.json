@@ -1,0 +1,579 @@
+{
+  "info": {
+    "name": "Payment API",
+    "description": "API endpoints for payment management in POS restaurant system",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Process Payment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_id\": 1,\n  \"amount\": 450.00,\n  \"method\": \"cash\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/payments",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "payments"
+          ]
+        },
+        "description": "Process payment for a closed order"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_id\": 1,\n  \"amount\": 450.00,\n  \"method\": \"cash\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/payments",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments"
+              ]
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": 201,\n  \"message\": \"Payment processed successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"order_id\": 1,\n    \"amount\": 450.00,\n    \"method\": \"cash\",\n    \"paid_at\": \"2024-01-15T10:30:00Z\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Process Credit Card Payment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_id\": 2,\n  \"amount\": 275.50,\n  \"method\": \"credit_card\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/payments",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "payments"
+          ]
+        },
+        "description": "Process credit card payment"
+      }
+    },
+    {
+      "name": "Process Wallet Payment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_id\": 3,\n  \"amount\": 180.00,\n  \"method\": \"wallet\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/payments",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "payments"
+          ]
+        },
+        "description": "Process wallet payment"
+      }
+    },
+    {
+      "name": "Get Payment by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/payments/1",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "payments",
+            "1"
+          ]
+        },
+        "description": "Get payment details by payment ID"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/payments/1",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                "1"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": 200,\n  \"message\": \"Payment retrieved successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"order_id\": 1,\n    \"amount\": 450.00,\n    \"method\": \"cash\",\n    \"paid_at\": \"2024-01-15T10:30:00Z\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Get Payment by Order ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/payments/order/1",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "payments",
+            "order",
+            "1"
+          ]
+        },
+        "description": "Get payment details by order ID"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/payments/order/1",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                "order",
+                "1"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": 200,\n  \"message\": \"Payment retrieved successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"order_id\": 1,\n    \"amount\": 450.00,\n    \"method\": \"cash\",\n    \"paid_at\": \"2024-01-15T10:30:00Z\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "List All Payments",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/payments?limit=10&offset=0",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "payments"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "10"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
+          ]
+        },
+        "description": "List all payments with pagination"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/payments?limit=10&offset=0",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": 200,\n  \"message\": \"Payments retrieved successfully\",\n  \"data\": {\n    \"payments\": [\n      {\n        \"id\": 1,\n        \"order_id\": 1,\n        \"amount\": 450.00,\n        \"method\": \"cash\",\n        \"paid_at\": \"2024-01-15T10:30:00Z\"\n      },\n      {\n        \"id\": 2,\n        \"order_id\": 2,\n        \"amount\": 275.50,\n        \"method\": \"credit_card\",\n        \"paid_at\": \"2024-01-15T11:15:00Z\"\n      }\n    ],\n    \"total\": 2,\n    \"limit\": 10,\n    \"offset\": 0\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "List Payments by Method",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/payments/search?method=cash&limit=10&offset=0",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "payments",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "method",
+              "value": "cash"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
+          ]
+        },
+        "description": "List payments by payment method (cash, credit_card, wallet)"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/payments/search?method=cash&limit=10&offset=0",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "method",
+                  "value": "cash"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": 200,\n  \"message\": \"Payments by method retrieved successfully\",\n  \"data\": {\n    \"payments\": [\n      {\n        \"id\": 1,\n        \"order_id\": 1,\n        \"amount\": 450.00,\n        \"method\": \"cash\",\n        \"paid_at\": \"2024-01-15T10:30:00Z\"\n      }\n    ],\n    \"total\": 1,\n    \"limit\": 10,\n    \"offset\": 0\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "List Payments by Credit Card",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/payments/search?method=credit_card&limit=10&offset=0",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "payments",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "method",
+              "value": "credit_card"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
+          ]
+        },
+        "description": "List payments made by credit card"
+      }
+    },
+    {
+      "name": "List Payments by Wallet",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/payments/search?method=wallet&limit=10&offset=0",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "payments",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "method",
+              "value": "wallet"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
+          ]
+        },
+        "description": "List payments made by wallet"
+      }
+    },
+    {
+      "name": "List Payments by Date Range",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/payments/date-range?start_date=2024-01-01&end_date=2024-01-31&limit=10&offset=0",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "payments",
+            "date-range"
+          ],
+          "query": [
+            {
+              "key": "start_date",
+              "value": "2024-01-01"
+            },
+            {
+              "key": "end_date",
+              "value": "2024-01-31"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
+          ]
+        },
+        "description": "List payments within a specific date range"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/payments/date-range?start_date=2024-01-01&end_date=2024-01-31&limit=10&offset=0",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                "date-range"
+              ],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-01-31"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": 200,\n  \"message\": \"Payments by date range retrieved successfully\",\n  \"data\": {\n    \"payments\": [\n      {\n        \"id\": 1,\n        \"order_id\": 1,\n        \"amount\": 450.00,\n        \"method\": \"cash\",\n        \"paid_at\": \"2024-01-15T10:30:00Z\"\n      },\n      {\n        \"id\": 2,\n        \"order_id\": 2,\n        \"amount\": 275.50,\n        \"method\": \"credit_card\",\n        \"paid_at\": \"2024-01-15T11:15:00Z\"\n      }\n    ],\n    \"total\": 2,\n    \"limit\": 10,\n    \"offset\": 0\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "List Today's Payments",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/payments/date-range?start_date=2024-01-15&end_date=2024-01-15&limit=50&offset=0",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "payments",
+            "date-range"
+          ],
+          "query": [
+            {
+              "key": "start_date",
+              "value": "2024-01-15"
+            },
+            {
+              "key": "end_date",
+              "value": "2024-01-15"
+            },
+            {
+              "key": "limit",
+              "value": "50"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
+          ]
+        },
+        "description": "List today's payments"
+      }
+    }
+  ]
+}

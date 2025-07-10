@@ -53,6 +53,49 @@ func (ns NullOrderStatus) Value() (driver.Value, error) {
 	return string(ns.OrderStatus), nil
 }
 
+type PaymentMethod string
+
+const (
+	PaymentMethodCash       PaymentMethod = "cash"
+	PaymentMethodCreditCard PaymentMethod = "credit_card"
+	PaymentMethodWallet     PaymentMethod = "wallet"
+)
+
+func (e *PaymentMethod) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PaymentMethod(s)
+	case string:
+		*e = PaymentMethod(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PaymentMethod: %T", src)
+	}
+	return nil
+}
+
+type NullPaymentMethod struct {
+	PaymentMethod PaymentMethod `json:"payment_method"`
+	Valid         bool          `json:"valid"` // Valid is true if PaymentMethod is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPaymentMethod) Scan(value interface{}) error {
+	if value == nil {
+		ns.PaymentMethod, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PaymentMethod.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPaymentMethod) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PaymentMethod), nil
+}
+
 type UserRole string
 
 const (
@@ -132,6 +175,15 @@ type OrderItem struct {
 	Notes     pgtype.Text      `json:"notes"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 	UpdatedAt pgtype.Timestamp `json:"updated_at"`
+}
+
+type Payment struct {
+	ID        int32            `json:"id"`
+	OrderID   int32            `json:"order_id"`
+	Amount    pgtype.Numeric   `json:"amount"`
+	Method    PaymentMethod    `json:"method"`
+	Reference pgtype.Text      `json:"reference"`
+	PaidAt    pgtype.Timestamp `json:"paid_at"`
 }
 
 type Table struct {

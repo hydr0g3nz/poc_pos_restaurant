@@ -16,6 +16,7 @@ type Querier interface {
 	CreateMenuItem(ctx context.Context, arg CreateMenuItemParams) (*MenuItem, error)
 	CreateOrder(ctx context.Context, arg CreateOrderParams) (*Order, error)
 	CreateOrderItem(ctx context.Context, arg CreateOrderItemParams) (*OrderItem, error)
+	CreatePayment(ctx context.Context, arg CreatePaymentParams) (*Payment, error)
 	CreateTable(ctx context.Context, arg CreateTableParams) (*Table, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (*User, error)
 	DeleteCategory(ctx context.Context, id int32) error
@@ -23,17 +24,24 @@ type Querier interface {
 	DeleteOrder(ctx context.Context, id int32) error
 	DeleteOrderItem(ctx context.Context, id int32) error
 	DeleteOrderItemsByOrderID(ctx context.Context, orderID int32) error
+	DeletePayment(ctx context.Context, id int32) error
 	DeleteTable(ctx context.Context, id int32) error
 	DeleteUser(ctx context.Context, id int32) error
 	GetCategoryByID(ctx context.Context, id int32) (*Category, error)
 	GetCategoryByName(ctx context.Context, name string) (*Category, error)
+	GetDailyPaymentSummary(ctx context.Context, arg GetDailyPaymentSummaryParams) ([]*GetDailyPaymentSummaryRow, error)
 	GetMenuItemByID(ctx context.Context, id int32) (*MenuItem, error)
 	GetMenuItemsByIDs(ctx context.Context, dollar_1 []int32) ([]*MenuItem, error)
+	GetMonthlyPaymentSummary(ctx context.Context, arg GetMonthlyPaymentSummaryParams) ([]*GetMonthlyPaymentSummaryRow, error)
 	GetOpenOrderByTable(ctx context.Context, tableID int32) (*Order, error)
 	GetOrderByID(ctx context.Context, id int32) (*Order, error)
 	GetOrderItemByID(ctx context.Context, id int32) (*OrderItem, error)
 	GetOrderItemByOrderAndItem(ctx context.Context, arg GetOrderItemByOrderAndItemParams) (*OrderItem, error)
 	GetOrderItemsByOrderID(ctx context.Context, orderID int32) ([]*OrderItem, error)
+	GetPaymentByID(ctx context.Context, id int32) (*Payment, error)
+	GetPaymentByOrderID(ctx context.Context, orderID int32) (*Payment, error)
+	GetPaymentMethodStats(ctx context.Context, arg GetPaymentMethodStatsParams) ([]*GetPaymentMethodStatsRow, error)
+	GetPaymentsByOrderIDs(ctx context.Context, dollar_1 []int32) ([]*Payment, error)
 	GetTableByID(ctx context.Context, id int32) (*Table, error)
 	GetTableByNumber(ctx context.Context, tableNumber int32) (*Table, error)
 	GetTableByQRCode(ctx context.Context, qrCode string) (*Table, error)
@@ -46,6 +54,9 @@ type Querier interface {
 	ListOrdersByDateRange(ctx context.Context, arg ListOrdersByDateRangeParams) ([]*Order, error)
 	ListOrdersByStatus(ctx context.Context, arg ListOrdersByStatusParams) ([]*Order, error)
 	ListOrdersByTable(ctx context.Context, arg ListOrdersByTableParams) ([]*Order, error)
+	ListPayments(ctx context.Context, arg ListPaymentsParams) ([]*Payment, error)
+	ListPaymentsByDateRange(ctx context.Context, arg ListPaymentsByDateRangeParams) ([]*Payment, error)
+	ListPaymentsByMethod(ctx context.Context, arg ListPaymentsByMethodParams) ([]*Payment, error)
 	ListTables(ctx context.Context) ([]*Table, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]*User, error)
 	ListUsersByRole(ctx context.Context, arg ListUsersByRoleParams) ([]*User, error)
@@ -55,6 +66,7 @@ type Querier interface {
 	UpdateMenuItemStatus(ctx context.Context, arg UpdateMenuItemStatusParams) (*MenuItem, error)
 	UpdateOrder(ctx context.Context, arg UpdateOrderParams) (*Order, error)
 	UpdateOrderItem(ctx context.Context, arg UpdateOrderItemParams) (*OrderItem, error)
+	UpdatePayment(ctx context.Context, arg UpdatePaymentParams) (*Payment, error)
 	UpdateTable(ctx context.Context, arg UpdateTableParams) (*Table, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (*User, error)
 	UpdateUserLastLogin(ctx context.Context, id int32) error
