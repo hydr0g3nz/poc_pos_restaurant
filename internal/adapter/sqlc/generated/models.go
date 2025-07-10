@@ -11,6 +11,48 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type OrderStatus string
+
+const (
+	OrderStatusOpen   OrderStatus = "open"
+	OrderStatusClosed OrderStatus = "closed"
+)
+
+func (e *OrderStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OrderStatus(s)
+	case string:
+		*e = OrderStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OrderStatus: %T", src)
+	}
+	return nil
+}
+
+type NullOrderStatus struct {
+	OrderStatus OrderStatus `json:"order_status"`
+	Valid       bool        `json:"valid"` // Valid is true if OrderStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOrderStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.OrderStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OrderStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOrderStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OrderStatus), nil
+}
+
 type UserRole string
 
 const (
@@ -66,6 +108,37 @@ type MenuItem struct {
 	Name        string           `json:"name"`
 	Description pgtype.Text      `json:"description"`
 	Price       pgtype.Numeric   `json:"price"`
+	IsActive    pgtype.Bool      `json:"is_active"`
+	CreatedAt   pgtype.Timestamp `json:"created_at"`
+	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
+}
+
+type Order struct {
+	ID        int32            `json:"id"`
+	TableID   int32            `json:"table_id"`
+	Status    OrderStatus      `json:"status"`
+	Notes     pgtype.Text      `json:"notes"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+	UpdatedAt pgtype.Timestamp `json:"updated_at"`
+	ClosedAt  pgtype.Timestamp `json:"closed_at"`
+}
+
+type OrderItem struct {
+	ID        int32            `json:"id"`
+	OrderID   int32            `json:"order_id"`
+	ItemID    int32            `json:"item_id"`
+	Quantity  int32            `json:"quantity"`
+	UnitPrice pgtype.Numeric   `json:"unit_price"`
+	Notes     pgtype.Text      `json:"notes"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+	UpdatedAt pgtype.Timestamp `json:"updated_at"`
+}
+
+type Table struct {
+	ID          int32            `json:"id"`
+	TableNumber int32            `json:"table_number"`
+	QrCode      string           `json:"qr_code"`
+	Seating     int32            `json:"seating"`
 	IsActive    pgtype.Bool      `json:"is_active"`
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
 	UpdatedAt   pgtype.Timestamp `json:"updated_at"`

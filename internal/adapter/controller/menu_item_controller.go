@@ -28,10 +28,24 @@ func (c *MenuItemController) CreateMenuItem(ctx *fiber.Ctx) error {
 	}
 
 	// Validate required fields
-	if req.Name == "" || req.CategoryID <= 0 || req.Price < 0 {
+	if req.CategoryID <= 0 {
 		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
 			Status:  fiber.StatusBadRequest,
-			Message: "Name, CategoryID, and valid Price are required",
+			Message: "Category ID is required and must be greater than 0",
+		})
+	}
+
+	if req.Name == "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Status:  fiber.StatusBadRequest,
+			Message: "Menu item name is required",
+		})
+	}
+
+	if req.Price < 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Status:  fiber.StatusBadRequest,
+			Message: "Price must be non-negative",
 		})
 	}
 
@@ -98,10 +112,24 @@ func (c *MenuItemController) UpdateMenuItem(ctx *fiber.Ctx) error {
 	}
 
 	// Validate required fields
-	if req.Name == "" || req.CategoryID <= 0 || req.Price < 0 {
+	if req.CategoryID <= 0 {
 		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
 			Status:  fiber.StatusBadRequest,
-			Message: "Name, CategoryID, and valid Price are required",
+			Message: "Category ID is required and must be greater than 0",
+		})
+	}
+
+	if req.Name == "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Status:  fiber.StatusBadRequest,
+			Message: "Menu item name is required",
+		})
+	}
+
+	if req.Price < 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Status:  fiber.StatusBadRequest,
+			Message: "Price must be non-negative",
 		})
 	}
 
@@ -144,25 +172,18 @@ func (c *MenuItemController) DeleteMenuItem(ctx *fiber.Ctx) error {
 	return SuccessResp(ctx, fiber.StatusOK, "Menu item deleted successfully", nil)
 }
 
-// ListMenuItems handles getting all menu items with pagination
+// ListMenuItems handles getting all menu items
 func (c *MenuItemController) ListMenuItems(ctx *fiber.Ctx) error {
-	limitStr := ctx.Query("limit", "10")
-	offsetStr := ctx.Query("offset", "0")
+	// Parse pagination parameters
+	limit, _ := strconv.Atoi(ctx.Query("limit", "10"))
+	offset, _ := strconv.Atoi(ctx.Query("offset", "0"))
 
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil || limit <= 0 {
-		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Status:  fiber.StatusBadRequest,
-			Message: "Invalid limit parameter",
-		})
+	// Validate pagination parameters
+	if limit <= 0 || limit > 100 {
+		limit = 10
 	}
-
-	offset, err := strconv.Atoi(offsetStr)
-	if err != nil || offset < 0 {
-		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Status:  fiber.StatusBadRequest,
-			Message: "Invalid offset parameter",
-		})
+	if offset < 0 {
+		offset = 0
 	}
 
 	response, err := c.menuItemUseCase.ListMenuItems(ctx.Context(), limit, offset)
@@ -191,23 +212,16 @@ func (c *MenuItemController) ListMenuItemsByCategory(ctx *fiber.Ctx) error {
 		})
 	}
 
-	limitStr := ctx.Query("limit", "10")
-	offsetStr := ctx.Query("offset", "0")
+	// Parse pagination parameters
+	limit, _ := strconv.Atoi(ctx.Query("limit", "10"))
+	offset, _ := strconv.Atoi(ctx.Query("offset", "0"))
 
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil || limit <= 0 {
-		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Status:  fiber.StatusBadRequest,
-			Message: "Invalid limit parameter",
-		})
+	// Validate pagination parameters
+	if limit <= 0 || limit > 100 {
+		limit = 10
 	}
-
-	offset, err := strconv.Atoi(offsetStr)
-	if err != nil || offset < 0 {
-		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Status:  fiber.StatusBadRequest,
-			Message: "Invalid offset parameter",
-		})
+	if offset < 0 {
+		offset = 0
 	}
 
 	response, err := c.menuItemUseCase.ListMenuItemsByCategory(ctx.Context(), categoryID, limit, offset)
@@ -215,7 +229,7 @@ func (c *MenuItemController) ListMenuItemsByCategory(ctx *fiber.Ctx) error {
 		return HandleError(ctx, err)
 	}
 
-	return SuccessResp(ctx, fiber.StatusOK, "Menu items retrieved successfully", response)
+	return SuccessResp(ctx, fiber.StatusOK, "Menu items by category retrieved successfully", response)
 }
 
 // SearchMenuItems handles searching menu items
@@ -228,23 +242,16 @@ func (c *MenuItemController) SearchMenuItems(ctx *fiber.Ctx) error {
 		})
 	}
 
-	limitStr := ctx.Query("limit", "10")
-	offsetStr := ctx.Query("offset", "0")
+	// Parse pagination parameters
+	limit, _ := strconv.Atoi(ctx.Query("limit", "10"))
+	offset, _ := strconv.Atoi(ctx.Query("offset", "0"))
 
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil || limit <= 0 {
-		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Status:  fiber.StatusBadRequest,
-			Message: "Invalid limit parameter",
-		})
+	// Validate pagination parameters
+	if limit <= 0 || limit > 100 {
+		limit = 10
 	}
-
-	offset, err := strconv.Atoi(offsetStr)
-	if err != nil || offset < 0 {
-		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
-			Status:  fiber.StatusBadRequest,
-			Message: "Invalid offset parameter",
-		})
+	if offset < 0 {
+		offset = 0
 	}
 
 	response, err := c.menuItemUseCase.SearchMenuItems(ctx.Context(), query, limit, offset)
@@ -261,9 +268,9 @@ func (c *MenuItemController) RegisterRoutes(router fiber.Router) {
 
 	// Public routes
 	menuItemGroup.Get("/", c.ListMenuItems)
-	menuItemGroup.Get("/search", c.SearchMenuItems) // GET /menu-items/search?q=ข้าวผัด
+	menuItemGroup.Get("/search", c.SearchMenuItems)                       // GET /menu-items/search?q=ข้าวผัด
+	menuItemGroup.Get("/category/:categoryId", c.ListMenuItemsByCategory) // GET /menu-items/category/1
 	menuItemGroup.Get("/:id", c.GetMenuItem)
-	menuItemGroup.Get("/category/:categoryId", c.ListMenuItemsByCategory)
 
 	// Admin routes (require admin role in real implementation)
 	menuItemGroup.Post("/", c.CreateMenuItem)

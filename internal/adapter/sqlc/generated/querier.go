@@ -10,28 +10,52 @@ import (
 
 type Querier interface {
 	CheckCategoryHasMenuItems(ctx context.Context, categoryID int32) (bool, error)
+	CheckTableHasOrders(ctx context.Context, tableID int32) (bool, error)
 	CountMenuItemsByCategory(ctx context.Context, categoryID int32) (int64, error)
 	CreateCategory(ctx context.Context, name string) (*Category, error)
 	CreateMenuItem(ctx context.Context, arg CreateMenuItemParams) (*MenuItem, error)
+	CreateOrder(ctx context.Context, arg CreateOrderParams) (*Order, error)
+	CreateOrderItem(ctx context.Context, arg CreateOrderItemParams) (*OrderItem, error)
+	CreateTable(ctx context.Context, arg CreateTableParams) (*Table, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (*User, error)
 	DeleteCategory(ctx context.Context, id int32) error
 	DeleteMenuItem(ctx context.Context, id int32) error
+	DeleteOrder(ctx context.Context, id int32) error
+	DeleteOrderItem(ctx context.Context, id int32) error
+	DeleteOrderItemsByOrderID(ctx context.Context, orderID int32) error
+	DeleteTable(ctx context.Context, id int32) error
 	DeleteUser(ctx context.Context, id int32) error
 	GetCategoryByID(ctx context.Context, id int32) (*Category, error)
 	GetCategoryByName(ctx context.Context, name string) (*Category, error)
 	GetMenuItemByID(ctx context.Context, id int32) (*MenuItem, error)
 	GetMenuItemsByIDs(ctx context.Context, dollar_1 []int32) ([]*MenuItem, error)
+	GetOpenOrderByTable(ctx context.Context, tableID int32) (*Order, error)
+	GetOrderByID(ctx context.Context, id int32) (*Order, error)
+	GetOrderItemByID(ctx context.Context, id int32) (*OrderItem, error)
+	GetOrderItemByOrderAndItem(ctx context.Context, arg GetOrderItemByOrderAndItemParams) (*OrderItem, error)
+	GetOrderItemsByOrderID(ctx context.Context, orderID int32) ([]*OrderItem, error)
+	GetTableByID(ctx context.Context, id int32) (*Table, error)
+	GetTableByNumber(ctx context.Context, tableNumber int32) (*Table, error)
+	GetTableByQRCode(ctx context.Context, qrCode string) (*Table, error)
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	GetUserByID(ctx context.Context, id int32) (*User, error)
 	ListCategories(ctx context.Context) ([]*Category, error)
 	ListMenuItems(ctx context.Context, arg ListMenuItemsParams) ([]*MenuItem, error)
 	ListMenuItemsByCategory(ctx context.Context, arg ListMenuItemsByCategoryParams) ([]*MenuItem, error)
+	ListOrders(ctx context.Context, arg ListOrdersParams) ([]*Order, error)
+	ListOrdersByDateRange(ctx context.Context, arg ListOrdersByDateRangeParams) ([]*Order, error)
+	ListOrdersByStatus(ctx context.Context, arg ListOrdersByStatusParams) ([]*Order, error)
+	ListOrdersByTable(ctx context.Context, arg ListOrdersByTableParams) ([]*Order, error)
+	ListTables(ctx context.Context) ([]*Table, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]*User, error)
 	ListUsersByRole(ctx context.Context, arg ListUsersByRoleParams) ([]*User, error)
 	SearchMenuItems(ctx context.Context, arg SearchMenuItemsParams) ([]*MenuItem, error)
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (*Category, error)
 	UpdateMenuItem(ctx context.Context, arg UpdateMenuItemParams) (*MenuItem, error)
 	UpdateMenuItemStatus(ctx context.Context, arg UpdateMenuItemStatusParams) (*MenuItem, error)
+	UpdateOrder(ctx context.Context, arg UpdateOrderParams) (*Order, error)
+	UpdateOrderItem(ctx context.Context, arg UpdateOrderItemParams) (*OrderItem, error)
+	UpdateTable(ctx context.Context, arg UpdateTableParams) (*Table, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (*User, error)
 	UpdateUserLastLogin(ctx context.Context, id int32) error
 }

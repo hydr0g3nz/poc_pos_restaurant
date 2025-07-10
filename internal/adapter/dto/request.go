@@ -141,3 +141,134 @@ type MenuItemListResponse struct {
 	Limit  int                 `json:"limit"`
 	Offset int                 `json:"offset"`
 }
+
+// Order DTOs
+type CreateOrderRequest struct {
+	TableID int `json:"table_id" validate:"required,gt=0"`
+}
+
+type UpdateOrderRequest struct {
+	Status string `json:"status" validate:"required,oneof=open closed"`
+}
+
+type OrderResponse struct {
+	ID        int            `json:"id"`
+	TableID   int            `json:"table_id"`
+	Status    string         `json:"status"`
+	Notes     string         `json:"notes,omitempty"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	ClosedAt  *time.Time     `json:"closed_at,omitempty"`
+	Table     *TableResponse `json:"table,omitempty"`
+}
+
+type OrderWithItemsResponse struct {
+	ID        int                  `json:"id"`
+	TableID   int                  `json:"table_id"`
+	Status    string               `json:"status"`
+	Notes     string               `json:"notes,omitempty"`
+	Items     []*OrderItemResponse `json:"items"`
+	Total     float64              `json:"total"`
+	CreatedAt time.Time            `json:"created_at"`
+	UpdatedAt time.Time            `json:"updated_at"`
+	ClosedAt  *time.Time           `json:"closed_at,omitempty"`
+	Table     *TableResponse       `json:"table,omitempty"`
+}
+
+type OrderListResponse struct {
+	Orders []*OrderResponse `json:"orders"`
+	Total  int              `json:"total"`
+	Limit  int              `json:"limit"`
+	Offset int              `json:"offset"`
+}
+
+// Order Item DTOs
+type AddOrderItemRequest struct {
+	OrderID  int    `json:"order_id" validate:"required,gt=0"`
+	ItemID   int    `json:"item_id" validate:"required,gt=0"`
+	Quantity int    `json:"quantity" validate:"required,gt=0"`
+	Notes    string `json:"notes,omitempty"`
+}
+
+type UpdateOrderItemRequest struct {
+	Quantity int    `json:"quantity" validate:"required,gt=0"`
+	Notes    string `json:"notes,omitempty"`
+}
+
+type OrderItemResponse struct {
+	ID        int               `json:"id"`
+	OrderID   int               `json:"order_id"`
+	ItemID    int               `json:"item_id"`
+	Quantity  int               `json:"quantity"`
+	UnitPrice float64           `json:"unit_price"`
+	Subtotal  float64           `json:"subtotal"`
+	Notes     string            `json:"notes,omitempty"`
+	CreatedAt time.Time         `json:"created_at"`
+	UpdatedAt time.Time         `json:"updated_at"`
+	MenuItem  *MenuItemResponse `json:"menu_item,omitempty"`
+}
+
+type OrderTotalResponse struct {
+	OrderID   int                  `json:"order_id"`
+	Items     []*OrderItemResponse `json:"items"`
+	Total     float64              `json:"total"`
+	ItemCount int                  `json:"item_count"`
+}
+
+// Table DTOs
+type CreateTableRequest struct {
+	TableNumber int `json:"table_number" validate:"required,gt=0"`
+	Seating     int `json:"seating" validate:"gte=0"`
+}
+
+type UpdateTableRequest struct {
+	TableNumber int `json:"table_number" validate:"required,gt=0"`
+	Seating     int `json:"seating" validate:"gte=0"`
+}
+
+type TableResponse struct {
+	ID          int       `json:"id"`
+	TableNumber int       `json:"table_number"`
+	QRCode      string    `json:"qr_code"`
+	Seating     int       `json:"seating"`
+	IsActive    bool      `json:"is_active"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type TableListResponse struct {
+	Tables []*TableResponse `json:"tables"`
+	Total  int              `json:"total"`
+}
+
+// QR Code DTOs
+type QRCodeScanResponse struct {
+	TableID      int            `json:"table_id"`
+	Table        *TableResponse `json:"table"`
+	HasOpenOrder bool           `json:"has_open_order"`
+	OpenOrder    *OrderResponse `json:"open_order,omitempty"`
+}
+
+// Payment DTOs
+type ProcessPaymentRequest struct {
+	OrderID int     `json:"order_id" validate:"required,gt=0"`
+	Amount  float64 `json:"amount" validate:"required,gt=0"`
+	Method  string  `json:"method" validate:"required,oneof=cash credit_card wallet"`
+}
+
+type PaymentResponse struct {
+	ID        int            `json:"id"`
+	OrderID   int            `json:"order_id"`
+	Amount    float64        `json:"amount"`
+	Method    string         `json:"method"`
+	Reference string         `json:"reference,omitempty"`
+	PaidAt    time.Time      `json:"paid_at"`
+	Order     *OrderResponse `json:"order,omitempty"`
+}
+
+type PaymentListResponse struct {
+	Payments []*PaymentResponse `json:"payments"`
+	Total    int                `json:"total"`
+	Limit    int                `json:"limit"`
+	Offset   int                `json:"offset"`
+}

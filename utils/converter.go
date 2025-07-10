@@ -3,6 +3,7 @@ package utils
 import (
 	"math"
 	"math/big"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -74,4 +75,25 @@ func FromPgTextToString(t pgtype.Text) string {
 		return ""
 	}
 	return t.String
+}
+
+// ConvertToPGTimestamp converts *time.Time to pgtype.Timestamp
+func ConvertToPGTimestamp(t *time.Time) pgtype.Timestamp {
+	if t == nil {
+		return pgtype.Timestamp{
+			Valid: false,
+		}
+	}
+	return pgtype.Timestamp{
+		Time:  *t,
+		Valid: true,
+	}
+}
+
+// ConvertFromPGTimestamp converts pgtype.Timestamp to *time.Time
+func ConvertFromPGTimestamp(t pgtype.Timestamp) *time.Time {
+	if !t.Valid {
+		return nil
+	}
+	return &t.Time
 }

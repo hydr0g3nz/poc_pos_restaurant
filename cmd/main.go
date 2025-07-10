@@ -12,6 +12,7 @@ import (
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/controller"
 	sqlcRepo "github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/repository/sqlc"
 	usecase "github.com/hydr0g3nz/poc_pos_restuarant/internal/application"
+	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/service"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/infrastructure"
 )
 
@@ -43,16 +44,25 @@ func main() {
 	userRepo := sqlcRepo.NewUserRepository(db)
 	categoryRepo := sqlcRepo.NewCategoryRepository(db)
 	menuItemRepo := sqlcRepo.NewMenuItemRepository(db)
+	tableRepo := sqlcRepo.NewTableRepository(db)
+	orderRepo := sqlcRepo.NewOrderRepository(db)
+	orderItemRepo := sqlcRepo.NewOrderItemRepository(db)
+
+	// Setup domain services
+	orderService := service.NewOrderService(orderRepo, orderItemRepo, tableRepo, menuItemRepo)
 
 	// Setup use cases
 	userUsecase := usecase.NewUserUsecase(userRepo, logger, cfg)
 	categoryUsecase := usecase.NewCategoryUsecase(categoryRepo, logger, cfg)
 	menuItemUsecase := usecase.NewMenuItemUsecase(menuItemRepo, categoryRepo, logger, cfg)
-
+	orderUsecase := usecase.NewOrderUsecase(orderRepo, orderItemRepo, tableRepo, menuItemRepo, orderService, logger, cfg)
+	tableUsecase := (usecase.TableUsecase)(nil)
 	// Setup controllers
 	userController := controller.NewUserController(userUsecase)
 	categoryController := controller.NewCategoryController(categoryUsecase)
 	menuItemController := controller.NewMenuItemController(menuItemUsecase)
+	orderController := controller.NewOrderController(orderUsecase)
+	tableController := controller.NewTableController(tableUsecase)
 
 	// Setup fiber server
 	app := infrastructure.NewFiber(infrastructure.ServerConfig{
@@ -66,7 +76,8 @@ func main() {
 	userController.RegisterRoutes(api)
 	categoryController.RegisterRoutes(api)
 	menuItemController.RegisterRoutes(api)
-
+	orderController.RegisterRoutes(api)
+	tableController.RegisterRoutes(api)
 	// Graceful shutdown
 	go func() {
 		logger.Info("Server starting", "port", cfg.Server.Port)
