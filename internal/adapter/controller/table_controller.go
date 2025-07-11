@@ -10,13 +10,15 @@ import (
 
 // TableController handles HTTP requests related to table operations
 type TableController struct {
-	tableUseCase usecase.TableUsecase
+	tableUsecase  usecase.TableUsecase
+	qrCodeUsecase usecase.QRCodeUsecase
 }
 
 // NewTableController creates a new instance of TableController
-func NewTableController(tableUseCase usecase.TableUsecase) *TableController {
+func NewTableController(tableUsecase usecase.TableUsecase, qrCodeUsecase usecase.QRCodeUsecase) *TableController {
 	return &TableController{
-		tableUseCase: tableUseCase,
+		tableUsecase:  tableUsecase,
+		qrCodeUsecase: qrCodeUsecase,
 	}
 }
 
@@ -34,7 +36,14 @@ func (c *TableController) CreateTable(ctx *fiber.Ctx) error {
 		})
 	}
 
-	response, err := c.tableUseCase.CreateTable(ctx.Context(), &usecase.CreateTableRequest{
+	if req.Seating < 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Status:  fiber.StatusBadRequest,
+			Message: "Seating capacity cannot be negative",
+		})
+	}
+
+	response, err := c.tableUsecase.CreateTable(ctx.Context(), &usecase.CreateTableRequest{
 		TableNumber: req.TableNumber,
 		Seating:     req.Seating,
 	})
@@ -63,7 +72,7 @@ func (c *TableController) GetTable(ctx *fiber.Ctx) error {
 		})
 	}
 
-	response, err := c.tableUseCase.GetTable(ctx.Context(), tableID)
+	response, err := c.tableUsecase.GetTable(ctx.Context(), tableID)
 	if err != nil {
 		return HandleError(ctx, err)
 	}
@@ -71,17 +80,17 @@ func (c *TableController) GetTable(ctx *fiber.Ctx) error {
 	return SuccessResp(ctx, fiber.StatusOK, "Table retrieved successfully", response)
 }
 
-// GetTableByNumber handles getting table by number
+// GetTableByNumber handles getting table by table number
 func (c *TableController) GetTableByNumber(ctx *fiber.Ctx) error {
-	tableNumber := ctx.Query("number")
-	if tableNumber == "" {
+	tableNumberParam := ctx.Params("number")
+	if tableNumberParam == "" {
 		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
 			Status:  fiber.StatusBadRequest,
-			Message: "Table number query parameter is required",
+			Message: "Table number is required",
 		})
 	}
 
-	number, err := strconv.Atoi(tableNumber)
+	tableNumber, err := strconv.Atoi(tableNumberParam)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
 			Status:  fiber.StatusBadRequest,
@@ -89,7 +98,7 @@ func (c *TableController) GetTableByNumber(ctx *fiber.Ctx) error {
 		})
 	}
 
-	response, err := c.tableUseCase.GetTableByNumber(ctx.Context(), number)
+	response, err := c.tableUsecase.GetTableByNumber(ctx.Context(), tableNumber)
 	if err != nil {
 		return HandleError(ctx, err)
 	}
@@ -103,11 +112,11 @@ func (c *TableController) GetTableByQRCode(ctx *fiber.Ctx) error {
 	if qrCode == "" {
 		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
 			Status:  fiber.StatusBadRequest,
-			Message: "QR code query parameter is required",
+			Message: "QR code is required",
 		})
 	}
 
-	response, err := c.tableUseCase.GetTableByQRCode(ctx.Context(), qrCode)
+	response, err := c.tableUsecase.GetTableByQRCode(ctx.Context(), qrCode)
 	if err != nil {
 		return HandleError(ctx, err)
 	}
@@ -145,7 +154,14 @@ func (c *TableController) UpdateTable(ctx *fiber.Ctx) error {
 		})
 	}
 
-	response, err := c.tableUseCase.UpdateTable(ctx.Context(), tableID, &usecase.UpdateTableRequest{
+	if req.Seating < 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Status:  fiber.StatusBadRequest,
+			Message: "Seating capacity cannot be negative",
+		})
+	}
+
+	response, err := c.tableUsecase.UpdateTable(ctx.Context(), tableID, &usecase.UpdateTableRequest{
 		TableNumber: req.TableNumber,
 		Seating:     req.Seating,
 	})
@@ -156,7 +172,7 @@ func (c *TableController) UpdateTable(ctx *fiber.Ctx) error {
 	return SuccessResp(ctx, fiber.StatusOK, "Table updated successfully", response)
 }
 
-// DeleteTable handles table deletion
+// DeleteTable handles deleting a table
 func (c *TableController) DeleteTable(ctx *fiber.Ctx) error {
 	tableIDParam := ctx.Params("id")
 	if tableIDParam == "" {
@@ -174,7 +190,7 @@ func (c *TableController) DeleteTable(ctx *fiber.Ctx) error {
 		})
 	}
 
-	err = c.tableUseCase.DeleteTable(ctx.Context(), tableID)
+	err = c.tableUsecase.DeleteTable(ctx.Context(), tableID)
 	if err != nil {
 		return HandleError(ctx, err)
 	}
@@ -184,15 +200,29 @@ func (c *TableController) DeleteTable(ctx *fiber.Ctx) error {
 
 // ListTables handles getting all tables
 func (c *TableController) ListTables(ctx *fiber.Ctx) error {
-	response, err := c.tableUseCase.ListTables(ctx.Context())
+	response, err := c.tableUsecase.ListTables(ctx.Context())
 	if err != nil {
 		return HandleError(ctx, err)
 	}
 
-	return SuccessResp(ctx, fiber.StatusOK, "Tables retrieved successfully", response)
+	tableListResponse := &dto.TableListResponse{
+		Tables: make([]*dto.TableResponse, len(response)),
+		Total:  len(response),
+	}
+
+	for i, table := range response {
+		tableListResponse.Tables[i] = &dto.TableResponse{
+			ID:          table.ID,
+			TableNumber: table.TableNumber,
+			QRCode:      table.QRCode,
+			Seating:     table.Seating,
+		}
+	}
+
+	return SuccessResp(ctx, fiber.StatusOK, "Tables retrieved successfully", tableListResponse)
 }
 
-// GenerateQRCode handles generating QR code for table
+// GenerateQRCode handles generating QR code for a table
 func (c *TableController) GenerateQRCode(ctx *fiber.Ctx) error {
 	tableIDParam := ctx.Params("id")
 	if tableIDParam == "" {
@@ -210,27 +240,106 @@ func (c *TableController) GenerateQRCode(ctx *fiber.Ctx) error {
 		})
 	}
 
-	qrCode, err := c.tableUseCase.GenerateQRCode(ctx.Context(), tableID)
+	qrCode, err := c.tableUsecase.GenerateQRCode(ctx.Context(), tableID)
 	if err != nil {
 		return HandleError(ctx, err)
 	}
 
-	return SuccessResp(ctx, fiber.StatusOK, "QR code generated successfully", map[string]string{"qr_code": qrCode})
+	response := map[string]interface{}{
+		"table_id": tableID,
+		"qr_code":  qrCode,
+	}
+
+	return SuccessResp(ctx, fiber.StatusOK, "QR code generated successfully", response)
+}
+
+// ScanQRCode handles QR code scanning with complete order information
+func (c *TableController) ScanQRCode(ctx *fiber.Ctx) error {
+	qrCode := ctx.Query("qr_code")
+	if qrCode == "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Status:  fiber.StatusBadRequest,
+			Message: "QR code is required",
+		})
+	}
+
+	// Use QRCodeUsecase to get complete information including order status
+	response, err := c.qrCodeUsecase.ScanQRCode(ctx.Context(), qrCode)
+	if err != nil {
+		return HandleError(ctx, err)
+	}
+
+	// Convert to DTO format
+	dtoResponse := &dto.QRCodeScanResponse{
+		TableID: response.TableID,
+		Table: &dto.TableResponse{
+			ID:          response.Table.ID,
+			TableNumber: response.Table.TableNumber,
+			QRCode:      response.Table.QRCode,
+			Seating:     response.Table.Seating,
+		},
+		HasOpenOrder: response.HasOpenOrder,
+	}
+
+	// Include open order if exists
+	if response.OpenOrder != nil {
+		dtoResponse.OpenOrder = &dto.OrderResponse{
+			ID:        response.OpenOrder.ID,
+			TableID:   response.OpenOrder.TableID,
+			Status:    response.OpenOrder.Status,
+			CreatedAt: response.OpenOrder.CreatedAt,
+			ClosedAt:  response.OpenOrder.ClosedAt,
+		}
+	}
+
+	return SuccessResp(ctx, fiber.StatusOK, "QR code scanned successfully", dtoResponse)
+}
+
+// CreateOrderFromQRCode handles creating order directly from QR code scan
+func (c *TableController) CreateOrderFromQRCode(ctx *fiber.Ctx) error {
+	qrCode := ctx.Query("qr_code")
+	if qrCode == "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Status:  fiber.StatusBadRequest,
+			Message: "QR code is required",
+		})
+	}
+
+	// Create order from QR code
+	response, err := c.qrCodeUsecase.CreateOrderFromQRCode(ctx.Context(), qrCode)
+	if err != nil {
+		return HandleError(ctx, err)
+	}
+
+	// Convert to DTO format
+	dtoResponse := &dto.OrderResponse{
+		ID:        response.ID,
+		TableID:   response.TableID,
+		Status:    response.Status,
+		CreatedAt: response.CreatedAt,
+		ClosedAt:  response.ClosedAt,
+	}
+
+	return SuccessResp(ctx, fiber.StatusCreated, "Order created from QR code successfully", dtoResponse)
 }
 
 // RegisterRoutes registers the routes for the table controller
 func (c *TableController) RegisterRoutes(router fiber.Router) {
 	tableGroup := router.Group("/tables")
 
-	// Public routes (for customers)
-	tableGroup.Get("/", c.ListTables)
-	tableGroup.Get("/search", c.GetTableByNumber) // GET /tables/search?number=1
-	tableGroup.Get("/qr", c.GetTableByQRCode)     // GET /tables/qr?qr_code=/order?table=1
-	tableGroup.Get("/:id", c.GetTable)
-	tableGroup.Post("/:id/qr", c.GenerateQRCode)
-
-	// Admin routes (require admin role in real implementation)
+	// Table CRUD operations
 	tableGroup.Post("/", c.CreateTable)
+	tableGroup.Get("/", c.ListTables)
+	tableGroup.Get("/:id", c.GetTable)
 	tableGroup.Put("/:id", c.UpdateTable)
 	tableGroup.Delete("/:id", c.DeleteTable)
+
+	// Table by number
+	tableGroup.Get("/number/:number", c.GetTableByNumber)
+
+	// QR code operations
+	tableGroup.Get("/qr", c.GetTableByQRCode)               // GET /tables/qr?qr_code=/order?table=1
+	tableGroup.Post("/:id/qr-code", c.GenerateQRCode)       // POST /tables/1/qr-code
+	tableGroup.Get("/scan", c.ScanQRCode)                   // GET /tables/scan?qr_code=/order?table=1
+	tableGroup.Post("/scan/order", c.CreateOrderFromQRCode) // POST /tables/scan/order?qr_code=/order?table=1
 }

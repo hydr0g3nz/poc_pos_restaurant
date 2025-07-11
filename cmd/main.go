@@ -51,22 +51,24 @@ func main() {
 
 	// Setup domain services
 	orderService := service.NewOrderService(orderRepo, orderItemRepo, tableRepo, menuItemRepo)
+	qrCodeService := service.NewQRCodeService(tableRepo)
 
 	// Setup use cases
 	userUsecase := usecase.NewUserUsecase(userRepo, logger, cfg)
 	categoryUsecase := usecase.NewCategoryUsecase(categoryRepo, logger, cfg)
 	menuItemUsecase := usecase.NewMenuItemUsecase(menuItemRepo, categoryRepo, logger, cfg)
+	tableUsecase := usecase.NewTableUsecase(tableRepo, logger, cfg)
 	orderUsecase := usecase.NewOrderUsecase(orderRepo, orderItemRepo, tableRepo, menuItemRepo, orderService, logger, cfg)
 	paymentUsecase := usecase.NewPaymentUsecase(paymentRepo, orderRepo, orderService, logger, cfg)
-	tableUsecase := (usecase.TableUsecase)(nil)
+	qrCodeUsecase := usecase.NewQRCodeUsecase(tableRepo, orderRepo, qrCodeService, orderUsecase, logger, cfg)
 
 	// Setup controllers
 	userController := controller.NewUserController(userUsecase)
 	categoryController := controller.NewCategoryController(categoryUsecase)
 	menuItemController := controller.NewMenuItemController(menuItemUsecase)
+	tableController := controller.NewTableController(tableUsecase, qrCodeUsecase) // Now with QR code support
 	orderController := controller.NewOrderController(orderUsecase)
 	paymentController := controller.NewPaymentController(paymentUsecase)
-	tableController := controller.NewTableController(tableUsecase)
 
 	// Setup fiber server
 	app := infrastructure.NewFiber(infrastructure.ServerConfig{
@@ -80,9 +82,9 @@ func main() {
 	userController.RegisterRoutes(api)
 	categoryController.RegisterRoutes(api)
 	menuItemController.RegisterRoutes(api)
+	tableController.RegisterRoutes(api) // Now properly registered
 	orderController.RegisterRoutes(api)
 	paymentController.RegisterRoutes(api)
-	tableController.RegisterRoutes(api)
 
 	// Graceful shutdown
 	go func() {

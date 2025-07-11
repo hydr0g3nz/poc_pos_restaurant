@@ -1,0 +1,911 @@
+{
+  "info": {
+    "name": "Table API - POS Restaurant",
+    "description": "Complete API collection for Table management in POS Restaurant system",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "api_version",
+      "value": "v1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Table CRUD Operations",
+      "item": [
+        {
+          "name": "Create Table",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"table_number\": 1,\n  \"seating\": 4\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/tables/",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tables",
+                ""
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"table_number\": 1,\n  \"seating\": 4\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/tables/",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "tables",
+                    ""
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"status\": 201,\n  \"message\": \"Table created successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"table_number\": 1,\n    \"qr_code\": \"/order?table=1\",\n    \"seating\": 4\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get All Tables",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/tables/",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tables",
+                ""
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/tables/",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "tables",
+                    ""
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": 200,\n  \"message\": \"Tables retrieved successfully\",\n  \"data\": {\n    \"tables\": [\n      {\n        \"id\": 1,\n        \"table_number\": 1,\n        \"qr_code\": \"/order?table=1\",\n        \"seating\": 4\n      },\n      {\n        \"id\": 2,\n        \"table_number\": 2,\n        \"qr_code\": \"/order?table=2\",\n        \"seating\": 2\n      }\n    ],\n    \"total\": 2\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Table by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/tables/1",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tables",
+                "1"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/tables/1",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "tables",
+                    "1"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": 200,\n  \"message\": \"Table retrieved successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"table_number\": 1,\n    \"qr_code\": \"/order?table=1\",\n    \"seating\": 4\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Table",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"table_number\": 1,\n  \"seating\": 6\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/tables/1",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tables",
+                "1"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"table_number\": 1,\n  \"seating\": 6\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/tables/1",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "tables",
+                    "1"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": 200,\n  \"message\": \"Table updated successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"table_number\": 1,\n    \"qr_code\": \"/order?table=1\",\n    \"seating\": 6\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Table",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/tables/1",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tables",
+                "1"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/tables/1",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "tables",
+                    "1"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": 200,\n  \"message\": \"Table deleted successfully\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Table Search Operations",
+      "item": [
+        {
+          "name": "Get Table by Number",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/tables/number/1",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tables",
+                "number",
+                "1"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/tables/number/1",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "tables",
+                    "number",
+                    "1"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": 200,\n  \"message\": \"Table retrieved successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"table_number\": 1,\n    \"qr_code\": \"/order?table=1\",\n    \"seating\": 4\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Table by QR Code",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/tables/qr?qr_code=/order?table=1",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tables",
+                "qr"
+              ],
+              "query": [
+                {
+                  "key": "qr_code",
+                  "value": "/order?table=1"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/tables/qr?qr_code=/order?table=1",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "tables",
+                    "qr"
+                  ],
+                  "query": [
+                    {
+                      "key": "qr_code",
+                      "value": "/order?table=1"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": 200,\n  \"message\": \"Table retrieved successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"table_number\": 1,\n    \"qr_code\": \"/order?table=1\",\n    \"seating\": 4\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "QR Code Operations",
+      "item": [
+        {
+          "name": "Generate QR Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/tables/1/qr-code",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tables",
+                "1",
+                "qr-code"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/tables/1/qr-code",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "tables",
+                    "1",
+                    "qr-code"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": 200,\n  \"message\": \"QR code generated successfully\",\n  \"data\": {\n    \"table_id\": 1,\n    \"qr_code\": \"/order?table=1\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Scan QR Code",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/tables/scan?qr_code=/order?table=1",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tables",
+                "scan"
+              ],
+              "query": [
+                {
+                  "key": "qr_code",
+                  "value": "/order?table=1"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Table Available",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/tables/scan?qr_code=/order?table=1",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "tables",
+                    "scan"
+                  ],
+                  "query": [
+                    {
+                      "key": "qr_code",
+                      "value": "/order?table=1"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": 200,\n  \"message\": \"QR code scanned successfully\",\n  \"data\": {\n    \"table_id\": 1,\n    \"table\": {\n      \"id\": 1,\n      \"table_number\": 1,\n      \"qr_code\": \"/order?table=1\",\n      \"seating\": 4\n    },\n    \"has_open_order\": false,\n    \"open_order\": null\n  }\n}"
+            },
+            {
+              "name": "Table Has Open Order",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/tables/scan?qr_code=/order?table=1",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "tables",
+                    "scan"
+                  ],
+                  "query": [
+                    {
+                      "key": "qr_code",
+                      "value": "/order?table=1"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": 200,\n  \"message\": \"QR code scanned successfully\",\n  \"data\": {\n    \"table_id\": 1,\n    \"table\": {\n      \"id\": 1,\n      \"table_number\": 1,\n      \"qr_code\": \"/order?table=1\",\n      \"seating\": 4\n    },\n    \"has_open_order\": true,\n    \"open_order\": {\n      \"id\": 123,\n      \"table_id\": 1,\n      \"status\": \"open\",\n      \"created_at\": \"2024-01-15T10:30:00Z\",\n      \"closed_at\": null\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Order from QR Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/tables/scan/order?qr_code=/order?table=1",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tables",
+                "scan",
+                "order"
+              ],
+              "query": [
+                {
+                  "key": "qr_code",
+                  "value": "/order?table=1"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/tables/scan/order?qr_code=/order?table=1",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "tables",
+                    "scan",
+                    "order"
+                  ],
+                  "query": [
+                    {
+                      "key": "qr_code",
+                      "value": "/order?table=1"
+                    }
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"status\": 201,\n  \"message\": \"Order created from QR code successfully\",\n  \"data\": {\n    \"id\": 124,\n    \"table_id\": 1,\n    \"status\": \"open\",\n    \"created_at\": \"2024-01-15T11:00:00Z\",\n    \"closed_at\": null\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Error Scenarios",
+      "item": [
+        {
+          "name": "Create Table - Duplicate Number",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"table_number\": 1,\n  \"seating\": 4\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/tables/",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tables",
+                ""
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Duplicate Table Number",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"table_number\": 1,\n  \"seating\": 4\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/tables/",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "tables",
+                    ""
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "body": "{\n  \"status\": 409,\n  \"message\": \"Table number already exists\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Table - Not Found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/tables/999",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tables",
+                "999"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Table Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/tables/999",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "tables",
+                    "999"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"status\": 404,\n  \"message\": \"Table not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Table - Has Orders",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/tables/1",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tables",
+                "1"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Cannot Delete Table With Orders",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/tables/1",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "tables",
+                    "1"
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "body": "{\n  \"status\": 409,\n  \"message\": \"Cannot delete table with existing orders\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Scan QR Code - Invalid Format",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/tables/scan?qr_code=invalid-qr-code",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tables",
+                "scan"
+              ],
+              "query": [
+                {
+                  "key": "qr_code",
+                  "value": "invalid-qr-code"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Invalid QR Code",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/tables/scan?qr_code=invalid-qr-code",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "tables",
+                    "scan"
+                  ],
+                  "query": [
+                    {
+                      "key": "qr_code",
+                      "value": "invalid-qr-code"
+                    }
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"status\": 400,\n  \"message\": \"Invalid QR code\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Order from QR - Table Has Open Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/tables/scan/order?qr_code=/order?table=1",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tables",
+                "scan",
+                "order"
+              ],
+              "query": [
+                {
+                  "key": "qr_code",
+                  "value": "/order?table=1"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Table Already Has Open Order",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/tables/scan/order?qr_code=/order?table=1",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "tables",
+                    "scan",
+                    "order"
+                  ],
+                  "query": [
+                    {
+                      "key": "qr_code",
+                      "value": "/order?table=1"
+                    }
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "body": "{\n  \"status\": 409,\n  \"message\": \"Table already has an open order\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}
