@@ -1,3 +1,4 @@
+// utils/converter.go (Updated with pgtype.Numeric handling)
 package utils
 
 import (
@@ -14,20 +15,22 @@ func ConvertToBool(pgBool pgtype.Bool) bool {
 	}
 	return false
 }
+
 func ConvertToPGBool(value bool) pgtype.Bool {
 	return pgtype.Bool{
 		Bool:  value,
 		Valid: true,
 	}
 }
+
 func ConvertToText(s string) pgtype.Text {
 	return pgtype.Text{
 		String: s,
 		Valid:  true,
 	}
 }
-func ConvertToPGNumericFromFloat(f float64) pgtype.Numeric {
 
+func ConvertToPGNumericFromFloat(f float64) pgtype.Numeric {
 	var n pgtype.Numeric
 	// Convert float64 to a big.Float for precise representation
 	bf := new(big.Float).SetFloat64(f)
@@ -53,6 +56,8 @@ func ConvertToPGNumericFromBigFloat(b *big.Float) pgtype.Numeric {
 	_ = n.Scan(str)
 	return n
 }
+
+// FromPgNumericToFloat converts pgtype.Numeric to float64
 func FromPgNumericToFloat(n pgtype.Numeric) float64 {
 	if !n.Valid {
 		return 0
@@ -70,6 +75,36 @@ func FromPgNumericToFloat(n pgtype.Numeric) float64 {
 	f64, _ := val.Float64()
 	return f64
 }
+
+// FromInterfaceToFloat converts interface{} (from SQLC) to float64
+// This handles the case where SQLC returns interface{} for SUM/COALESCE results
+func FromInterfaceToFloat(i interface{}) float64 {
+	if i == nil {
+		return 0
+	}
+
+	switch v := i.(type) {
+	case pgtype.Numeric:
+		return FromPgNumericToFloat(v)
+	case float64:
+		return v
+	case float32:
+		return float64(v)
+	case int:
+		return float64(v)
+	case int64:
+		return float64(v)
+	case int32:
+		return float64(v)
+	default:
+		// Try to convert pgtype.Numeric if it's wrapped in interface{}
+		if numeric, ok := i.(pgtype.Numeric); ok {
+			return FromPgNumericToFloat(numeric)
+		}
+		return 0
+	}
+}
+
 func FromPgTextToString(t pgtype.Text) string {
 	if !t.Valid {
 		return ""

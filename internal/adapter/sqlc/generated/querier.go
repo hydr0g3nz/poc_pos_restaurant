@@ -6,6 +6,8 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
@@ -30,9 +32,15 @@ type Querier interface {
 	GetCategoryByID(ctx context.Context, id int32) (*Category, error)
 	GetCategoryByName(ctx context.Context, name string) (*Category, error)
 	GetDailyPaymentSummary(ctx context.Context, arg GetDailyPaymentSummaryParams) ([]*GetDailyPaymentSummaryRow, error)
+	// internal/adapter/sqlc/queries/revenue.sql
+	GetDailyRevenue(ctx context.Context, arg GetDailyRevenueParams) (pgtype.Numeric, error)
+	GetDailyRevenueRange(ctx context.Context, arg GetDailyRevenueRangeParams) ([]*GetDailyRevenueRangeRow, error)
+	GetHourlyRevenue(ctx context.Context, date interface{}) ([]*GetHourlyRevenueRow, error)
 	GetMenuItemByID(ctx context.Context, id int32) (*MenuItem, error)
 	GetMenuItemsByIDs(ctx context.Context, dollar_1 []int32) ([]*MenuItem, error)
 	GetMonthlyPaymentSummary(ctx context.Context, arg GetMonthlyPaymentSummaryParams) ([]*GetMonthlyPaymentSummaryRow, error)
+	GetMonthlyRevenue(ctx context.Context, arg GetMonthlyRevenueParams) (pgtype.Numeric, error)
+	GetMonthlyRevenueRange(ctx context.Context, arg GetMonthlyRevenueRangeParams) ([]*GetMonthlyRevenueRangeRow, error)
 	GetOpenOrderByTable(ctx context.Context, tableID int32) (*Order, error)
 	GetOrderByID(ctx context.Context, id int32) (*Order, error)
 	GetOrderItemByID(ctx context.Context, id int32) (*OrderItem, error)
@@ -42,9 +50,13 @@ type Querier interface {
 	GetPaymentByOrderID(ctx context.Context, orderID int32) (*Payment, error)
 	GetPaymentMethodStats(ctx context.Context, arg GetPaymentMethodStatsParams) ([]*GetPaymentMethodStatsRow, error)
 	GetPaymentsByOrderIDs(ctx context.Context, dollar_1 []int32) ([]*Payment, error)
+	GetRevenueByPaymentMethod(ctx context.Context, arg GetRevenueByPaymentMethodParams) ([]*GetRevenueByPaymentMethodRow, error)
+	GetRevenueStats(ctx context.Context, arg GetRevenueStatsParams) (*GetRevenueStatsRow, error)
 	GetTableByID(ctx context.Context, id int32) (*Table, error)
 	GetTableByNumber(ctx context.Context, tableNumber int32) (*Table, error)
 	GetTableByQRCode(ctx context.Context, qrCode string) (*Table, error)
+	GetTopSellingItems(ctx context.Context, arg GetTopSellingItemsParams) ([]*GetTopSellingItemsRow, error)
+	GetTotalRevenue(ctx context.Context, arg GetTotalRevenueParams) (pgtype.Numeric, error)
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	GetUserByID(ctx context.Context, id int32) (*User, error)
 	ListCategories(ctx context.Context) ([]*Category, error)

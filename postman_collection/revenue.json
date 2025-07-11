@@ -1,0 +1,279 @@
+{
+	"info": {
+		"_postman_id": "revenue-api-collection",
+		"name": "POS Restaurant - Revenue APIs",
+		"description": "Collection for Revenue related endpoints only",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080/api/v1",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Revenue",
+			"item": [
+				{
+					"name": "Get Daily Revenue",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/revenue/daily?date=2024-01-15",
+							"host": ["{{BASE_URL}}"],
+							"path": ["revenue", "daily"],
+							"query": [
+								{
+									"key": "date",
+									"value": "2024-01-15",
+									"description": "Date in YYYY-MM-DD format"
+								}
+							]
+						},
+						"description": "Get revenue for a specific date"
+					}
+				},
+				{
+					"name": "Get Monthly Revenue",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/revenue/monthly?year=2024&month=1",
+							"host": ["{{BASE_URL}}"],
+							"path": ["revenue", "monthly"],
+							"query": [
+								{
+									"key": "year",
+									"value": "2024",
+									"description": "Year (e.g., 2024)"
+								},
+								{
+									"key": "month",
+									"value": "1",
+									"description": "Month (1-12)"
+								}
+							]
+						},
+						"description": "Get revenue for a specific month"
+					}
+				},
+				{
+					"name": "Get Daily Revenue Range",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/revenue/daily/range?start_date=2024-01-01&end_date=2024-01-31",
+							"host": ["{{BASE_URL}}"],
+							"path": ["revenue", "daily", "range"],
+							"query": [
+								{
+									"key": "start_date",
+									"value": "2024-01-01",
+									"description": "Start date in YYYY-MM-DD format"
+								},
+								{
+									"key": "end_date",
+									"value": "2024-01-31",
+									"description": "End date in YYYY-MM-DD format"
+								}
+							]
+						},
+						"description": "Get daily revenue breakdown for a date range"
+					}
+				},
+				{
+					"name": "Get Monthly Revenue Range",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/revenue/monthly/range?start_date=2024-01-01&end_date=2024-12-31",
+							"host": ["{{BASE_URL}}"],
+							"path": ["revenue", "monthly", "range"],
+							"query": [
+								{
+									"key": "start_date",
+									"value": "2024-01-01",
+									"description": "Start date in YYYY-MM-DD format"
+								},
+								{
+									"key": "end_date",
+									"value": "2024-12-31",
+									"description": "End date in YYYY-MM-DD format"
+								}
+							]
+						},
+						"description": "Get monthly revenue breakdown for a date range"
+					}
+				},
+				{
+					"name": "Get Total Revenue",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/revenue/total?start_date=2024-01-01&end_date=2024-12-31",
+							"host": ["{{BASE_URL}}"],
+							"path": ["revenue", "total"],
+							"query": [
+								{
+									"key": "start_date",
+									"value": "2024-01-01",
+									"description": "Start date in YYYY-MM-DD format"
+								},
+								{
+									"key": "end_date",
+									"value": "2024-12-31",
+									"description": "End date in YYYY-MM-DD format"
+								}
+							]
+						},
+						"description": "Get total revenue for a date range"
+					}
+				},
+				{
+					"name": "Get Current Month Revenue",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/revenue/monthly?year={{$randomInt}}&month={{$randomInt}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["revenue", "monthly"],
+							"query": [
+								{
+									"key": "year",
+									"value": "{{$randomInt}}",
+									"description": "Current year",
+									"disabled": true
+								},
+								{
+									"key": "month",
+									"value": "{{$randomInt}}",
+									"description": "Current month",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get revenue for current month (update year and month manually)"
+					}
+				},
+				{
+					"name": "Get Today Revenue",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/revenue/daily?date={{$isoTimestamp}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["revenue", "daily"],
+							"query": [
+								{
+									"key": "date",
+									"value": "{{$isoTimestamp}}",
+									"description": "Today's date (update manually to YYYY-MM-DD format)",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get revenue for today (update date manually)"
+					}
+				},
+				{
+					"name": "Get Last 7 Days Revenue",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/revenue/daily/range?start_date=2024-01-08&end_date=2024-01-15",
+							"host": ["{{BASE_URL}}"],
+							"path": ["revenue", "daily", "range"],
+							"query": [
+								{
+									"key": "start_date",
+									"value": "2024-01-08",
+									"description": "7 days ago (update manually)"
+								},
+								{
+									"key": "end_date",
+									"value": "2024-01-15",
+									"description": "Today (update manually)"
+								}
+							]
+						},
+						"description": "Get daily revenue for the last 7 days"
+					}
+				}
+			],
+			"description": "Revenue related endpoints"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set current date for convenience",
+					"const today = new Date();",
+					"const year = today.getFullYear();",
+					"const month = today.getMonth() + 1;",
+					"const day = today.getDate();",
+					"",
+					"// Format as YYYY-MM-DD",
+					"const todayStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;",
+					"",
+					"// Set environment variables",
+					"pm.environment.set('currentDate', todayStr);",
+					"pm.environment.set('currentYear', year.toString());",
+					"pm.environment.set('currentMonth', month.toString());"
+				]
+			}
+		}
+	]
+}

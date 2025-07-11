@@ -145,6 +145,23 @@ type Category struct {
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 }
 
+type DailyRevenueSummary struct {
+	RevenueDate        pgtype.Date `json:"revenue_date"`
+	TransactionCount   int64       `json:"transaction_count"`
+	TotalRevenue       int64       `json:"total_revenue"`
+	AverageTransaction float64     `json:"average_transaction"`
+	MinTransaction     interface{} `json:"min_transaction"`
+	MaxTransaction     interface{} `json:"max_transaction"`
+}
+
+type HourlyRevenueSummary struct {
+	RevenueDate        pgtype.Date    `json:"revenue_date"`
+	Hour               pgtype.Numeric `json:"hour"`
+	TransactionCount   int64          `json:"transaction_count"`
+	TotalRevenue       int64          `json:"total_revenue"`
+	AverageTransaction float64        `json:"average_transaction"`
+}
+
 type MenuItem struct {
 	ID          int32            `json:"id"`
 	CategoryID  int32            `json:"category_id"`
@@ -154,6 +171,14 @@ type MenuItem struct {
 	IsActive    pgtype.Bool      `json:"is_active"`
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
 	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
+}
+
+type MonthlyRevenueSummary struct {
+	RevenueMonth       pgtype.Interval `json:"revenue_month"`
+	TransactionCount   int64           `json:"transaction_count"`
+	TotalRevenue       int64           `json:"total_revenue"`
+	AverageTransaction float64         `json:"average_transaction"`
+	UniqueOrders       int64           `json:"unique_orders"`
 }
 
 type Order struct {
@@ -186,6 +211,14 @@ type Payment struct {
 	PaidAt    pgtype.Timestamp `json:"paid_at"`
 }
 
+type PaymentMethodSummary struct {
+	Method           PaymentMethod `json:"method"`
+	PaymentDate      pgtype.Date   `json:"payment_date"`
+	TransactionCount int64         `json:"transaction_count"`
+	TotalAmount      int64         `json:"total_amount"`
+	AverageAmount    float64       `json:"average_amount"`
+}
+
 type Table struct {
 	ID          int32            `json:"id"`
 	TableNumber int32            `json:"table_number"`
@@ -194,6 +227,16 @@ type Table struct {
 	IsActive    pgtype.Bool      `json:"is_active"`
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
 	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
+}
+
+type TopSellingItem struct {
+	ItemID            int32   `json:"item_id"`
+	ItemName          string  `json:"item_name"`
+	CategoryName      string  `json:"category_name"`
+	TotalQuantitySold int64   `json:"total_quantity_sold"`
+	TotalRevenue      int64   `json:"total_revenue"`
+	AveragePrice      float64 `json:"average_price"`
+	UniqueOrders      int64   `json:"unique_orders"`
 }
 
 type User struct {

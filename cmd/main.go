@@ -1,3 +1,4 @@
+// cmd/main.go (Updated with Revenue functionality)
 package main
 
 import (
@@ -48,10 +49,12 @@ func main() {
 	orderRepo := sqlcRepo.NewOrderRepository(db)
 	orderItemRepo := sqlcRepo.NewOrderItemRepository(db)
 	paymentRepo := sqlcRepo.NewPaymentRepository(db)
+	revenueRepo := sqlcRepo.NewRevenueRepository(db) // New revenue repository
 
 	// Setup domain services
 	orderService := service.NewOrderService(orderRepo, orderItemRepo, tableRepo, menuItemRepo)
 	qrCodeService := service.NewQRCodeService(tableRepo)
+	// revenueService := service.NewRevenueService(revenueRepo, paymentRepo, orderRepo) // New revenue service
 
 	// Setup use cases
 	userUsecase := usecase.NewUserUsecase(userRepo, logger, cfg)
@@ -61,14 +64,16 @@ func main() {
 	orderUsecase := usecase.NewOrderUsecase(orderRepo, orderItemRepo, tableRepo, menuItemRepo, orderService, logger, cfg)
 	paymentUsecase := usecase.NewPaymentUsecase(paymentRepo, orderRepo, orderService, logger, cfg)
 	qrCodeUsecase := usecase.NewQRCodeUsecase(tableRepo, orderRepo, qrCodeService, orderUsecase, logger, cfg)
+	revenueUsecase := usecase.NewRevenueUsecase(revenueRepo, paymentRepo, orderRepo, logger, cfg) // New revenue usecase
 
 	// Setup controllers
 	userController := controller.NewUserController(userUsecase)
 	categoryController := controller.NewCategoryController(categoryUsecase)
 	menuItemController := controller.NewMenuItemController(menuItemUsecase)
-	tableController := controller.NewTableController(tableUsecase, qrCodeUsecase) // Now with QR code support
+	tableController := controller.NewTableController(tableUsecase, qrCodeUsecase)
 	orderController := controller.NewOrderController(orderUsecase)
 	paymentController := controller.NewPaymentController(paymentUsecase)
+	revenueController := controller.NewRevenueController(revenueUsecase) // New revenue controller
 
 	// Setup fiber server
 	app := infrastructure.NewFiber(infrastructure.ServerConfig{
@@ -82,9 +87,10 @@ func main() {
 	userController.RegisterRoutes(api)
 	categoryController.RegisterRoutes(api)
 	menuItemController.RegisterRoutes(api)
-	tableController.RegisterRoutes(api) // Now properly registered
+	tableController.RegisterRoutes(api)
 	orderController.RegisterRoutes(api)
 	paymentController.RegisterRoutes(api)
+	revenueController.RegisterRoutes(app) // Register revenue routes
 
 	// Graceful shutdown
 	go func() {
