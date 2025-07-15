@@ -311,7 +311,7 @@ func (q *Queries) ListPayments(ctx context.Context, arg ListPaymentsParams) ([]*
 
 const listPaymentsByDateRange = `-- name: ListPaymentsByDateRange :many
 SELECT id, order_id, amount, method, reference, paid_at FROM payments
-WHERE paid_at >= $1 AND paid_at <= $2
+WHERE paid_at >= $1 AND paid_at < $2
 ORDER BY paid_at DESC
 LIMIT $3 OFFSET $4
 `

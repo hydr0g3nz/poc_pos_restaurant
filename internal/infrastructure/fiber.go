@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	fb_logger "github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 )
@@ -41,6 +42,11 @@ func NewFiber(config ServerConfig) *FiberApp {
 		},
 	})
 
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*", // Allow all origins
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+		AllowMethods: "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
+	}))
 	// Add middlewares
 	app.Use(fb_logger.New())
 	app.Use(recover.New(recover.Config{

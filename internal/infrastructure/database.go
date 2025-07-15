@@ -3,9 +3,17 @@ package infrastructure
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/tracelog"
 )
+
+type SimpleLogger struct{}
+
+func (sl SimpleLogger) Log(ctx context.Context, level tracelog.LogLevel, msg string, data map[string]interface{}) {
+	log.Printf("[PGX] %s: %s, Data: %v\n", level.String(), msg, data)
+}
 
 // DBConfig holds database connection configuration
 type DBConfig struct {
@@ -24,7 +32,15 @@ func ConnectDB(cfg *DBConfig) (*pgxpool.Pool, error) {
 		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.DBName, cfg.SSLMode,
 	)
 
-	pool, err := pgxpool.New(context.Background(), dsn)
+	poolConfig, err := pgxpool.ParseConfig(dsn)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse pool config: %w", err)
+	}
+
+	// Set the custom logger
+	poolConfig.ConnConfig.Tracer = &tracelog.TraceLog{Logger: SimpleLogger{}, LogLevel: tracelog.LogLevelDebug}
+
+	pool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create connection pool: %w", err)
 	}

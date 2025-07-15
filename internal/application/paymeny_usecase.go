@@ -165,7 +165,7 @@ func (u *paymentUsecase) ListPaymentsByDateRange(ctx context.Context, startDate,
 		u.logger.Error("Invalid date range", "startDate", startDate, "endDate", endDate)
 		return nil, errs.ErrInvalidDateRange
 	}
-
+	endDate = endDate.AddDate(0, 0, 1) // Include end date in query
 	payments, err := u.paymentRepo.ListByDateRange(ctx, startDate, endDate, limit, offset)
 	if err != nil {
 		u.logger.Error("Error listing payments by date range", "error", err, "startDate", startDate, "endDate", endDate)

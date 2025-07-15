@@ -28,7 +28,7 @@ LIMIT $1 OFFSET $2;
 
 -- name: ListPaymentsByDateRange :many
 SELECT * FROM payments
-WHERE paid_at >= $1 AND paid_at <= $2
+WHERE paid_at >= $1 AND paid_at < $2
 ORDER BY paid_at DESC
 LIMIT $3 OFFSET $4;
 

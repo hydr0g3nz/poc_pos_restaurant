@@ -90,7 +90,7 @@ func main() {
 	tableController.RegisterRoutes(api)
 	orderController.RegisterRoutes(api)
 	paymentController.RegisterRoutes(api)
-	revenueController.RegisterRoutes(app) // Register revenue routes
+	revenueController.RegisterRoutes(api) // Register revenue routes
 
 	// Graceful shutdown
 	go func() {
