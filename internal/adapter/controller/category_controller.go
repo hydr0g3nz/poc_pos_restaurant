@@ -5,18 +5,21 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/dto"
+	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/presenter"
 	usecase "github.com/hydr0g3nz/poc_pos_restuarant/internal/application"
 )
 
 // CategoryController handles HTTP requests related to category operations
 type CategoryController struct {
 	categoryUseCase usecase.CategoryUsecase
+	errorPresenter  presenter.ErrorPresenter
 }
 
 // NewCategoryController creates a new instance of CategoryController
-func NewCategoryController(categoryUseCase usecase.CategoryUsecase) *CategoryController {
+func NewCategoryController(categoryUseCase usecase.CategoryUsecase, errorPresenter presenter.ErrorPresenter) *CategoryController {
 	return &CategoryController{
 		categoryUseCase: categoryUseCase,
+		errorPresenter:  errorPresenter,
 	}
 }
 
@@ -24,7 +27,7 @@ func NewCategoryController(categoryUseCase usecase.CategoryUsecase) *CategoryCon
 func (c *CategoryController) CreateCategory(ctx *fiber.Ctx) error {
 	var req dto.CreateCategoryRequest
 	if err := ctx.BodyParser(&req); err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	if req.Name == "" {
@@ -38,7 +41,7 @@ func (c *CategoryController) CreateCategory(ctx *fiber.Ctx) error {
 		Name: req.Name,
 	})
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusCreated, "Category created successfully", response)
@@ -64,7 +67,7 @@ func (c *CategoryController) GetCategory(ctx *fiber.Ctx) error {
 
 	response, err := c.categoryUseCase.GetCategory(ctx.Context(), categoryID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Category retrieved successfully", response)
@@ -82,7 +85,7 @@ func (c *CategoryController) GetCategoryByName(ctx *fiber.Ctx) error {
 
 	response, err := c.categoryUseCase.GetCategoryByName(ctx.Context(), name)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Category retrieved successfully", response)
@@ -108,7 +111,7 @@ func (c *CategoryController) UpdateCategory(ctx *fiber.Ctx) error {
 
 	var req dto.UpdateCategoryRequest
 	if err := ctx.BodyParser(&req); err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	if req.Name == "" {
@@ -122,7 +125,7 @@ func (c *CategoryController) UpdateCategory(ctx *fiber.Ctx) error {
 		Name: req.Name,
 	})
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Category updated successfully", response)
@@ -148,7 +151,7 @@ func (c *CategoryController) DeleteCategory(ctx *fiber.Ctx) error {
 
 	err = c.categoryUseCase.DeleteCategory(ctx.Context(), categoryID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Category deleted successfully", nil)
@@ -158,7 +161,7 @@ func (c *CategoryController) DeleteCategory(ctx *fiber.Ctx) error {
 func (c *CategoryController) ListCategories(ctx *fiber.Ctx) error {
 	response, err := c.categoryUseCase.ListCategories(ctx.Context())
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Categories retrieved successfully", response)

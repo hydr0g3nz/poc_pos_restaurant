@@ -5,18 +5,21 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/dto"
+	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/presenter"
 	usecase "github.com/hydr0g3nz/poc_pos_restuarant/internal/application"
 )
 
 // UserController handles HTTP requests related to user operations
 type UserController struct {
-	userUseCase usecase.UserUsecase
+	userUseCase    usecase.UserUsecase
+	errorPresenter presenter.ErrorPresenter
 }
 
 // NewUserController creates a new instance of UserController
-func NewUserController(userUseCase usecase.UserUsecase) *UserController {
+func NewUserController(userUseCase usecase.UserUsecase, errorPresenter presenter.ErrorPresenter) *UserController {
 	return &UserController{
-		userUseCase: userUseCase,
+		userUseCase:    userUseCase,
+		errorPresenter: errorPresenter,
 	}
 }
 
@@ -24,7 +27,7 @@ func NewUserController(userUseCase usecase.UserUsecase) *UserController {
 func (c *UserController) Register(ctx *fiber.Ctx) error {
 	var req dto.RegisterRequest
 	if err := ctx.BodyParser(&req); err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	if req.Email == "" || req.Password == "" || req.Role == "" {
@@ -40,7 +43,7 @@ func (c *UserController) Register(ctx *fiber.Ctx) error {
 		Role:     req.Role,
 	})
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusCreated, "User registered successfully", response)
@@ -50,7 +53,7 @@ func (c *UserController) Register(ctx *fiber.Ctx) error {
 func (c *UserController) Login(ctx *fiber.Ctx) error {
 	var req dto.LoginRequest
 	if err := ctx.BodyParser(&req); err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	if req.Email == "" || req.Password == "" {
@@ -65,7 +68,7 @@ func (c *UserController) Login(ctx *fiber.Ctx) error {
 		Password: req.Password,
 	})
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Login successful", response)
@@ -91,7 +94,7 @@ func (c *UserController) GetProfile(ctx *fiber.Ctx) error {
 
 	response, err := c.userUseCase.GetProfile(ctx.Context(), userID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Profile retrieved successfully", response)
@@ -117,14 +120,14 @@ func (c *UserController) UpdateProfile(ctx *fiber.Ctx) error {
 
 	var req dto.UpdateProfileRequest
 	if err := ctx.BodyParser(&req); err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	response, err := c.userUseCase.UpdateProfile(ctx.Context(), userID, &usecase.UpdateProfileRequest{
 		Email: req.Email,
 	})
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Profile updated successfully", response)
@@ -150,7 +153,7 @@ func (c *UserController) ChangePassword(ctx *fiber.Ctx) error {
 
 	var req dto.ChangePasswordRequest
 	if err := ctx.BodyParser(&req); err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	if req.CurrentPassword == "" || req.NewPassword == "" || req.ConfirmPassword == "" {
@@ -166,7 +169,7 @@ func (c *UserController) ChangePassword(ctx *fiber.Ctx) error {
 		ConfirmPassword: req.ConfirmPassword,
 	})
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Password changed successfully", nil)
@@ -192,7 +195,7 @@ func (c *UserController) VerifyEmail(ctx *fiber.Ctx) error {
 
 	err = c.userUseCase.VerifyEmail(ctx.Context(), userID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Email verified successfully", nil)
@@ -218,7 +221,7 @@ func (c *UserController) DeactivateUser(ctx *fiber.Ctx) error {
 
 	err = c.userUseCase.DeactivateUser(ctx.Context(), userID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "User deactivated successfully", nil)
@@ -244,7 +247,7 @@ func (c *UserController) ActivateUser(ctx *fiber.Ctx) error {
 
 	err = c.userUseCase.ActivateUser(ctx.Context(), userID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "User activated successfully", nil)
@@ -281,7 +284,7 @@ func (c *UserController) GetUsersByRole(ctx *fiber.Ctx) error {
 
 	response, err := c.userUseCase.GetUsersByRole(ctx.Context(), role, limit, offset)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Users retrieved successfully", response)
@@ -307,7 +310,7 @@ func (c *UserController) DeleteUser(ctx *fiber.Ctx) error {
 
 	err = c.userUseCase.DeleteUser(ctx.Context(), userID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "User deleted successfully", nil)
@@ -334,7 +337,7 @@ func (c *UserController) GetMe(ctx *fiber.Ctx) error {
 
 	response, err := c.userUseCase.GetProfile(ctx.Context(), userIDInt)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Current user profile retrieved successfully", response)
@@ -361,14 +364,14 @@ func (c *UserController) UpdateMe(ctx *fiber.Ctx) error {
 
 	var req dto.UpdateProfileRequest
 	if err := ctx.BodyParser(&req); err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	response, err := c.userUseCase.UpdateProfile(ctx.Context(), userIDInt, &usecase.UpdateProfileRequest{
 		Email: req.Email,
 	})
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Profile updated successfully", response)
@@ -395,7 +398,7 @@ func (c *UserController) ChangeMyPassword(ctx *fiber.Ctx) error {
 
 	var req dto.ChangePasswordRequest
 	if err := ctx.BodyParser(&req); err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	if req.CurrentPassword == "" || req.NewPassword == "" || req.ConfirmPassword == "" {
@@ -411,7 +414,7 @@ func (c *UserController) ChangeMyPassword(ctx *fiber.Ctx) error {
 		ConfirmPassword: req.ConfirmPassword,
 	})
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Password changed successfully", nil)

@@ -11,6 +11,7 @@ import (
 
 	"github.com/hydr0g3nz/poc_pos_restuarant/config"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/controller"
+	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/presenter"
 	sqlcRepo "github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/repository/sqlc"
 	usecase "github.com/hydr0g3nz/poc_pos_restuarant/internal/application"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/service"
@@ -40,7 +41,7 @@ func main() {
 	// Setup cache
 	cache := infrastructure.NewRedisClient(cfg.Cache)
 	defer cache.Close()
-
+	errorPresenter := presenter.NewErrorPresenter(logger)
 	// Setup repositories
 	userRepo := sqlcRepo.NewUserRepository(db)
 	categoryRepo := sqlcRepo.NewCategoryRepository(db)
@@ -67,13 +68,13 @@ func main() {
 	revenueUsecase := usecase.NewRevenueUsecase(revenueRepo, paymentRepo, orderRepo, logger, cfg) // New revenue usecase
 
 	// Setup controllers
-	userController := controller.NewUserController(userUsecase)
-	categoryController := controller.NewCategoryController(categoryUsecase)
-	menuItemController := controller.NewMenuItemController(menuItemUsecase)
-	tableController := controller.NewTableController(tableUsecase, qrCodeUsecase)
-	orderController := controller.NewOrderController(orderUsecase)
-	paymentController := controller.NewPaymentController(paymentUsecase)
-	revenueController := controller.NewRevenueController(revenueUsecase) // New revenue controller
+	userController := controller.NewUserController(userUsecase, errorPresenter)
+	categoryController := controller.NewCategoryController(categoryUsecase, errorPresenter)
+	menuItemController := controller.NewMenuItemController(menuItemUsecase, errorPresenter)
+	tableController := controller.NewTableController(tableUsecase, qrCodeUsecase, errorPresenter)
+	orderController := controller.NewOrderController(orderUsecase, errorPresenter)
+	paymentController := controller.NewPaymentController(paymentUsecase, errorPresenter)
+	revenueController := controller.NewRevenueController(revenueUsecase, errorPresenter) // New revenue controller
 
 	// Setup fiber server
 	app := infrastructure.NewFiber(infrastructure.ServerConfig{

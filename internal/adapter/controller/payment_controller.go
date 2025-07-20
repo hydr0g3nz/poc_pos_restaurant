@@ -6,18 +6,21 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/dto"
+	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/presenter"
 	usecase "github.com/hydr0g3nz/poc_pos_restuarant/internal/application"
 )
 
 // PaymentController handles HTTP requests related to payment operations
 type PaymentController struct {
 	paymentUseCase usecase.PaymentUsecase
+	errorPresenter presenter.ErrorPresenter
 }
 
 // NewPaymentController creates a new instance of PaymentController
-func NewPaymentController(paymentUseCase usecase.PaymentUsecase) *PaymentController {
+func NewPaymentController(paymentUseCase usecase.PaymentUsecase, errorPresenter presenter.ErrorPresenter) *PaymentController {
 	return &PaymentController{
 		paymentUseCase: paymentUseCase,
+		errorPresenter: errorPresenter,
 	}
 }
 
@@ -25,7 +28,7 @@ func NewPaymentController(paymentUseCase usecase.PaymentUsecase) *PaymentControl
 func (c *PaymentController) ProcessPayment(ctx *fiber.Ctx) error {
 	var req dto.ProcessPaymentRequest
 	if err := ctx.BodyParser(&req); err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	if req.OrderID <= 0 {
@@ -55,7 +58,7 @@ func (c *PaymentController) ProcessPayment(ctx *fiber.Ctx) error {
 		Method:  req.Method,
 	})
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusCreated, "Payment processed successfully", response)
@@ -81,7 +84,7 @@ func (c *PaymentController) GetPayment(ctx *fiber.Ctx) error {
 
 	response, err := c.paymentUseCase.GetPayment(ctx.Context(), paymentID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Payment retrieved successfully", response)
@@ -107,7 +110,7 @@ func (c *PaymentController) GetPaymentByOrder(ctx *fiber.Ctx) error {
 
 	response, err := c.paymentUseCase.GetPaymentByOrder(ctx.Context(), orderID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Payment retrieved successfully", response)
@@ -129,7 +132,7 @@ func (c *PaymentController) ListPayments(ctx *fiber.Ctx) error {
 
 	response, err := c.paymentUseCase.ListPayments(ctx.Context(), limit, offset)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Payments retrieved successfully", response)
@@ -177,7 +180,7 @@ func (c *PaymentController) ListPaymentsByDateRange(ctx *fiber.Ctx) error {
 
 	response, err := c.paymentUseCase.ListPaymentsByDateRange(ctx.Context(), startDate, endDate, limit, offset)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Payments by date range retrieved successfully", response)
@@ -207,7 +210,7 @@ func (c *PaymentController) ListPaymentsByMethod(ctx *fiber.Ctx) error {
 
 	response, err := c.paymentUseCase.ListPaymentsByMethod(ctx.Context(), method, limit, offset)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Payments by method retrieved successfully", response)

@@ -5,18 +5,21 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/dto"
+	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/presenter"
 	usecase "github.com/hydr0g3nz/poc_pos_restuarant/internal/application"
 )
 
 // MenuItemController handles HTTP requests related to menu item operations
 type MenuItemController struct {
 	menuItemUseCase usecase.MenuItemUsecase
+	errorPresenter  presenter.ErrorPresenter
 }
 
 // NewMenuItemController creates a new instance of MenuItemController
-func NewMenuItemController(menuItemUseCase usecase.MenuItemUsecase) *MenuItemController {
+func NewMenuItemController(menuItemUseCase usecase.MenuItemUsecase, errorPresenter presenter.ErrorPresenter) *MenuItemController {
 	return &MenuItemController{
 		menuItemUseCase: menuItemUseCase,
+		errorPresenter:  errorPresenter,
 	}
 }
 
@@ -24,7 +27,7 @@ func NewMenuItemController(menuItemUseCase usecase.MenuItemUsecase) *MenuItemCon
 func (c *MenuItemController) CreateMenuItem(ctx *fiber.Ctx) error {
 	var req dto.CreateMenuItemRequest
 	if err := ctx.BodyParser(&req); err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	// Validate required fields
@@ -56,7 +59,7 @@ func (c *MenuItemController) CreateMenuItem(ctx *fiber.Ctx) error {
 		Price:       req.Price,
 	})
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusCreated, "Menu item created successfully", response)
@@ -82,7 +85,7 @@ func (c *MenuItemController) GetMenuItem(ctx *fiber.Ctx) error {
 
 	response, err := c.menuItemUseCase.GetMenuItem(ctx.Context(), menuItemID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Menu item retrieved successfully", response)
@@ -108,7 +111,7 @@ func (c *MenuItemController) UpdateMenuItem(ctx *fiber.Ctx) error {
 
 	var req dto.UpdateMenuItemRequest
 	if err := ctx.BodyParser(&req); err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	// Validate required fields
@@ -140,7 +143,7 @@ func (c *MenuItemController) UpdateMenuItem(ctx *fiber.Ctx) error {
 		Price:       req.Price,
 	})
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Menu item updated successfully", response)
@@ -166,7 +169,7 @@ func (c *MenuItemController) DeleteMenuItem(ctx *fiber.Ctx) error {
 
 	err = c.menuItemUseCase.DeleteMenuItem(ctx.Context(), menuItemID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Menu item deleted successfully", nil)
@@ -188,7 +191,7 @@ func (c *MenuItemController) ListMenuItems(ctx *fiber.Ctx) error {
 
 	response, err := c.menuItemUseCase.ListMenuItems(ctx.Context(), limit, offset)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Menu items retrieved successfully", response)
@@ -226,7 +229,7 @@ func (c *MenuItemController) ListMenuItemsByCategory(ctx *fiber.Ctx) error {
 
 	response, err := c.menuItemUseCase.ListMenuItemsByCategory(ctx.Context(), categoryID, limit, offset)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Menu items by category retrieved successfully", response)
@@ -256,7 +259,7 @@ func (c *MenuItemController) SearchMenuItems(ctx *fiber.Ctx) error {
 
 	response, err := c.menuItemUseCase.SearchMenuItems(ctx.Context(), query, limit, offset)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Menu items search completed successfully", response)

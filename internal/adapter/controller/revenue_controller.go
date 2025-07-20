@@ -5,18 +5,21 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/presenter"
 	usecase "github.com/hydr0g3nz/poc_pos_restuarant/internal/application"
 )
 
 // RevenueController handles HTTP requests related to revenue operations
 type RevenueController struct {
 	revenueUsecase usecase.RevenueUsecase
+	errorPresenter presenter.ErrorPresenter
 }
 
 // NewRevenueController creates a new instance of RevenueController
-func NewRevenueController(revenueUsecase usecase.RevenueUsecase) *RevenueController {
+func NewRevenueController(revenueUsecase usecase.RevenueUsecase, errorPresenter presenter.ErrorPresenter) *RevenueController {
 	return &RevenueController{
 		revenueUsecase: revenueUsecase,
+		errorPresenter: errorPresenter,
 	}
 }
 
@@ -40,7 +43,7 @@ func (c *RevenueController) GetDailyRevenue(ctx *fiber.Ctx) error {
 
 	response, err := c.revenueUsecase.GetDailyRevenue(ctx.Context(), date)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Daily revenue retrieved successfully", response)
@@ -83,7 +86,7 @@ func (c *RevenueController) GetMonthlyRevenue(ctx *fiber.Ctx) error {
 
 	response, err := c.revenueUsecase.GetMonthlyRevenue(ctx.Context(), year, month)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Monthly revenue retrieved successfully", response)
@@ -119,7 +122,7 @@ func (c *RevenueController) GetDailyRevenueRange(ctx *fiber.Ctx) error {
 
 	response, err := c.revenueUsecase.GetDailyRevenueRange(ctx.Context(), startDate, endDate)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Daily revenue range retrieved successfully", response)
@@ -155,7 +158,7 @@ func (c *RevenueController) GetMonthlyRevenueRange(ctx *fiber.Ctx) error {
 
 	response, err := c.revenueUsecase.GetMonthlyRevenueRange(ctx.Context(), startDate, endDate)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Monthly revenue range retrieved successfully", response)
@@ -191,7 +194,7 @@ func (c *RevenueController) GetTotalRevenue(ctx *fiber.Ctx) error {
 
 	response, err := c.revenueUsecase.GetTotalRevenue(ctx.Context(), startDate, endDate)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Total revenue retrieved successfully", response)

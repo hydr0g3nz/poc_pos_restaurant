@@ -6,18 +6,21 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/dto"
+	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/presenter"
 	usecase "github.com/hydr0g3nz/poc_pos_restuarant/internal/application"
 )
 
 // OrderController handles HTTP requests related to order operations
 type OrderController struct {
-	orderUseCase usecase.OrderUsecase
+	orderUseCase   usecase.OrderUsecase
+	errorPresenter presenter.ErrorPresenter
 }
 
 // NewOrderController creates a new instance of OrderController
-func NewOrderController(orderUseCase usecase.OrderUsecase) *OrderController {
+func NewOrderController(orderUseCase usecase.OrderUsecase, errorPresenter presenter.ErrorPresenter) *OrderController {
 	return &OrderController{
-		orderUseCase: orderUseCase,
+		orderUseCase:   orderUseCase,
+		errorPresenter: errorPresenter,
 	}
 }
 
@@ -25,7 +28,7 @@ func NewOrderController(orderUseCase usecase.OrderUsecase) *OrderController {
 func (c *OrderController) CreateOrder(ctx *fiber.Ctx) error {
 	var req dto.CreateOrderRequest
 	if err := ctx.BodyParser(&req); err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	if req.TableID <= 0 {
@@ -39,7 +42,7 @@ func (c *OrderController) CreateOrder(ctx *fiber.Ctx) error {
 		TableID: req.TableID,
 	})
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusCreated, "Order created successfully", response)
@@ -65,7 +68,7 @@ func (c *OrderController) GetOrder(ctx *fiber.Ctx) error {
 
 	response, err := c.orderUseCase.GetOrder(ctx.Context(), orderID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Order retrieved successfully", response)
@@ -91,7 +94,7 @@ func (c *OrderController) GetOrderWithItems(ctx *fiber.Ctx) error {
 
 	response, err := c.orderUseCase.GetOrderWithItems(ctx.Context(), orderID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Order with items retrieved successfully", response)
@@ -117,7 +120,7 @@ func (c *OrderController) UpdateOrder(ctx *fiber.Ctx) error {
 
 	var req dto.UpdateOrderRequest
 	if err := ctx.BodyParser(&req); err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	if req.Status == "" {
@@ -131,7 +134,7 @@ func (c *OrderController) UpdateOrder(ctx *fiber.Ctx) error {
 		Status: req.Status,
 	})
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Order updated successfully", response)
@@ -157,7 +160,7 @@ func (c *OrderController) CloseOrder(ctx *fiber.Ctx) error {
 
 	response, err := c.orderUseCase.CloseOrder(ctx.Context(), orderID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Order closed successfully", response)
@@ -179,7 +182,7 @@ func (c *OrderController) ListOrders(ctx *fiber.Ctx) error {
 
 	response, err := c.orderUseCase.ListOrders(ctx.Context(), limit, offset)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Orders retrieved successfully", response)
@@ -217,7 +220,7 @@ func (c *OrderController) ListOrdersByTable(ctx *fiber.Ctx) error {
 
 	response, err := c.orderUseCase.ListOrdersByTable(ctx.Context(), tableID, limit, offset)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Orders by table retrieved successfully", response)
@@ -243,7 +246,7 @@ func (c *OrderController) GetOpenOrderByTable(ctx *fiber.Ctx) error {
 
 	response, err := c.orderUseCase.GetOpenOrderByTable(ctx.Context(), tableID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Open order by table retrieved successfully", response)
@@ -273,7 +276,7 @@ func (c *OrderController) GetOrdersByStatus(ctx *fiber.Ctx) error {
 
 	response, err := c.orderUseCase.GetOrdersByStatus(ctx.Context(), status, limit, offset)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Orders by status retrieved successfully", response)
@@ -321,7 +324,7 @@ func (c *OrderController) GetOrdersByDateRange(ctx *fiber.Ctx) error {
 
 	response, err := c.orderUseCase.GetOrdersByDateRange(ctx.Context(), startDate, endDate, limit, offset)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Orders by date range retrieved successfully", response)
@@ -331,7 +334,7 @@ func (c *OrderController) GetOrdersByDateRange(ctx *fiber.Ctx) error {
 func (c *OrderController) AddOrderItem(ctx *fiber.Ctx) error {
 	var req dto.AddOrderItemRequest
 	if err := ctx.BodyParser(&req); err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	if req.OrderID <= 0 {
@@ -361,7 +364,7 @@ func (c *OrderController) AddOrderItem(ctx *fiber.Ctx) error {
 		Quantity: req.Quantity,
 	})
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusCreated, "Order item added successfully", response)
@@ -387,7 +390,7 @@ func (c *OrderController) UpdateOrderItem(ctx *fiber.Ctx) error {
 
 	var req dto.UpdateOrderItemRequest
 	if err := ctx.BodyParser(&req); err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	if req.Quantity <= 0 {
@@ -401,7 +404,7 @@ func (c *OrderController) UpdateOrderItem(ctx *fiber.Ctx) error {
 		Quantity: req.Quantity,
 	})
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Order item updated successfully", response)
@@ -427,7 +430,7 @@ func (c *OrderController) RemoveOrderItem(ctx *fiber.Ctx) error {
 
 	err = c.orderUseCase.RemoveOrderItem(ctx.Context(), orderItemID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Order item removed successfully", nil)
@@ -453,7 +456,7 @@ func (c *OrderController) ListOrderItems(ctx *fiber.Ctx) error {
 
 	response, err := c.orderUseCase.ListOrderItems(ctx.Context(), orderID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Order items retrieved successfully", response)
@@ -479,7 +482,7 @@ func (c *OrderController) CalculateOrderTotal(ctx *fiber.Ctx) error {
 
 	response, err := c.orderUseCase.CalculateOrderTotal(ctx.Context(), orderID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Order total calculated successfully", response)

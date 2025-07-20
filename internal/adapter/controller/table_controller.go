@@ -5,20 +5,23 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/dto"
+	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/presenter"
 	usecase "github.com/hydr0g3nz/poc_pos_restuarant/internal/application"
 )
 
 // TableController handles HTTP requests related to table operations
 type TableController struct {
-	tableUsecase  usecase.TableUsecase
-	qrCodeUsecase usecase.QRCodeUsecase
+	tableUsecase   usecase.TableUsecase
+	qrCodeUsecase  usecase.QRCodeUsecase
+	errorPresenter presenter.ErrorPresenter
 }
 
 // NewTableController creates a new instance of TableController
-func NewTableController(tableUsecase usecase.TableUsecase, qrCodeUsecase usecase.QRCodeUsecase) *TableController {
+func NewTableController(tableUsecase usecase.TableUsecase, qrCodeUsecase usecase.QRCodeUsecase, errorPresenter presenter.ErrorPresenter) *TableController {
 	return &TableController{
-		tableUsecase:  tableUsecase,
-		qrCodeUsecase: qrCodeUsecase,
+		tableUsecase:   tableUsecase,
+		qrCodeUsecase:  qrCodeUsecase,
+		errorPresenter: errorPresenter,
 	}
 }
 
@@ -26,7 +29,7 @@ func NewTableController(tableUsecase usecase.TableUsecase, qrCodeUsecase usecase
 func (c *TableController) CreateTable(ctx *fiber.Ctx) error {
 	var req dto.CreateTableRequest
 	if err := ctx.BodyParser(&req); err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	if req.TableNumber <= 0 {
@@ -48,7 +51,7 @@ func (c *TableController) CreateTable(ctx *fiber.Ctx) error {
 		Seating:     req.Seating,
 	})
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusCreated, "Table created successfully", response)
@@ -74,7 +77,7 @@ func (c *TableController) GetTable(ctx *fiber.Ctx) error {
 
 	response, err := c.tableUsecase.GetTable(ctx.Context(), tableID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Table retrieved successfully", response)
@@ -100,7 +103,7 @@ func (c *TableController) GetTableByNumber(ctx *fiber.Ctx) error {
 
 	response, err := c.tableUsecase.GetTableByNumber(ctx.Context(), tableNumber)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Table retrieved successfully", response)
@@ -118,7 +121,7 @@ func (c *TableController) GetTableByQRCode(ctx *fiber.Ctx) error {
 
 	response, err := c.tableUsecase.GetTableByQRCode(ctx.Context(), qrCode)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Table retrieved successfully", response)
@@ -144,7 +147,7 @@ func (c *TableController) UpdateTable(ctx *fiber.Ctx) error {
 
 	var req dto.UpdateTableRequest
 	if err := ctx.BodyParser(&req); err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	if req.TableNumber <= 0 {
@@ -166,7 +169,7 @@ func (c *TableController) UpdateTable(ctx *fiber.Ctx) error {
 		Seating:     req.Seating,
 	})
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Table updated successfully", response)
@@ -192,7 +195,7 @@ func (c *TableController) DeleteTable(ctx *fiber.Ctx) error {
 
 	err = c.tableUsecase.DeleteTable(ctx.Context(), tableID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Table deleted successfully", nil)
@@ -202,7 +205,7 @@ func (c *TableController) DeleteTable(ctx *fiber.Ctx) error {
 func (c *TableController) ListTables(ctx *fiber.Ctx) error {
 	response, err := c.tableUsecase.ListTables(ctx.Context())
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	tableListResponse := &dto.TableListResponse{
@@ -242,7 +245,7 @@ func (c *TableController) GenerateQRCode(ctx *fiber.Ctx) error {
 
 	qrCode, err := c.tableUsecase.GenerateQRCode(ctx.Context(), tableID)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	response := map[string]interface{}{
@@ -266,7 +269,7 @@ func (c *TableController) ScanQRCode(ctx *fiber.Ctx) error {
 	// Use QRCodeUsecase to get complete information including order status
 	response, err := c.qrCodeUsecase.ScanQRCode(ctx.Context(), qrCode)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	// Convert to DTO format
@@ -308,7 +311,7 @@ func (c *TableController) CreateOrderFromQRCode(ctx *fiber.Ctx) error {
 	// Create order from QR code
 	response, err := c.qrCodeUsecase.CreateOrderFromQRCode(ctx.Context(), qrCode)
 	if err != nil {
-		return HandleError(ctx, err)
+		return HandleError(ctx, err, c.errorPresenter)
 	}
 
 	// Convert to DTO format
