@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -163,21 +164,19 @@ func (u *orderUsecase) CloseOrder(ctx context.Context, id int) (*OrderResponse, 
 		u.logger.Error("Error getting current order", "error", err, "orderID", id)
 		return nil, fmt.Errorf("failed to get order: %w", err)
 	}
-	if currentOrder == nil {
-		return nil, errs.ErrOrderNotFound
-	}
-
-	// Check if order is already closed
-	if currentOrder.IsClosed() {
-		return nil, errs.ErrOrderAlreadyClosed
-	}
 
 	// Process order closure
-	if err := u.orderService.ProcessOrderClosure(ctx, id); err != nil {
+	if err := u.orderService.ProcessOrderClosure(ctx, id); err != nil && !errors.Is(err, errs.ErrEmptyOrder) {
 		u.logger.Error("Order closure validation failed", "error", err, "orderID", id)
 		return nil, err
 	}
-
+	if err == errs.ErrEmptyOrder {
+		deleteErr := u.orderRepo.Delete(ctx, id)
+		if deleteErr != nil {
+			u.logger.Error("Error deleting empty order", "error", deleteErr, "orderID", id)
+			return nil, fmt.Errorf("failed to delete empty order: %w", deleteErr)
+		}
+	}
 	// Close order
 	currentOrder.Close()
 
