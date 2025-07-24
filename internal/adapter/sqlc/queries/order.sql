@@ -50,3 +50,7 @@ SELECT * FROM orders
 WHERE created_at >= $1 AND created_at <= $2
 ORDER BY created_at DESC
 LIMIT $3 OFFSET $4;
+
+-- name: GetOrderByQRCode :one
+SELECT * FROM orders
+WHERE qrcode = $1;

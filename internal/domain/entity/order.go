@@ -12,6 +12,7 @@ type Order struct {
 	TableID   int            `json:"table_id"`
 	Status    vo.OrderStatus `json:"status"`
 	Items     []*OrderItem   `json:"items,omitempty"`
+	QRCode    string         `json:"qr_code,omitempty"` // QR code for the order
 	Notes     string         `json:"notes,omitempty"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`

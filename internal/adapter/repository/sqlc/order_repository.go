@@ -172,6 +172,21 @@ func (r *orderRepository) ListByDateRange(ctx context.Context, startDate, endDat
 
 	return r.dbOrdersToEntities(dbOrders)
 }
+func (r *orderRepository) GetOrderByQRCode(ctx context.Context, qrCode string) (*entity.Order, error) {
+	dbOrder, err := r.queries.GetOrderByQRCode(ctx, utils.ConvertToText(qrCode))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	// Convert the database order to domain entity
+	order, err := r.dbOrderToEntity(dbOrder)
+	if err != nil {
+		return nil, err
+	}
+	return order, nil
+}
 
 // Helper methods for conversion
 func (r *orderRepository) dbOrderToEntity(dbOrder *sqlc.Order) (*entity.Order, error) {

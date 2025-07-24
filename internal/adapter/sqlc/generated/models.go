@@ -189,6 +189,7 @@ type Order struct {
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 	UpdatedAt pgtype.Timestamp `json:"updated_at"`
 	ClosedAt  pgtype.Timestamp `json:"closed_at"`
+	Qrcode    pgtype.Text      `json:"qrcode"`
 }
 
 type OrderItem struct {

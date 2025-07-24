@@ -14,7 +14,7 @@ import (
 const createOrder = `-- name: CreateOrder :one
 INSERT INTO orders (table_id, status, notes)
 VALUES ($1, $2, $3)
-RETURNING id, table_id, status, notes, created_at, updated_at, closed_at
+RETURNING id, table_id, status, notes, created_at, updated_at, closed_at, qrcode
 `
 
 type CreateOrderParams struct {
@@ -34,6 +34,7 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (*Orde
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.ClosedAt,
+		&i.Qrcode,
 	)
 	return &i, err
 }
@@ -49,7 +50,7 @@ func (q *Queries) DeleteOrder(ctx context.Context, id int32) error {
 }
 
 const getOpenOrderByTable = `-- name: GetOpenOrderByTable :one
-SELECT id, table_id, status, notes, created_at, updated_at, closed_at FROM orders
+SELECT id, table_id, status, notes, created_at, updated_at, closed_at, qrcode FROM orders
 WHERE table_id = $1 AND status = 'open'
 ORDER BY created_at DESC
 LIMIT 1
@@ -66,12 +67,13 @@ func (q *Queries) GetOpenOrderByTable(ctx context.Context, tableID int32) (*Orde
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.ClosedAt,
+		&i.Qrcode,
 	)
 	return &i, err
 }
 
 const getOrderByID = `-- name: GetOrderByID :one
-SELECT id, table_id, status, notes, created_at, updated_at, closed_at FROM orders
+SELECT id, table_id, status, notes, created_at, updated_at, closed_at, qrcode FROM orders
 WHERE id = $1
 `
 
@@ -86,12 +88,34 @@ func (q *Queries) GetOrderByID(ctx context.Context, id int32) (*Order, error) {
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.ClosedAt,
+		&i.Qrcode,
+	)
+	return &i, err
+}
+
+const getOrderByQRCode = `-- name: GetOrderByQRCode :one
+SELECT id, table_id, status, notes, created_at, updated_at, closed_at, qrcode FROM orders
+WHERE qrcode = $1
+`
+
+func (q *Queries) GetOrderByQRCode(ctx context.Context, qrcode pgtype.Text) (*Order, error) {
+	row := q.db.QueryRow(ctx, getOrderByQRCode, qrcode)
+	var i Order
+	err := row.Scan(
+		&i.ID,
+		&i.TableID,
+		&i.Status,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ClosedAt,
+		&i.Qrcode,
 	)
 	return &i, err
 }
 
 const listOrders = `-- name: ListOrders :many
-SELECT id, table_id, status, notes, created_at, updated_at, closed_at FROM orders
+SELECT id, table_id, status, notes, created_at, updated_at, closed_at, qrcode FROM orders
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2
 `
@@ -118,6 +142,7 @@ func (q *Queries) ListOrders(ctx context.Context, arg ListOrdersParams) ([]*Orde
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.ClosedAt,
+			&i.Qrcode,
 		); err != nil {
 			return nil, err
 		}
@@ -130,7 +155,7 @@ func (q *Queries) ListOrders(ctx context.Context, arg ListOrdersParams) ([]*Orde
 }
 
 const listOrdersByDateRange = `-- name: ListOrdersByDateRange :many
-SELECT id, table_id, status, notes, created_at, updated_at, closed_at FROM orders
+SELECT id, table_id, status, notes, created_at, updated_at, closed_at, qrcode FROM orders
 WHERE created_at >= $1 AND created_at <= $2
 ORDER BY created_at DESC
 LIMIT $3 OFFSET $4
@@ -165,6 +190,7 @@ func (q *Queries) ListOrdersByDateRange(ctx context.Context, arg ListOrdersByDat
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.ClosedAt,
+			&i.Qrcode,
 		); err != nil {
 			return nil, err
 		}
@@ -177,7 +203,7 @@ func (q *Queries) ListOrdersByDateRange(ctx context.Context, arg ListOrdersByDat
 }
 
 const listOrdersByStatus = `-- name: ListOrdersByStatus :many
-SELECT id, table_id, status, notes, created_at, updated_at, closed_at FROM orders
+SELECT id, table_id, status, notes, created_at, updated_at, closed_at, qrcode FROM orders
 WHERE status = $1
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
@@ -206,6 +232,7 @@ func (q *Queries) ListOrdersByStatus(ctx context.Context, arg ListOrdersByStatus
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.ClosedAt,
+			&i.Qrcode,
 		); err != nil {
 			return nil, err
 		}
@@ -218,7 +245,7 @@ func (q *Queries) ListOrdersByStatus(ctx context.Context, arg ListOrdersByStatus
 }
 
 const listOrdersByTable = `-- name: ListOrdersByTable :many
-SELECT id, table_id, status, notes, created_at, updated_at, closed_at FROM orders
+SELECT id, table_id, status, notes, created_at, updated_at, closed_at, qrcode FROM orders
 WHERE table_id = $1
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
@@ -247,6 +274,7 @@ func (q *Queries) ListOrdersByTable(ctx context.Context, arg ListOrdersByTablePa
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.ClosedAt,
+			&i.Qrcode,
 		); err != nil {
 			return nil, err
 		}
@@ -267,7 +295,7 @@ SET
     closed_at = $5,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, table_id, status, notes, created_at, updated_at, closed_at
+RETURNING id, table_id, status, notes, created_at, updated_at, closed_at, qrcode
 `
 
 type UpdateOrderParams struct {
@@ -295,6 +323,7 @@ func (q *Queries) UpdateOrder(ctx context.Context, arg UpdateOrderParams) (*Orde
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.ClosedAt,
+		&i.Qrcode,
 	)
 	return &i, err
 }

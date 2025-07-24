@@ -43,6 +43,7 @@ type Querier interface {
 	GetMonthlyRevenueRange(ctx context.Context, arg GetMonthlyRevenueRangeParams) ([]*GetMonthlyRevenueRangeRow, error)
 	GetOpenOrderByTable(ctx context.Context, tableID int32) (*Order, error)
 	GetOrderByID(ctx context.Context, id int32) (*Order, error)
+	GetOrderByQRCode(ctx context.Context, qrcode pgtype.Text) (*Order, error)
 	GetOrderItemByID(ctx context.Context, id int32) (*OrderItem, error)
 	GetOrderItemByOrderAndItem(ctx context.Context, arg GetOrderItemByOrderAndItemParams) (*OrderItem, error)
 	GetOrderItemsByOrderID(ctx context.Context, orderID int32) ([]*OrderItem, error)
