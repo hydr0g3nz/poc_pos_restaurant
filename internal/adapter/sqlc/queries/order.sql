@@ -1,6 +1,6 @@
 -- name: CreateOrder :one
-INSERT INTO orders (table_id, status, notes)
-VALUES ($1, $2, $3)
+INSERT INTO orders (table_id, status, notes, qrcode)
+VALUES ($1, $2, $3, $4)
 RETURNING *;
 
 -- name: GetOrderByID :one

@@ -41,6 +41,9 @@ func main() {
 	// Setup cache
 	cache := infrastructure.NewRedisClient(cfg.Cache)
 	defer cache.Close()
+
+	// infra
+	qrcodeGenerator := infrastructure.NewQRCodeService()
 	errorPresenter := presenter.NewErrorPresenter(logger)
 	// Setup repositories
 	userRepo := sqlcRepo.NewUserRepository(db)
@@ -54,7 +57,7 @@ func main() {
 
 	// Setup domain services
 	orderService := service.NewOrderService(orderRepo, orderItemRepo, tableRepo, menuItemRepo)
-	qrCodeService := service.NewQRCodeService(tableRepo)
+	qrCodeService := service.NewQRCodeService("http://localhost:8080", qrcodeGenerator, orderRepo) // New QR code service (pass in "tableRepo)
 	// revenueService := service.NewRevenueService(revenueRepo, paymentRepo, orderRepo) // New revenue service
 
 	// Setup use cases
@@ -62,16 +65,16 @@ func main() {
 	categoryUsecase := usecase.NewCategoryUsecase(categoryRepo, logger, cfg)
 	menuItemUsecase := usecase.NewMenuItemUsecase(menuItemRepo, categoryRepo, logger, cfg)
 	tableUsecase := usecase.NewTableUsecase(tableRepo, logger, cfg)
-	orderUsecase := usecase.NewOrderUsecase(orderRepo, orderItemRepo, tableRepo, menuItemRepo, orderService, logger, cfg)
+	orderUsecase := usecase.NewOrderUsecase(orderRepo, orderItemRepo, tableRepo, menuItemRepo, orderService, qrCodeService, logger, cfg)
 	paymentUsecase := usecase.NewPaymentUsecase(paymentRepo, orderRepo, orderService, logger, cfg)
-	qrCodeUsecase := usecase.NewQRCodeUsecase(tableRepo, orderRepo, qrCodeService, orderUsecase, logger, cfg)
+	// qrCodeUsecase := usecase.NewQRCodeUsecase(tableRepo, orderRepo, qrCodeService, orderUsecase, logger, cfg)
 	revenueUsecase := usecase.NewRevenueUsecase(revenueRepo, paymentRepo, orderRepo, logger, cfg) // New revenue usecase
 
 	// Setup controllers
 	userController := controller.NewUserController(userUsecase, errorPresenter)
 	categoryController := controller.NewCategoryController(categoryUsecase, errorPresenter)
 	menuItemController := controller.NewMenuItemController(menuItemUsecase, errorPresenter)
-	tableController := controller.NewTableController(tableUsecase, qrCodeUsecase, errorPresenter)
+	tableController := controller.NewTableController(tableUsecase, errorPresenter)
 	orderController := controller.NewOrderController(orderUsecase, errorPresenter)
 	paymentController := controller.NewPaymentController(paymentUsecase, errorPresenter)
 	revenueController := controller.NewRevenueController(revenueUsecase, errorPresenter) // New revenue controller

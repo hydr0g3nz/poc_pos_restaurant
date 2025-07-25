@@ -31,6 +31,7 @@ func (r *orderRepository) Create(ctx context.Context, order *entity.Order) (*ent
 		TableID: int32(order.TableID),
 		Status:  sqlc.OrderStatus(order.Status.String()),
 		Notes:   utils.ConvertToText(order.Notes),
+		Qrcode:  utils.ConvertToText(order.QRCode),
 	})
 	if err != nil {
 		return nil, err

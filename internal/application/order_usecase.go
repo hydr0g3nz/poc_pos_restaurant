@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"time"
@@ -22,6 +23,7 @@ type orderUsecase struct {
 	tableRepo     repository.TableRepository
 	menuItemRepo  repository.MenuItemRepository
 	orderService  service.OrderService
+	qrCodeService service.QRCodeService
 	logger        infra.Logger
 	config        *config.Config
 }
@@ -33,6 +35,7 @@ func NewOrderUsecase(
 	tableRepo repository.TableRepository,
 	menuItemRepo repository.MenuItemRepository,
 	orderService service.OrderService,
+	qrCodeService service.QRCodeService,
 	logger infra.Logger,
 	config *config.Config,
 ) OrderUsecase {
@@ -44,36 +47,45 @@ func NewOrderUsecase(
 		orderService:  orderService,
 		logger:        logger,
 		config:        config,
+		qrCodeService: qrCodeService,
 	}
 }
 
 // CreateOrder creates a new order
-func (u *orderUsecase) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*OrderResponse, error) {
+func (u *orderUsecase) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*OrderResponse, string, error) {
 	u.logger.Info("Creating order", "tableID", req.TableID)
 
 	// Validate order creation
 	if err := u.orderService.ValidateOrderCreation(ctx, req.TableID); err != nil {
 		u.logger.Error("Order validation failed", "error", err, "tableID", req.TableID)
-		return nil, err
+		return nil, "", err
 	}
 
 	// Create order entity
 	order, err := entity.NewOrder(req.TableID)
 	if err != nil {
 		u.logger.Error("Error creating order entity", "error", err, "tableID", req.TableID)
-		return nil, err
+		return nil, "", err
 	}
+	qrCode := u.qrCodeService.GenerateQRCodeForOrder(ctx, order.ID)
+	order.QRCode = qrCode
+	qrCodeImageBytes, err := u.qrCodeService.GenerateQRCodeImage(ctx, qrCode)
+	if err != nil {
+		u.logger.Error("Error generating QR code image", "error", err, "qrCode", qrCode)
+		return nil, "", fmt.Errorf("failed to generate QR code image: %w", err)
+	}
+	qrcodeImageBase64 := base64.StdEncoding.EncodeToString(qrCodeImageBytes)
 
 	// Save to database
 	createdOrder, err := u.orderRepo.Create(ctx, order)
 	if err != nil {
 		u.logger.Error("Error creating order", "error", err, "tableID", req.TableID)
-		return nil, fmt.Errorf("failed to create order: %w", err)
+		return nil, "", fmt.Errorf("failed to create order: %w", err)
 	}
 
 	u.logger.Info("Order created successfully", "orderID", createdOrder.ID, "tableID", createdOrder.TableID)
 
-	return u.toOrderResponse(createdOrder), nil
+	return u.toOrderResponse(createdOrder), qrcodeImageBase64, nil
 }
 
 // GetOrder retrieves order by ID

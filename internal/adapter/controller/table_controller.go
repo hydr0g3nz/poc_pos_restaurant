@@ -17,10 +17,9 @@ type TableController struct {
 }
 
 // NewTableController creates a new instance of TableController
-func NewTableController(tableUsecase usecase.TableUsecase, qrCodeUsecase usecase.QRCodeUsecase, errorPresenter presenter.ErrorPresenter) *TableController {
+func NewTableController(tableUsecase usecase.TableUsecase, errorPresenter presenter.ErrorPresenter) *TableController {
 	return &TableController{
 		tableUsecase:   tableUsecase,
-		qrCodeUsecase:  qrCodeUsecase,
 		errorPresenter: errorPresenter,
 	}
 }

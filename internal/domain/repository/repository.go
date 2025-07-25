@@ -79,7 +79,7 @@ type OrderRepository interface {
 	List(ctx context.Context, limit, offset int) ([]*entity.Order, error)
 	ListByTable(ctx context.Context, tableID int, limit, offset int) ([]*entity.Order, error)
 	GetOpenOrderByTable(ctx context.Context, tableID int) (*entity.Order, error)
-	GetByQRCode(ctx context.Context, qrCode string) (*entity.Order, error)
+	GetOrderByQRCode(ctx context.Context, qrCode string) (*entity.Order, error)
 	ListByStatus(ctx context.Context, status string, limit, offset int) ([]*entity.Order, error)
 	ListByDateRange(ctx context.Context, startDate, endDate time.Time, limit, offset int) ([]*entity.Order, error)
 }

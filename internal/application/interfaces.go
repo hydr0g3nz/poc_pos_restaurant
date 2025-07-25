@@ -41,7 +41,7 @@ type TableUsecase interface {
 
 // OrderUsecase handles order business logic
 type OrderUsecase interface {
-	CreateOrder(ctx context.Context, req *CreateOrderRequest) (*OrderResponse, error)
+	CreateOrder(ctx context.Context, req *CreateOrderRequest) (*OrderResponse, string, error)
 	GetOrder(ctx context.Context, id int) (*OrderResponse, error)
 	GetOrderWithItems(ctx context.Context, id int) (*OrderWithItemsResponse, error)
 	UpdateOrder(ctx context.Context, id int, req *UpdateOrderRequest) (*OrderResponse, error)

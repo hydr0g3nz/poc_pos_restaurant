@@ -38,14 +38,21 @@ func (c *OrderController) CreateOrder(ctx *fiber.Ctx) error {
 		})
 	}
 
-	response, err := c.orderUseCase.CreateOrder(ctx.Context(), &usecase.CreateOrderRequest{
+	response, qrCode, err := c.orderUseCase.CreateOrder(ctx.Context(), &usecase.CreateOrderRequest{
 		TableID: req.TableID,
 	})
 	if err != nil {
 		return HandleError(ctx, err, c.errorPresenter)
 	}
+	resp := struct {
+		*usecase.OrderResponse
+		QRCode string `json:"qr_code"`
+	}{
+		OrderResponse: response,
+		QRCode:        qrCode,
+	}
 
-	return SuccessResp(ctx, fiber.StatusCreated, "Order created successfully", response)
+	return SuccessResp(ctx, fiber.StatusCreated, "Order created successfully", resp)
 }
 
 // GetOrder handles getting order by ID
