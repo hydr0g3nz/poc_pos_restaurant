@@ -17,12 +17,12 @@ type Payment struct {
 
 // IsValid validates payment data
 func (p *Payment) IsValid() bool {
-	return p.OrderID > 0 && p.Amount.Amount() > 0 && p.Method.Valid()
+	return p.OrderID > 0 && !p.Amount.IsZero() && p.Method.Valid()
 }
 
 // NewPayment creates a new payment
 func NewPayment(orderID int, amount float64, method string) (*Payment, error) {
-	money, err := vo.NewMoney(amount)
+	money, err := vo.NewMoneyFromBaht(amount)
 	if err != nil {
 		return nil, err
 	}

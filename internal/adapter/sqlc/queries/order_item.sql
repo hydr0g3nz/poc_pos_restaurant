@@ -1,6 +1,6 @@
 -- name: CreateOrderItem :one
-INSERT INTO order_items (order_id, item_id, quantity, unit_price, notes)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO order_items (order_id, item_id, quantity, unit_price, notes, name)
+VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
 
 -- name: GetOrderItemByID :one
@@ -15,6 +15,7 @@ SET
     quantity = $4,
     unit_price = $5,
     notes = $6,
+    name = $7,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;

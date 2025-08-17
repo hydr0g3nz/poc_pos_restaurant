@@ -80,8 +80,8 @@ func (u *paymentUsecase) ProcessPayment(ctx context.Context, req *ProcessPayment
 	}
 
 	// Validate payment amount
-	if req.Amount != total.Amount() {
-		u.logger.Warn("Invalid payment amount", "orderID", req.OrderID, "expected", total.Amount(), "actual", req.Amount)
+	if req.Amount != total.AmountBaht() {
+		u.logger.Warn("Invalid payment amount", "orderID", req.OrderID, "expected", total.AmountBaht(), "actual", req.Amount)
 		return nil, errs.ErrInvalidPaymentAmount
 	}
 
@@ -211,7 +211,7 @@ func (u *paymentUsecase) toPaymentResponse(payment *entity.Payment) *PaymentResp
 	return &PaymentResponse{
 		ID:      payment.ID,
 		OrderID: payment.OrderID,
-		Amount:  payment.Amount.Amount(),
+		Amount:  payment.Amount.AmountBaht(),
 		Method:  payment.Method.String(),
 		PaidAt:  payment.PaidAt,
 	}

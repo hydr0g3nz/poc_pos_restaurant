@@ -263,7 +263,7 @@ func (u *menuItemUsecase) toMenuItemResponse(menuItem *entity.MenuItem, category
 		CategoryID:  menuItem.CategoryID,
 		Name:        menuItem.Name,
 		Description: menuItem.Description,
-		Price:       menuItem.Price.Amount(),
+		Price:       menuItem.Price.AmountBaht(),
 		CreatedAt:   menuItem.CreatedAt,
 	}
 

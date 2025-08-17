@@ -201,6 +201,7 @@ type OrderItem struct {
 	Notes     pgtype.Text      `json:"notes"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 	UpdatedAt pgtype.Timestamp `json:"updated_at"`
+	Name      pgtype.Text      `json:"name"`
 }
 
 type Payment struct {

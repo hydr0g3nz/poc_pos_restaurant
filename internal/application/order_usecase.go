@@ -18,14 +18,15 @@ import (
 
 // orderUsecase implements OrderUsecase interface
 type orderUsecase struct {
-	orderRepo     repository.OrderRepository
-	orderItemRepo repository.OrderItemRepository
-	tableRepo     repository.TableRepository
-	menuItemRepo  repository.MenuItemRepository
-	orderService  service.OrderService
-	qrCodeService service.QRCodeService
-	logger        infra.Logger
-	config        *config.Config
+	orderRepo      repository.OrderRepository
+	orderItemRepo  repository.OrderItemRepository
+	tableRepo      repository.TableRepository
+	menuItemRepo   repository.MenuItemRepository
+	orderService   service.OrderService
+	qrCodeService  service.QRCodeService
+	printerService infra.PrinterService
+	logger         infra.Logger
+	config         *config.Config
 }
 
 // NewOrderUsecase creates a new order usecase
@@ -36,18 +37,20 @@ func NewOrderUsecase(
 	menuItemRepo repository.MenuItemRepository,
 	orderService service.OrderService,
 	qrCodeService service.QRCodeService,
+	printerService infra.PrinterService,
 	logger infra.Logger,
 	config *config.Config,
 ) OrderUsecase {
 	return &orderUsecase{
-		orderRepo:     orderRepo,
-		orderItemRepo: orderItemRepo,
-		tableRepo:     tableRepo,
-		menuItemRepo:  menuItemRepo,
-		orderService:  orderService,
-		logger:        logger,
-		config:        config,
-		qrCodeService: qrCodeService,
+		orderRepo:      orderRepo,
+		orderItemRepo:  orderItemRepo,
+		tableRepo:      tableRepo,
+		menuItemRepo:   menuItemRepo,
+		orderService:   orderService,
+		printerService: printerService,
+		logger:         logger,
+		config:         config,
+		qrCodeService:  qrCodeService,
 	}
 }
 
@@ -348,7 +351,7 @@ func (u *orderUsecase) AddOrderItem(ctx context.Context, req *AddOrderItemReques
 	}
 
 	// Create new order item
-	orderItem, err := entity.NewOrderItem(req.OrderID, req.ItemID, req.Quantity, menuItem.Price.Amount())
+	orderItem, err := entity.NewOrderItem(req.OrderID, req.ItemID, req.Quantity, menuItem.Price.AmountBaht(), menuItem.Name)
 	if err != nil {
 		u.logger.Error("Error creating order item entity", "error", err, "orderID", req.OrderID, "itemID", req.ItemID)
 		return nil, err
@@ -497,7 +500,7 @@ func (u *orderUsecase) CalculateOrderTotal(ctx context.Context, orderID int) (*O
 	itemCount := 0
 	for _, item := range items {
 		subtotal := item.CalculateSubtotal()
-		total += subtotal.Amount()
+		total += subtotal.AmountBaht()
 		itemCount += item.Quantity
 	}
 
@@ -534,7 +537,7 @@ func (u *orderUsecase) toOrderWithItemsResponse(order *entity.Order) *OrderWithI
 		TableID:   order.TableID,
 		Status:    order.Status.String(),
 		Items:     u.toOrderItemResponses(order.Items),
-		Total:     order.CalculateTotal().Amount(),
+		Total:     order.CalculateTotal().AmountBaht(),
 		CreatedAt: order.CreatedAt,
 	}
 
@@ -561,9 +564,10 @@ func (u *orderUsecase) toOrderItemResponse(item *entity.OrderItem) *OrderItemRes
 		OrderID:   item.OrderID,
 		ItemID:    item.ItemID,
 		Quantity:  item.Quantity,
-		UnitPrice: item.UnitPrice.Amount(),
-		Subtotal:  item.CalculateSubtotal().Amount(),
+		UnitPrice: item.UnitPrice.AmountBaht(),
+		Subtotal:  item.CalculateSubtotal().AmountBaht(),
 		CreatedAt: item.CreatedAt,
+		Name:      item.Name,
 	}
 }
 
@@ -574,4 +578,65 @@ func (u *orderUsecase) toOrderItemResponses(items []*entity.OrderItem) []*OrderI
 		responses[i] = u.toOrderItemResponse(item)
 	}
 	return responses
+}
+
+func (u *orderUsecase) PrintOrderReceipt(ctx context.Context, orderID int) error {
+	u.logger.Info("Printing order receipt", "orderID", orderID)
+	order, err := u.orderRepo.GetByID(ctx, orderID)
+	if err != nil {
+		u.logger.Error("Error getting order for printing", "error", err, "orderID", orderID)
+		return fmt.Errorf("failed to get order for printing: %w", err)
+	}
+	if order == nil {
+		u.logger.Warn("Order not found for printing", "orderID", orderID)
+		return errs.ErrOrderNotFound
+	}
+	// Get order items
+	items, err := u.orderItemRepo.ListByOrder(ctx, orderID)
+	if err != nil {
+		u.logger.Error("Error getting order items for printing", "error", err, "orderID", orderID)
+		return fmt.Errorf("failed to get order items for printing: %w", err)
+	}
+	if len(items) == 0 {
+		u.logger.Warn("No items found for order", "orderID", orderID)
+		return errs.ErrEmptyOrder
+	}
+	order.Items = items
+	// Generate receipt PDF
+	receiptPDF, err := u.orderService.ReceiptPdf(ctx, order)
+	if err != nil {
+		u.logger.Error("Error generating receipt PDF", "error", err, "orderID", orderID)
+		return fmt.Errorf("failed to generate receipt PDF: %w", err)
+	}
+	// Print receipt
+	if err := u.printerService.Print(ctx, receiptPDF, "PDF"); err != nil {
+		u.logger.Error("Error printing receipt", "error", err, "orderID", orderID)
+		return fmt.Errorf("failed to print receipt: %w", err)
+	}
+	return nil
+}
+func (u *orderUsecase) PrintOrderQRCode(ctx context.Context, orderID int) error {
+	u.logger.Info("Printing order receipt", "orderID", orderID)
+	order, err := u.orderRepo.GetByID(ctx, orderID)
+	if err != nil {
+		u.logger.Error("Error getting order for printing", "error", err, "orderID", orderID)
+		return fmt.Errorf("failed to get order for printing: %w", err)
+	}
+	if order == nil {
+		u.logger.Warn("Order not found for printing", "orderID", orderID)
+		return errs.ErrOrderNotFound
+	}
+
+	// Generate receipt PDF
+	qrCodePDF, err := u.orderService.QRCodePdf(ctx, order)
+	if err != nil {
+		u.logger.Error("Error generating receipt PDF", "error", err, "orderID", orderID)
+		return fmt.Errorf("failed to generate receipt PDF: %w", err)
+	}
+	// Print receipt
+	if err := u.printerService.Print(ctx, qrCodePDF, "PDF"); err != nil {
+		u.logger.Error("Error printing receipt", "error", err, "orderID", orderID)
+		return fmt.Errorf("failed to print receipt: %w", err)
+	}
+	return nil
 }

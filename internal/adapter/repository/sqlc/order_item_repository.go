@@ -30,8 +30,9 @@ func (r *orderItemRepository) Create(ctx context.Context, item *entity.OrderItem
 		OrderID:   int32(item.OrderID),
 		ItemID:    int32(item.ItemID),
 		Quantity:  int32(item.Quantity),
-		UnitPrice: utils.ConvertToPGNumericFromFloat(item.UnitPrice.Amount()),
+		UnitPrice: utils.ConvertToPGNumericFromFloat(item.UnitPrice.AmountBaht()),
 		Notes:     utils.ConvertToText(item.Notes),
+		Name:      utils.ConvertToText(item.Name),
 	})
 	if err != nil {
 		return nil, err
@@ -58,8 +59,9 @@ func (r *orderItemRepository) Update(ctx context.Context, item *entity.OrderItem
 		OrderID:   int32(item.OrderID),
 		ItemID:    int32(item.ItemID),
 		Quantity:  int32(item.Quantity),
-		UnitPrice: utils.ConvertToPGNumericFromFloat(item.UnitPrice.Amount()),
+		UnitPrice: utils.ConvertToPGNumericFromFloat(item.UnitPrice.AmountBaht()),
 		Notes:     utils.ConvertToText(item.Notes),
+		Name:      utils.ConvertToText(item.Name),
 	})
 	if err != nil {
 		return nil, err
@@ -102,7 +104,7 @@ func (r *orderItemRepository) GetByOrderAndItem(ctx context.Context, orderID, it
 
 // Helper methods for conversion
 func (r *orderItemRepository) dbOrderItemToEntity(dbItem *sqlc.OrderItem) (*entity.OrderItem, error) {
-	money, err := vo.NewMoney(utils.FromPgNumericToFloat(dbItem.UnitPrice))
+	money, err := vo.NewMoneyFromBaht(utils.FromPgNumericToFloat(dbItem.UnitPrice))
 	if err != nil {
 		return nil, err
 	}
@@ -116,6 +118,7 @@ func (r *orderItemRepository) dbOrderItemToEntity(dbItem *sqlc.OrderItem) (*enti
 		Notes:     utils.FromPgTextToString(dbItem.Notes),
 		CreatedAt: dbItem.CreatedAt.Time,
 		UpdatedAt: dbItem.UpdatedAt.Time,
+		Name:      utils.FromPgTextToString(dbItem.Name),
 	}, nil
 }
 

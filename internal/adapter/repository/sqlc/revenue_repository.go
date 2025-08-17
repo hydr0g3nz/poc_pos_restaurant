@@ -45,7 +45,7 @@ func (r *revenueRepository) GetDailyRevenue(ctx context.Context, date time.Time)
 	}
 
 	// Convert to entity
-	revenueAmount, err := vo.NewMoney(utils.FromInterfaceToFloat(totalRevenue))
+	revenueAmount, err := vo.NewMoneyFromBaht(utils.FromInterfaceToFloat(totalRevenue))
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (r *revenueRepository) GetMonthlyRevenue(ctx context.Context, year int, mon
 	}
 
 	// Convert to entity
-	revenueAmount, err := vo.NewMoney(utils.FromInterfaceToFloat(totalRevenue))
+	revenueAmount, err := vo.NewMoneyFromBaht(utils.FromInterfaceToFloat(totalRevenue))
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func (r *revenueRepository) GetDailyRevenueRange(ctx context.Context, startDate,
 	// Convert to entities
 	revenues := make([]*entity.DailyRevenue, len(results))
 	for i, result := range results {
-		totalRevenue, err := vo.NewMoney(utils.FromInterfaceToFloat(result.TotalRevenue))
+		totalRevenue, err := vo.NewMoneyFromBaht(utils.FromInterfaceToFloat(result.TotalRevenue))
 		if err != nil {
 			return nil, err
 		}
@@ -125,7 +125,7 @@ func (r *revenueRepository) GetMonthlyRevenueRange(ctx context.Context, startDat
 	// Convert to entities
 	revenues := make([]*entity.MonthlyRevenue, len(results))
 	for i, result := range results {
-		totalRevenue, err := vo.NewMoney(utils.FromInterfaceToFloat(result.TotalRevenue))
+		totalRevenue, err := vo.NewMoneyFromBaht(utils.FromInterfaceToFloat(result.TotalRevenue))
 		if err != nil {
 			return nil, err
 		}

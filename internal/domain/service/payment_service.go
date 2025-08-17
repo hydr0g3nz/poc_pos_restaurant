@@ -68,7 +68,7 @@ func (s *paymentService) ValidatePayment(ctx context.Context, orderID int, amoun
 		return fmt.Errorf("failed to calculate order total: %w", err)
 	}
 
-	if amount.Amount() != total.Amount() {
+	if amount.AmountBaht() != total.AmountBaht() {
 		return errs.ErrInvalidPaymentAmount
 	}
 

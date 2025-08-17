@@ -175,6 +175,7 @@ type OrderItemResponse struct {
 	Subtotal  float64           `json:"subtotal"`
 	CreatedAt time.Time         `json:"created_at"`
 	MenuItem  *MenuItemResponse `json:"menu_item,omitempty"`
+	Name      string            `json:"name"`
 }
 
 type OrderTotalResponse struct {

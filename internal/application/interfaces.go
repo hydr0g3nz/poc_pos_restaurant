@@ -51,7 +51,8 @@ type OrderUsecase interface {
 	GetOpenOrderByTable(ctx context.Context, tableID int) (*OrderResponse, error)
 	GetOrdersByStatus(ctx context.Context, status string, limit, offset int) (*OrderListResponse, error)
 	GetOrdersByDateRange(ctx context.Context, startDate, endDate time.Time, limit, offset int) (*OrderListResponse, error)
-
+	PrintOrderReceipt(ctx context.Context, orderID int) error
+	PrintOrderQRCode(ctx context.Context, orderID int) error
 	// Order item operations
 	AddOrderItem(ctx context.Context, req *AddOrderItemRequest) (*OrderItemResponse, error)
 	UpdateOrderItem(ctx context.Context, id int, req *UpdateOrderItemRequest) (*OrderItemResponse, error)

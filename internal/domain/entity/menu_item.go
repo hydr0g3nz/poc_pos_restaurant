@@ -20,12 +20,12 @@ type MenuItem struct {
 
 // IsValid validates menu item data
 func (m *MenuItem) IsValid() bool {
-	return m.Name != "" && m.CategoryID > 0 && m.Price.Amount() >= 0
+	return m.Name != "" && m.CategoryID > 0 && !m.Price.IsZero()
 }
 
 // NewMenuItem creates a new menu item
 func NewMenuItem(categoryID int, name, description string, price float64) (*MenuItem, error) {
-	money, err := vo.NewMoney(price)
+	money, err := vo.NewMoneyFromBaht(price)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (m *MenuItem) Deactivate() {
 
 // UpdatePrice updates the price of the menu item
 func (m *MenuItem) UpdatePrice(newPrice float64) error {
-	money, err := vo.NewMoney(newPrice)
+	money, err := vo.NewMoneyFromBaht(newPrice)
 	if err != nil {
 		return err
 	}

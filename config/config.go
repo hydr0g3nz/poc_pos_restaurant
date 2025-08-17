@@ -16,9 +16,11 @@ type Config struct {
 	Cache    infrastructure.CacheConfig
 	LogLevel string
 	App      AppConfig
+	Printer  PrinterConfig
 }
 type AppConfig struct {
 	MaxAcceptedAmount float64
+	QRcodeURL         string
 }
 
 // ServerConfig holds server configuration
@@ -35,6 +37,9 @@ type JWTConfig struct {
 	Secret            string
 	AccessExpiration  int // in minutes
 	RefreshExpiration int // in hours
+}
+type PrinterConfig struct {
+	URL string
 }
 
 // LoadFromEnv loads configuration from environment variables
@@ -67,8 +72,12 @@ func LoadFromEnv() *Config {
 		},
 		App: AppConfig{
 			MaxAcceptedAmount: getEnvAsFloat("MAX_ACCEPTED_AMOUNT", 100000.0),
+			QRcodeURL:         getEnv("QRCODE_URL", "http://localhost:8080"),
 		},
 		LogLevel: getEnv("LOG_LEVEL", "info"),
+		Printer: PrinterConfig{
+			URL: getEnv("PRINTER_URL", "ws://localhost:8080/printer"),
+		},
 	}
 }
 

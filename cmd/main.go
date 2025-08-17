@@ -41,9 +41,14 @@ func main() {
 	// Setup cache
 	cache := infrastructure.NewRedisClient(cfg.Cache)
 	defer cache.Close()
-
+	printerService, err := infrastructure.NewPrinterService(cfg.Printer.URL)
+	if err != nil {
+		logger.Fatal("Failed to connect to printer service", "error", err)
+	}
+	defer printerService.Close()
 	// infra
 	qrcodeGenerator := infrastructure.NewQRCodeService()
+
 	errorPresenter := presenter.NewErrorPresenter(logger)
 	// Setup repositories
 	userRepo := sqlcRepo.NewUserRepository(db)
@@ -57,7 +62,7 @@ func main() {
 
 	// Setup domain services
 	orderService := service.NewOrderService(orderRepo, orderItemRepo, tableRepo, menuItemRepo)
-	qrCodeService := service.NewQRCodeService("http://localhost:8080", qrcodeGenerator, orderRepo) // New QR code service (pass in "tableRepo)
+	qrCodeService := service.NewQRCodeService(cfg.App.QRcodeURL, qrcodeGenerator, orderRepo) // New QR code service (pass in "tableRepo)
 	// revenueService := service.NewRevenueService(revenueRepo, paymentRepo, orderRepo) // New revenue service
 
 	// Setup use cases
@@ -65,7 +70,7 @@ func main() {
 	categoryUsecase := usecase.NewCategoryUsecase(categoryRepo, logger, cfg)
 	menuItemUsecase := usecase.NewMenuItemUsecase(menuItemRepo, categoryRepo, logger, cfg)
 	tableUsecase := usecase.NewTableUsecase(tableRepo, logger, cfg)
-	orderUsecase := usecase.NewOrderUsecase(orderRepo, orderItemRepo, tableRepo, menuItemRepo, orderService, qrCodeService, logger, cfg)
+	orderUsecase := usecase.NewOrderUsecase(orderRepo, orderItemRepo, tableRepo, menuItemRepo, orderService, qrCodeService, printerService, logger, cfg)
 	paymentUsecase := usecase.NewPaymentUsecase(paymentRepo, orderRepo, orderService, logger, cfg)
 	// qrCodeUsecase := usecase.NewQRCodeUsecase(tableRepo, orderRepo, qrCodeService, orderUsecase, logger, cfg)
 	revenueUsecase := usecase.NewRevenueUsecase(revenueRepo, paymentRepo, orderRepo, logger, cfg) // New revenue usecase

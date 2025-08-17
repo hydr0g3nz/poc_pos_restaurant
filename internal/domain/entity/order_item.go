@@ -14,6 +14,7 @@ type OrderItem struct {
 	ItemID    int       `json:"item_id"`
 	Quantity  int       `json:"quantity"`
 	UnitPrice vo.Money  `json:"unit_price"`
+	Name      string    `json:"name,omitempty"` // Name of the menu item
 	Notes     string    `json:"notes,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -21,12 +22,12 @@ type OrderItem struct {
 
 // IsValid validates order item data
 func (oi *OrderItem) IsValid() bool {
-	return oi.OrderID > 0 && oi.ItemID > 0 && oi.Quantity > 0 && oi.UnitPrice.Amount() >= 0
+	return oi.OrderID > 0 && oi.ItemID > 0 && oi.Quantity > 0 && !oi.UnitPrice.IsZero() && oi.Name != ""
 }
 
 // NewOrderItem creates a new order item
-func NewOrderItem(orderID, itemID int, quantity int, unitPrice float64) (*OrderItem, error) {
-	money, err := vo.NewMoney(unitPrice)
+func NewOrderItem(orderID, itemID int, quantity int, unitPrice float64, name string) (*OrderItem, error) {
+	money, err := vo.NewMoneyFromBaht(unitPrice)
 	if err != nil {
 		return nil, err
 	}
@@ -36,6 +37,7 @@ func NewOrderItem(orderID, itemID int, quantity int, unitPrice float64) (*OrderI
 		ItemID:    itemID,
 		Quantity:  quantity,
 		UnitPrice: money,
+		Name:      name,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}, nil
@@ -43,7 +45,7 @@ func NewOrderItem(orderID, itemID int, quantity int, unitPrice float64) (*OrderI
 
 // CalculateSubtotal calculates subtotal for this order item
 func (oi *OrderItem) CalculateSubtotal() vo.Money {
-	subtotal, _ := vo.NewMoney(oi.UnitPrice.Amount() * float64(oi.Quantity))
+	subtotal, _ := vo.NewMoneyFromBaht(oi.UnitPrice.AmountBaht() * float64(oi.Quantity))
 	return subtotal
 }
 

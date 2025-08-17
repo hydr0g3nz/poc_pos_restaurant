@@ -29,7 +29,7 @@ func NewPaymentRepository(db *pgxpool.Pool) repository.PaymentRepository {
 func (r *paymentRepository) Create(ctx context.Context, payment *entity.Payment) (*entity.Payment, error) {
 	dbPayment, err := r.queries.CreatePayment(ctx, sqlc.CreatePaymentParams{
 		OrderID:   int32(payment.OrderID),
-		Amount:    utils.ConvertToPGNumericFromFloat(payment.Amount.Amount()),
+		Amount:    utils.ConvertToPGNumericFromFloat(payment.Amount.AmountBaht()),
 		Method:    sqlc.PaymentMethod(payment.Method.String()),
 		Reference: utils.ConvertToText(payment.Reference),
 	})
@@ -68,7 +68,7 @@ func (r *paymentRepository) Update(ctx context.Context, payment *entity.Payment)
 	dbPayment, err := r.queries.UpdatePayment(ctx, sqlc.UpdatePaymentParams{
 		ID:        int32(payment.ID),
 		OrderID:   int32(payment.OrderID),
-		Amount:    utils.ConvertToPGNumericFromFloat(payment.Amount.Amount()),
+		Amount:    utils.ConvertToPGNumericFromFloat(payment.Amount.AmountBaht()),
 		Method:    sqlc.PaymentMethod(payment.Method.String()),
 		Reference: utils.ConvertToText(payment.Reference),
 	})
@@ -124,7 +124,7 @@ func (r *paymentRepository) ListByMethod(ctx context.Context, method string, lim
 
 // Helper methods for conversion
 func (r *paymentRepository) dbPaymentToEntity(dbPayment *sqlc.Payment) (*entity.Payment, error) {
-	money, err := vo.NewMoney(utils.FromPgNumericToFloat(dbPayment.Amount))
+	money, err := vo.NewMoneyFromBaht(utils.FromPgNumericToFloat(dbPayment.Amount))
 	if err != nil {
 		return nil, err
 	}

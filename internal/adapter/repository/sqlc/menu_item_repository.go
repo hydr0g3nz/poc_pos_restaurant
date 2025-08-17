@@ -30,7 +30,7 @@ func (r *menuItemRepository) Create(ctx context.Context, item *entity.MenuItem) 
 		CategoryID:  int32(item.CategoryID),
 		Name:        item.Name,
 		Description: utils.ConvertToText(item.Description),
-		Price:       utils.ConvertToPGNumericFromFloat(item.Price.Amount()),
+		Price:       utils.ConvertToPGNumericFromFloat(item.Price.AmountBaht()),
 		IsActive:    utils.ConvertToPGBool(item.IsActive),
 	})
 	if err != nil {
@@ -58,7 +58,7 @@ func (r *menuItemRepository) Update(ctx context.Context, item *entity.MenuItem) 
 		CategoryID:  int32(item.CategoryID),
 		Name:        item.Name,
 		Description: utils.ConvertToText(item.Description),
-		Price:       utils.ConvertToPGNumericFromFloat(item.Price.Amount()),
+		Price:       utils.ConvertToPGNumericFromFloat(item.Price.AmountBaht()),
 		IsActive:    utils.ConvertToPGBool(item.IsActive),
 	})
 	if err != nil {
@@ -153,7 +153,7 @@ func (r *menuItemRepository) CountByCategory(ctx context.Context, categoryID int
 // Helper methods for conversion
 func (r *menuItemRepository) dbMenuItemToEntity(dbMenuItem *sqlc.MenuItem) (*entity.MenuItem, error) {
 
-	money, err := vo.NewMoney(utils.FromPgNumericToFloat(dbMenuItem.Price))
+	money, err := vo.NewMoneyFromBaht(utils.FromPgNumericToFloat(dbMenuItem.Price))
 	if err != nil {
 		return nil, err
 	}

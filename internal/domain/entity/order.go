@@ -60,7 +60,7 @@ func (o *Order) AddNotes(notes string) {
 
 // CalculateTotal calculates total amount for the order
 func (o *Order) CalculateTotal() vo.Money {
-	total, _ := vo.NewMoney(0)
+	total, _ := vo.NewMoneyFromSatang(0)
 	for _, item := range o.Items {
 		itemTotal := item.CalculateSubtotal()
 		total = total.Add(itemTotal)
@@ -75,4 +75,15 @@ func (o *Order) GetItemCount() int {
 		count += item.Quantity
 	}
 	return count
+}
+
+func (o *Order) CalculateDiscount() vo.Money {
+	// Placeholder for discount logic
+	// This can be extended to apply discounts based on business rules
+	return o.CalculateTotal().Multiply(0.1) // Example: 10% discount
+}
+func (o *Order) CalculateTax() vo.Money {
+	// Placeholder for tax calculation logic
+	// This can be extended to apply tax based on business rules
+	return o.CalculateTotal().Multiply(0.07) // Example: 7% tax
 }

@@ -78,7 +78,7 @@ func (u *revenueUsecase) GetDailyRevenue(ctx context.Context, date time.Time) (*
 
 	return &DailyRevenueResponse{
 		Date:         dailyRevenue.Date,
-		TotalRevenue: dailyRevenue.TotalRevenue.Amount(),
+		TotalRevenue: dailyRevenue.TotalRevenue.AmountBaht(),
 		OrderCount:   orderCount,
 	}, nil
 }
@@ -128,7 +128,7 @@ func (u *revenueUsecase) GetMonthlyRevenue(ctx context.Context, year int, month 
 
 	return &MonthlyRevenueResponse{
 		Month:        monthlyRevenue.Month,
-		TotalRevenue: monthlyRevenue.TotalRevenue.Amount(),
+		TotalRevenue: monthlyRevenue.TotalRevenue.AmountBaht(),
 		OrderCount:   orderCount,
 	}, nil
 }
@@ -171,7 +171,7 @@ func (u *revenueUsecase) GetDailyRevenueRange(ctx context.Context, startDate, en
 
 		responses[i] = &DailyRevenueResponse{
 			Date:         revenue.Date,
-			TotalRevenue: revenue.TotalRevenue.Amount(),
+			TotalRevenue: revenue.TotalRevenue.AmountBaht(),
 			OrderCount:   orderCount,
 		}
 	}
@@ -210,7 +210,7 @@ func (u *revenueUsecase) GetMonthlyRevenueRange(ctx context.Context, startDate, 
 
 		responses[i] = &MonthlyRevenueResponse{
 			Month:        revenue.Month,
-			TotalRevenue: revenue.TotalRevenue.Amount(),
+			TotalRevenue: revenue.TotalRevenue.AmountBaht(),
 			OrderCount:   orderCount,
 		}
 	}

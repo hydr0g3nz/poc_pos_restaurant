@@ -203,6 +203,7 @@ func (r *orderRepository) dbOrderToEntity(dbOrder *sqlc.Order) (*entity.Order, e
 		Notes:     utils.FromPgTextToString(dbOrder.Notes),
 		CreatedAt: dbOrder.CreatedAt.Time,
 		UpdatedAt: dbOrder.UpdatedAt.Time,
+		QRCode:    utils.FromPgTextToString(dbOrder.Qrcode),
 	}
 
 	if dbOrder.ClosedAt.Valid {
@@ -225,7 +226,7 @@ func (r *orderRepository) dbOrdersToEntities(dbOrders []*sqlc.Order) ([]*entity.
 }
 
 func (r *orderRepository) dbOrderItemToEntity(dbItem *sqlc.OrderItem) (*entity.OrderItem, error) {
-	money, err := vo.NewMoney(utils.FromPgNumericToFloat(dbItem.UnitPrice))
+	money, err := vo.NewMoneyFromBaht(utils.FromPgNumericToFloat(dbItem.UnitPrice))
 	if err != nil {
 		return nil, err
 	}
@@ -239,6 +240,7 @@ func (r *orderRepository) dbOrderItemToEntity(dbItem *sqlc.OrderItem) (*entity.O
 		Notes:     utils.FromPgTextToString(dbItem.Notes),
 		CreatedAt: dbItem.CreatedAt.Time,
 		UpdatedAt: dbItem.UpdatedAt.Time,
+		Name:      utils.FromPgTextToString(dbItem.Name),
 	}
 
 	return orderItem, nil
