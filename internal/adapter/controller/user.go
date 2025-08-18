@@ -23,6 +23,30 @@ func NewUserController(userUseCase usecase.UserUsecase, errorPresenter presenter
 	}
 }
 
+// RegisterRoutes registers the routes for the user controller
+func (c *UserController) RegisterRoutes(router fiber.Router) {
+	userGroup := router.Group("/users")
+
+	// Public routes
+	userGroup.Post("/register", c.Register)
+	userGroup.Post("/login", c.Login)
+
+	// Protected routes (require authentication)
+	userGroup.Get("/me", c.GetMe)
+	userGroup.Put("/me", c.UpdateMe)
+	userGroup.Put("/me/password", c.ChangeMyPassword)
+
+	// Admin routes (require admin role)
+	userGroup.Get("/", c.GetUsersByRole)
+	userGroup.Get("/:id", c.GetProfile)
+	userGroup.Put("/:id", c.UpdateProfile)
+	userGroup.Put("/:id/password", c.ChangePassword)
+	userGroup.Put("/:id/verify-email", c.VerifyEmail)
+	userGroup.Put("/:id/deactivate", c.DeactivateUser)
+	userGroup.Put("/:id/activate", c.ActivateUser)
+	userGroup.Delete("/:id", c.DeleteUser)
+}
+
 // Register handles user registration
 func (c *UserController) Register(ctx *fiber.Ctx) error {
 	var req dto.RegisterRequest
@@ -418,28 +442,4 @@ func (c *UserController) ChangeMyPassword(ctx *fiber.Ctx) error {
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Password changed successfully", nil)
-}
-
-// RegisterRoutes registers the routes for the user controller
-func (c *UserController) RegisterRoutes(router fiber.Router) {
-	userGroup := router.Group("/users")
-
-	// Public routes
-	userGroup.Post("/register", c.Register)
-	userGroup.Post("/login", c.Login)
-
-	// Protected routes (require authentication)
-	userGroup.Get("/me", c.GetMe)
-	userGroup.Put("/me", c.UpdateMe)
-	userGroup.Put("/me/password", c.ChangeMyPassword)
-
-	// Admin routes (require admin role)
-	userGroup.Get("/", c.GetUsersByRole)
-	userGroup.Get("/:id", c.GetProfile)
-	userGroup.Put("/:id", c.UpdateProfile)
-	userGroup.Put("/:id/password", c.ChangePassword)
-	userGroup.Put("/:id/verify-email", c.VerifyEmail)
-	userGroup.Put("/:id/deactivate", c.DeactivateUser)
-	userGroup.Put("/:id/activate", c.ActivateUser)
-	userGroup.Delete("/:id", c.DeleteUser)
 }

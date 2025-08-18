@@ -23,6 +23,22 @@ func NewRevenueController(revenueUsecase usecase.RevenueUsecase, errorPresenter 
 	}
 }
 
+// RegisterRoutes registers the routes for the revenue controller
+func (c *RevenueController) RegisterRoutes(router fiber.Router) {
+	revenueGroup := router.Group("/revenue")
+
+	// Daily revenue routes
+	revenueGroup.Get("/daily", c.GetDailyRevenue)            // GET /revenue/daily?date=2024-01-01
+	revenueGroup.Get("/daily/range", c.GetDailyRevenueRange) // GET /revenue/daily/range?start_date=2024-01-01&end_date=2024-01-31
+
+	// Monthly revenue routes
+	revenueGroup.Get("/monthly", c.GetMonthlyRevenue)            // GET /revenue/monthly?year=2024&month=1
+	revenueGroup.Get("/monthly/range", c.GetMonthlyRevenueRange) // GET /revenue/monthly/range?start_date=2024-01-01&end_date=2024-12-31
+
+	// Total revenue route
+	revenueGroup.Get("/total", c.GetTotalRevenue) // GET /revenue/total?start_date=2024-01-01&end_date=2024-12-31
+}
+
 // GetDailyRevenue handles getting daily revenue
 func (c *RevenueController) GetDailyRevenue(ctx *fiber.Ctx) error {
 	dateStr := ctx.Query("date")
@@ -198,20 +214,4 @@ func (c *RevenueController) GetTotalRevenue(ctx *fiber.Ctx) error {
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Total revenue retrieved successfully", response)
-}
-
-// RegisterRoutes registers the routes for the revenue controller
-func (c *RevenueController) RegisterRoutes(router fiber.Router) {
-	revenueGroup := router.Group("/revenue")
-
-	// Daily revenue routes
-	revenueGroup.Get("/daily", c.GetDailyRevenue)            // GET /revenue/daily?date=2024-01-01
-	revenueGroup.Get("/daily/range", c.GetDailyRevenueRange) // GET /revenue/daily/range?start_date=2024-01-01&end_date=2024-01-31
-
-	// Monthly revenue routes
-	revenueGroup.Get("/monthly", c.GetMonthlyRevenue)            // GET /revenue/monthly?year=2024&month=1
-	revenueGroup.Get("/monthly/range", c.GetMonthlyRevenueRange) // GET /revenue/monthly/range?start_date=2024-01-01&end_date=2024-12-31
-
-	// Total revenue route
-	revenueGroup.Get("/total", c.GetTotalRevenue) // GET /revenue/total?start_date=2024-01-01&end_date=2024-12-31
 }

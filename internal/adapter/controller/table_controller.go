@@ -24,6 +24,27 @@ func NewTableController(tableUsecase usecase.TableUsecase, errorPresenter presen
 	}
 }
 
+// RegisterRoutes registers the routes for the table controller
+func (c *TableController) RegisterRoutes(router fiber.Router) {
+	tableGroup := router.Group("/tables")
+
+	// Table CRUD operations
+	tableGroup.Post("/", c.CreateTable)
+	tableGroup.Get("/", c.ListTables)
+	tableGroup.Get("/:id", c.GetTable)
+	tableGroup.Put("/:id", c.UpdateTable)
+	tableGroup.Delete("/:id", c.DeleteTable)
+
+	// Table by number
+	tableGroup.Get("/number/:number", c.GetTableByNumber)
+
+	// QR code operations
+	tableGroup.Get("/qr", c.GetTableByQRCode)               // GET /tables/qr?qr_code=/order?table=1
+	tableGroup.Post("/:id/qr-code", c.GenerateQRCode)       // POST /tables/1/qr-code
+	tableGroup.Get("/scan", c.ScanQRCode)                   // GET /tables/scan?qr_code=/order?table=1
+	tableGroup.Post("/scan/order", c.CreateOrderFromQRCode) // POST /tables/scan/order?qr_code=/order?table=1
+}
+
 // CreateTable handles table creation
 func (c *TableController) CreateTable(ctx *fiber.Ctx) error {
 	var req dto.CreateTableRequest
@@ -323,25 +344,4 @@ func (c *TableController) CreateOrderFromQRCode(ctx *fiber.Ctx) error {
 	}
 
 	return SuccessResp(ctx, fiber.StatusCreated, "Order created from QR code successfully", dtoResponse)
-}
-
-// RegisterRoutes registers the routes for the table controller
-func (c *TableController) RegisterRoutes(router fiber.Router) {
-	tableGroup := router.Group("/tables")
-
-	// Table CRUD operations
-	tableGroup.Post("/", c.CreateTable)
-	tableGroup.Get("/", c.ListTables)
-	tableGroup.Get("/:id", c.GetTable)
-	tableGroup.Put("/:id", c.UpdateTable)
-	tableGroup.Delete("/:id", c.DeleteTable)
-
-	// Table by number
-	tableGroup.Get("/number/:number", c.GetTableByNumber)
-
-	// QR code operations
-	tableGroup.Get("/qr", c.GetTableByQRCode)               // GET /tables/qr?qr_code=/order?table=1
-	tableGroup.Post("/:id/qr-code", c.GenerateQRCode)       // POST /tables/1/qr-code
-	tableGroup.Get("/scan", c.ScanQRCode)                   // GET /tables/scan?qr_code=/order?table=1
-	tableGroup.Post("/scan/order", c.CreateOrderFromQRCode) // POST /tables/scan/order?qr_code=/order?table=1
 }

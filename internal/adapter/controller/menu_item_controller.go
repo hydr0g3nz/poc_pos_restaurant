@@ -23,6 +23,22 @@ func NewMenuItemController(menuItemUseCase usecase.MenuItemUsecase, errorPresent
 	}
 }
 
+// RegisterRoutes registers the routes for the menu item controller
+func (c *MenuItemController) RegisterRoutes(router fiber.Router) {
+	menuItemGroup := router.Group("/menu-items")
+
+	// Public routes
+	menuItemGroup.Get("/", c.ListMenuItems)
+	menuItemGroup.Get("/search", c.SearchMenuItems)                       // GET /menu-items/search?q=ข้าวผัด
+	menuItemGroup.Get("/category/:categoryId", c.ListMenuItemsByCategory) // GET /menu-items/category/1
+	menuItemGroup.Get("/:id", c.GetMenuItem)
+
+	// Admin routes (require admin role in real implementation)
+	menuItemGroup.Post("/", c.CreateMenuItem)
+	menuItemGroup.Put("/:id", c.UpdateMenuItem)
+	menuItemGroup.Delete("/:id", c.DeleteMenuItem)
+}
+
 // CreateMenuItem handles menu item creation
 func (c *MenuItemController) CreateMenuItem(ctx *fiber.Ctx) error {
 	var req dto.CreateMenuItemRequest
@@ -263,20 +279,4 @@ func (c *MenuItemController) SearchMenuItems(ctx *fiber.Ctx) error {
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Menu items search completed successfully", response)
-}
-
-// RegisterRoutes registers the routes for the menu item controller
-func (c *MenuItemController) RegisterRoutes(router fiber.Router) {
-	menuItemGroup := router.Group("/menu-items")
-
-	// Public routes
-	menuItemGroup.Get("/", c.ListMenuItems)
-	menuItemGroup.Get("/search", c.SearchMenuItems)                       // GET /menu-items/search?q=ข้าวผัด
-	menuItemGroup.Get("/category/:categoryId", c.ListMenuItemsByCategory) // GET /menu-items/category/1
-	menuItemGroup.Get("/:id", c.GetMenuItem)
-
-	// Admin routes (require admin role in real implementation)
-	menuItemGroup.Post("/", c.CreateMenuItem)
-	menuItemGroup.Put("/:id", c.UpdateMenuItem)
-	menuItemGroup.Delete("/:id", c.DeleteMenuItem)
 }
