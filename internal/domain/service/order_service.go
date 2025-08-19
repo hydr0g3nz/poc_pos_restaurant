@@ -247,23 +247,6 @@ func generateReceiptPDF(receipt *entity.Order, writer io.Writer) error {
 	pdf.CellFormat(0, 6, fmt.Sprintf("ยอดสุทธิ: %.2f บาท", total.AmountBaht()), "", 1, "R", false, 0, "")
 	pdf.Ln(4)
 
-	// // QR Code
-	// if receipt.OrderURL != "" {
-	// 	qrFile := "temp_qr.png"
-	// 	err := qrcode.WriteFile(receipt.OrderURL, qrcode.Medium, 256, qrFile)
-	// 	if err != nil {
-	// 		return fmt.Errorf("failed to create QR code: %v", err)
-	// 	}
-	// 	defer os.Remove(qrFile)
-
-	// 	qrX := (80.0 - 40.0) / 2
-	// 	pdf.Image(qrFile, qrX, pdf.GetY(), 40, 40, false, "", 0, "")
-	// 	pdf.Ln(45)
-	// 	pdf.SetFont("NotoSansThai", "B", 8)
-	// 	pdf.CellFormat(0, 5, "สแกน QR เพื่อสั่งอาหารหรือดูโปรโมชั่น", "", 1, "C", false, 0, "")
-	// 	pdf.Ln(2)
-	// }
-
 	// Footer
 	pdf.SetFont("NotoSansThai", "", 8)
 	pdf.CellFormat(0, 5, "ขอบคุณที่ใช้บริการ", "", 1, "C", false, 0, "")

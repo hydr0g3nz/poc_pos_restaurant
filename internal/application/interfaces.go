@@ -36,7 +36,6 @@ type TableUsecase interface {
 	UpdateTable(ctx context.Context, id int, req *UpdateTableRequest) (*TableResponse, error)
 	DeleteTable(ctx context.Context, id int) error
 	ListTables(ctx context.Context) ([]*TableResponse, error)
-	GenerateQRCode(ctx context.Context, tableID int) (string, error)
 }
 
 // OrderUsecase handles order business logic

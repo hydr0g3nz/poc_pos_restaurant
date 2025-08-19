@@ -102,8 +102,6 @@ func (c *TableController) RegisterRoutes(router fiber.Router) {
 	tableGroup.Get("/number/:number", c.GetTableByNumber)
 
 	// QR code operations
-	tableGroup.Get("/qr", c.GetTableByQRCode)               // GET /tables/qr?qr_code=/order?table=1
-	tableGroup.Post("/:id/qr-code", c.GenerateQRCode)       // POST /tables/1/qr-code
-	tableGroup.Get("/scan", c.ScanQRCode)                   // GET /tables/scan?qr_code=/order?table=1
-	tableGroup.Post("/scan/order", c.CreateOrderFromQRCode) // POST /tables/scan/order?qr_code=/order?table=1
+	tableGroup.Get("/qr", c.GetTableByQRCode)
+
 }

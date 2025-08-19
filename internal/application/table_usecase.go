@@ -213,35 +213,6 @@ func (u *tableUsecase) ListTables(ctx context.Context) ([]*TableResponse, error)
 	return u.toTableResponses(tables), nil
 }
 
-// GenerateQRCode generates QR code for a table
-func (u *tableUsecase) GenerateQRCode(ctx context.Context, tableID int) (string, error) {
-	u.logger.Info("Generating QR code", "tableID", tableID)
-
-	// Get table
-	table, err := u.tableRepo.GetByID(ctx, tableID)
-	if err != nil {
-		u.logger.Error("Error getting table", "error", err, "tableID", tableID)
-		return "", fmt.Errorf("failed to get table: %w", err)
-	}
-	if table == nil {
-		return "", errs.ErrTableNotFound
-	}
-
-	// Generate new QR code
-	table.UpdateQRCode()
-
-	// Update table with new QR code
-	updatedTable, err := u.tableRepo.Update(ctx, table)
-	if err != nil {
-		u.logger.Error("Error updating table with QR code", "error", err, "tableID", tableID)
-		return "", fmt.Errorf("failed to update table with QR code: %w", err)
-	}
-
-	u.logger.Info("QR code generated successfully", "tableID", tableID, "qrCode", updatedTable.QRCode)
-
-	return updatedTable.QRCode, nil
-}
-
 // Helper methods
 
 // toTableResponse converts entity to response
