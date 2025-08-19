@@ -23,31 +23,6 @@ func NewOrderController(orderUseCase usecase.OrderUsecase, errorPresenter presen
 		errorPresenter: errorPresenter,
 	}
 }
-func (c *OrderController) RegisterRoutes(router fiber.Router) {
-	orderGroup := router.Group("/orders")
-
-	// Order routes
-	orderGroup.Post("/", c.CreateOrder)
-	orderGroup.Get("/", c.ListOrders)
-	orderGroup.Get("/search", c.GetOrdersByStatus)        // GET /orders/search?status=open
-	orderGroup.Get("/date-range", c.GetOrdersByDateRange) // GET /orders/date-range?start_date=2024-01-01&end_date=2024-01-31
-	orderGroup.Get("/:id", c.GetOrder)
-	orderGroup.Get("/:id/items", c.GetOrderWithItems)
-	orderGroup.Put("/:id", c.UpdateOrder)
-	orderGroup.Put("/:id/close", c.CloseOrder)
-	orderGroup.Get("/:id/print/receipt", c.PrintOrderReceipt) // Print order by ID
-	orderGroup.Get("/:id/print/qrcode", c.PrintOrderQRCode)   // Print order by ID
-	// Order by table routes
-	orderGroup.Get("/table/:tableId", c.ListOrdersByTable)
-	orderGroup.Get("/table/:tableId/open", c.GetOpenOrderByTable)
-
-	// Order items routes
-	orderGroup.Post("/items", c.AddOrderItem)
-	orderGroup.Put("/items/:id", c.UpdateOrderItem)
-	orderGroup.Delete("/items/:id", c.RemoveOrderItem)
-	orderGroup.Get("/:orderId/items", c.ListOrderItems)
-	orderGroup.Get("/:orderId/total", c.CalculateOrderTotal)
-}
 
 // CreateOrder handles order creation
 func (c *OrderController) CreateOrder(ctx *fiber.Ctx) error {

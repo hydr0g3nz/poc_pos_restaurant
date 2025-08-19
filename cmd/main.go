@@ -11,6 +11,7 @@ import (
 
 	"github.com/hydr0g3nz/poc_pos_restuarant/config"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/controller"
+	mockAdapter "github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/mock"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/presenter"
 	sqlcRepo "github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/repository/sqlc"
 	usecase "github.com/hydr0g3nz/poc_pos_restuarant/internal/application"
@@ -41,11 +42,12 @@ func main() {
 	// Setup cache
 	cache := infrastructure.NewRedisClient(cfg.Cache)
 	defer cache.Close()
-	printerService, err := infrastructure.NewPrinterService(cfg.Printer.URL)
-	if err != nil {
-		logger.Fatal("Failed to connect to printer service", "error", err)
-	}
-	defer printerService.Close()
+	// printerService, err := infrastructure.NewPrinterService(cfg.Printer.URL)
+	// if err != nil {
+	// 	logger.Fatal("Failed to connect to printer service", "error", err)
+	// }
+	// defer printerService.Close()
+	printerMock := mockAdapter.NewPrinterService()
 	// infra
 	qrcodeGenerator := infrastructure.NewQRCodeService()
 
@@ -70,7 +72,7 @@ func main() {
 	categoryUsecase := usecase.NewCategoryUsecase(categoryRepo, logger, cfg)
 	menuItemUsecase := usecase.NewMenuItemUsecase(menuItemRepo, categoryRepo, logger, cfg)
 	tableUsecase := usecase.NewTableUsecase(tableRepo, logger, cfg)
-	orderUsecase := usecase.NewOrderUsecase(orderRepo, orderItemRepo, tableRepo, menuItemRepo, orderService, qrCodeService, printerService, logger, cfg)
+	orderUsecase := usecase.NewOrderUsecase(orderRepo, orderItemRepo, tableRepo, menuItemRepo, orderService, qrCodeService, printerMock, logger, cfg)
 	paymentUsecase := usecase.NewPaymentUsecase(paymentRepo, orderRepo, orderService, logger, cfg)
 	// qrCodeUsecase := usecase.NewQRCodeUsecase(tableRepo, orderRepo, qrCodeService, orderUsecase, logger, cfg)
 	revenueUsecase := usecase.NewRevenueUsecase(revenueRepo, paymentRepo, orderRepo, logger, cfg) // New revenue usecase

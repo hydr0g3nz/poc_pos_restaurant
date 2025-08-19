@@ -23,21 +23,6 @@ func NewCategoryController(categoryUseCase usecase.CategoryUsecase, errorPresent
 	}
 }
 
-// RegisterRoutes registers the routes for the category controller
-func (c *CategoryController) RegisterRoutes(router fiber.Router) {
-	categoryGroup := router.Group("/categories")
-
-	// Public routes
-	categoryGroup.Get("/", c.ListCategories)
-	categoryGroup.Get("/search", c.GetCategoryByName) // GET /categories/search?name=ของคาว
-	categoryGroup.Get("/:id", c.GetCategory)
-
-	// Admin routes (require admin role in real implementation)
-	categoryGroup.Post("/", c.CreateCategory)
-	categoryGroup.Put("/:id", c.UpdateCategory)
-	categoryGroup.Delete("/:id", c.DeleteCategory)
-}
-
 // CreateCategory handles category creation
 func (c *CategoryController) CreateCategory(ctx *fiber.Ctx) error {
 	var req dto.CreateCategoryRequest

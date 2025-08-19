@@ -24,19 +24,6 @@ func NewPaymentController(paymentUseCase usecase.PaymentUsecase, errorPresenter 
 	}
 }
 
-// RegisterRoutes registers the routes for the payment controller
-func (c *PaymentController) RegisterRoutes(router fiber.Router) {
-	paymentGroup := router.Group("/payments")
-
-	// Payment routes
-	paymentGroup.Post("/", c.ProcessPayment)
-	paymentGroup.Get("/", c.ListPayments)
-	paymentGroup.Get("/search", c.ListPaymentsByMethod)        // GET /payments/search?method=cash
-	paymentGroup.Get("/date-range", c.ListPaymentsByDateRange) // GET /payments/date-range?start_date=2024-01-01&end_date=2024-01-31
-	paymentGroup.Get("/:id", c.GetPayment)
-	paymentGroup.Get("/order/:orderId", c.GetPaymentByOrder)
-}
-
 // ProcessPayment handles payment processing
 func (c *PaymentController) ProcessPayment(ctx *fiber.Ctx) error {
 	var req dto.ProcessPaymentRequest
