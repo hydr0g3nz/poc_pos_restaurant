@@ -13,7 +13,8 @@ import (
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/controller"
 	mockAdapter "github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/mock"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/presenter"
-	sqlcRepo "github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/repository/sqlc"
+	gormRepo "github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/repository/gorm"
+	migrater "github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/repository/migration"
 	usecase "github.com/hydr0g3nz/poc_pos_restuarant/internal/application"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/service"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/infrastructure"
@@ -33,12 +34,14 @@ func main() {
 	logger.Info("Starting application")
 
 	// Setup database
-	db, err := infrastructure.ConnectDB(&cfg.Database)
+	db, err := infrastructure.ConnectGorm(&cfg.Database)
 	if err != nil {
 		logger.Fatal("Failed to connect to database", "error", err)
 	}
-	defer infrastructure.CloseDB(db)
-
+	defer infrastructure.CloseGorm(db)
+	if err := migrater.AutoMigrate(db); err != nil {
+		logger.Fatal("Failed to migrate database", "error", err)
+	}
 	// Setup cache
 	cache := infrastructure.NewRedisClient(cfg.Cache)
 	defer cache.Close()
@@ -53,14 +56,15 @@ func main() {
 
 	errorPresenter := presenter.NewErrorPresenter(logger)
 	// Setup repositories
-	userRepo := sqlcRepo.NewUserRepository(db)
-	categoryRepo := sqlcRepo.NewCategoryRepository(db)
-	menuItemRepo := sqlcRepo.NewMenuItemRepository(db)
-	tableRepo := sqlcRepo.NewTableRepository(db)
-	orderRepo := sqlcRepo.NewOrderRepository(db)
-	orderItemRepo := sqlcRepo.NewOrderItemRepository(db)
-	paymentRepo := sqlcRepo.NewPaymentRepository(db)
-	revenueRepo := sqlcRepo.NewRevenueRepository(db) // New revenue repository
+	repoContainer := gormRepo.NewRepositoryContainer(db)
+	userRepo := repoContainer.UserRepository()
+	categoryRepo := repoContainer.CategoryRepository()
+	menuItemRepo := repoContainer.MenuItemRepository()
+	tableRepo := repoContainer.TableRepository()
+	orderRepo := repoContainer.OrderRepository()
+	orderItemRepo := repoContainer.OrderItemRepository()
+	paymentRepo := repoContainer.PaymentRepository()
+	revenueRepo := repoContainer.RevenueRepository() // New revenue repository
 
 	// Setup domain services
 	orderService := service.NewOrderService(orderRepo, orderItemRepo, tableRepo, menuItemRepo)

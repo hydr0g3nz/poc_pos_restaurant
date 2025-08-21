@@ -7,6 +7,9 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/tracelog"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type SimpleLogger struct{}
@@ -25,7 +28,7 @@ type DBConfig struct {
 	SSLMode  string
 }
 
-// ConnectDB creates a database connection pool
+// ConnectDB creates a pgxpool connection
 func ConnectDB(cfg *DBConfig) (*pgxpool.Pool, error) {
 	dsn := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
@@ -53,9 +56,45 @@ func ConnectDB(cfg *DBConfig) (*pgxpool.Pool, error) {
 	return pool, nil
 }
 
-// CloseDB closes the database connection pool
+// ConnectGorm creates a GORM connection
+func ConnectGorm(cfg *DBConfig) (*gorm.DB, error) {
+	dsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
+		cfg.Host, cfg.User, cfg.Password, cfg.DBName, cfg.Port, cfg.SSLMode,
+	)
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info), // log query (เปลี่ยนเป็น Silent/Debug ได้)
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect gorm: %w", err)
+	}
+
+	// ทดสอบ connection
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get db instance: %w", err)
+	}
+	if err := sqlDB.Ping(); err != nil {
+		return nil, fmt.Errorf("failed to ping database: %w", err)
+	}
+
+	return db, nil
+}
+
+// CloseDB closes the pgxpool connection
 func CloseDB(pool *pgxpool.Pool) {
 	if pool != nil {
 		pool.Close()
+	}
+}
+
+// CloseGorm closes the gorm connection
+func CloseGorm(db *gorm.DB) {
+	if db != nil {
+		sqlDB, err := db.DB()
+		if err == nil {
+			sqlDB.Close()
+		}
 	}
 }

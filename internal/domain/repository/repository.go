@@ -8,13 +8,54 @@ import (
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/entity"
 )
 
+// เพิ่ม interface ใหม่
+type MenuOptionRepository interface {
+	Create(ctx context.Context, option *entity.MenuOption) (*entity.MenuOption, error)
+	GetByID(ctx context.Context, id int) (*entity.MenuOption, error)
+	Update(ctx context.Context, option *entity.MenuOption) (*entity.MenuOption, error)
+	Delete(ctx context.Context, id int) error
+	List(ctx context.Context, limit, offset int) ([]*entity.MenuOption, error)
+	GetByType(ctx context.Context, optionType string) ([]*entity.MenuOption, error)
+}
+
+type OptionValueRepository interface {
+	Create(ctx context.Context, value *entity.OptionValue) (*entity.OptionValue, error)
+	GetByID(ctx context.Context, id int) (*entity.OptionValue, error)
+	GetByOptionID(ctx context.Context, optionID int) ([]*entity.OptionValue, error)
+	Update(ctx context.Context, value *entity.OptionValue) (*entity.OptionValue, error)
+	Delete(ctx context.Context, id int) error
+	List(ctx context.Context, limit, offset int) ([]*entity.OptionValue, error)
+}
+
+type MenuItemOptionRepository interface {
+	Create(ctx context.Context, itemOption *entity.MenuItemOption) (*entity.MenuItemOption, error)
+	GetByItemID(ctx context.Context, itemID int) ([]*entity.MenuItemOption, error)
+	GetByItemAndOption(ctx context.Context, itemID, optionID int) (*entity.MenuItemOption, error)
+	Update(ctx context.Context, itemOption *entity.MenuItemOption) (*entity.MenuItemOption, error)
+	Delete(ctx context.Context, itemID, optionID int) error
+	DeleteByItemID(ctx context.Context, itemID int) error
+}
+
+type OrderItemOptionRepository interface {
+	Create(ctx context.Context, itemOption *entity.OrderItemOption) (*entity.OrderItemOption, error)
+	GetByOrderItemID(ctx context.Context, orderItemID int) ([]*entity.OrderItemOption, error)
+	Update(ctx context.Context, itemOption *entity.OrderItemOption) (*entity.OrderItemOption, error)
+	Delete(ctx context.Context, orderItemID, optionID, valueID int) error
+	DeleteByOrderItemID(ctx context.Context, orderItemID int) error
+}
+
+// อัปเดต Repository interface
 type Repository interface {
 	UserRepository() UserRepository
 	CategoryRepository() CategoryRepository
 	MenuItemRepository() MenuItemRepository
+	MenuOptionRepository() MenuOptionRepository
+	OptionValueRepository() OptionValueRepository
+	MenuItemOptionRepository() MenuItemOptionRepository
 	TableRepository() TableRepository
 	OrderRepository() OrderRepository
 	OrderItemRepository() OrderItemRepository
+	OrderItemOptionRepository() OrderItemOptionRepository
 	PaymentRepository() PaymentRepository
 	RevenueRepository() RevenueRepository
 }
