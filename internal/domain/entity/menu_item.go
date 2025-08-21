@@ -8,14 +8,19 @@ import (
 
 // MenuItem represents a menu item domain entity
 type MenuItem struct {
-	ID          int       `json:"id"`
-	CategoryID  int       `json:"category_id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	Price       vo.Money  `json:"price"`
-	IsActive    bool      `json:"is_active"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID              int       `json:"id"`
+	CategoryID      int       `json:"category_id"`
+	Name            string    `json:"name"`
+	Description     string    `json:"description"`
+	Price           vo.Money  `json:"price"`
+	ImageURL        string    `json:"image_url,omitempty"`
+	IsRecommended   bool      `json:"is_recommended,omitempty"`
+	PreparationTime int       `json:"preparation_time,omitempty"` // in minutes
+	DisplayOrder    int       `json:"display_order,omitempty"`
+	KitchenID       string    `json:"kitchen_station,omitempty"` // optional kitchen station for tracking
+	IsActive        bool      `json:"is_active"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
 }
 
 // IsValid validates menu item data

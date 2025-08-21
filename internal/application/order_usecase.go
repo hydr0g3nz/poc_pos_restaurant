@@ -147,7 +147,7 @@ func (u *orderUsecase) UpdateOrder(ctx context.Context, id int, req *UpdateOrder
 	}
 
 	// Update order status
-	if newStatus == vo.OrderStatusClosed && !currentOrder.IsClosed() {
+	if newStatus == vo.OrderStatusCompleted && !currentOrder.IsClosed() {
 		if err := u.orderService.ProcessOrderClosure(ctx, id); err != nil {
 			u.logger.Error("Order closure validation failed", "error", err, "orderID", id)
 			return nil, err
@@ -155,7 +155,7 @@ func (u *orderUsecase) UpdateOrder(ctx context.Context, id int, req *UpdateOrder
 		currentOrder.Close()
 	}
 
-	currentOrder.Status = newStatus
+	currentOrder.OrderStatus = newStatus
 
 	// Update order
 	updatedOrder, err := u.orderRepo.Update(ctx, currentOrder)
@@ -519,7 +519,7 @@ func (u *orderUsecase) toOrderResponse(order *entity.Order) *OrderResponse {
 	response := &OrderResponse{
 		ID:        order.ID,
 		TableID:   order.TableID,
-		Status:    order.Status.String(),
+		Status:    order.OrderStatus.String(),
 		CreatedAt: order.CreatedAt,
 	}
 
@@ -535,7 +535,7 @@ func (u *orderUsecase) toOrderWithItemsResponse(order *entity.Order) *OrderWithI
 	response := &OrderWithItemsResponse{
 		ID:        order.ID,
 		TableID:   order.TableID,
-		Status:    order.Status.String(),
+		Status:    order.OrderStatus.String(),
 		Items:     u.toOrderItemResponses(order.Items),
 		Total:     order.CalculateTotal().AmountBaht(),
 		CreatedAt: order.CreatedAt,

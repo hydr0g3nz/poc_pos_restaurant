@@ -8,9 +8,13 @@ import (
 
 // Category represents a menu category domain entity
 type Category struct {
-	ID        int             `json:"id"`
-	Name      vo.CategoryType `json:"name"`
-	CreatedAt time.Time       `json:"created_at"`
+	ID           int             `json:"id"`
+	Name         vo.CategoryType `json:"name"`
+	Description  string          `json:"description,omitempty"`
+	DisplayOrder int             `json:"display_order,omitempty"`
+	IsActive     bool            `json:"is_active"`
+	CreatedAt    time.Time       `json:"created_at"`
+	UpdatedAt    time.Time       `json:"updated_at"`
 }
 
 // IsValid validates category data

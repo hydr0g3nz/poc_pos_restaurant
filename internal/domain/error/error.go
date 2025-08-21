@@ -54,6 +54,16 @@ var (
 	// Promo Code Validation
 	ErrInvalidPromoCode     = NewValidationError("promo_code", "invalid format or not found", nil)
 	ErrInvalidLoyaltyPoints = NewValidationError("loyalty_points", "must be non-negative", nil)
+	// menu_option
+	ErrInvalidMenuOption = NewValidationError("menu_option", "must have valid name and type", nil)
+	// option_value
+	ErrInvalidMenuOptionValue = NewValidationError("option_value", "must have valid name", nil)
+	// payment status
+	ErrInvalidPaymentStatus = NewValidationError("payment_status", "must be 'pending', 'completed', or 'failed'", nil)
+	//
+	ErrInvalidOrderItemOption = NewValidationError("order_item_option", "must have valid order item ID, option ID, and value ID", nil)
+	//
+	ErrInvalidItemStatus = NewValidationError("item_status", "must be 'pending', 'preparing', 'ready', or 'served'", nil)
 )
 
 // ==========================================

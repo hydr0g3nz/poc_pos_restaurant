@@ -60,7 +60,7 @@ func (u *tableUsecase) CreateTable(ctx context.Context, req *CreateTableRequest)
 		return nil, fmt.Errorf("failed to create table: %w", err)
 	}
 
-	u.logger.Info("Table created successfully", "tableID", createdTable.ID, "tableNumber", createdTable.TableNumber.Number())
+	u.logger.Info("Table created successfully", "tableID", createdTable.ID, "tableNumber", createdTable.TableNumber)
 
 	return u.toTableResponse(createdTable), nil
 }
@@ -131,7 +131,7 @@ func (u *tableUsecase) UpdateTable(ctx context.Context, id int, req *UpdateTable
 	}
 
 	// Check if new table number is different and unique
-	if req.TableNumber != currentTable.TableNumber.Number() {
+	if req.TableNumber != currentTable.TableNumber {
 		existingTable, err := u.tableRepo.GetByNumber(ctx, req.TableNumber)
 		if err != nil {
 			u.logger.Error("Error checking table number uniqueness", "error", err, "tableNumber", req.TableNumber)
@@ -148,7 +148,6 @@ func (u *tableUsecase) UpdateTable(ctx context.Context, id int, req *UpdateTable
 			return nil, err
 		}
 		currentTable.TableNumber = newTableNumber.TableNumber
-		currentTable.UpdateQRCode() // Regenerate QR code with new table number
 	}
 
 	// Update seating
@@ -219,8 +218,7 @@ func (u *tableUsecase) ListTables(ctx context.Context) ([]*TableResponse, error)
 func (u *tableUsecase) toTableResponse(table *entity.Table) *TableResponse {
 	return &TableResponse{
 		ID:          table.ID,
-		TableNumber: table.TableNumber.Number(),
-		QRCode:      table.QRCode,
+		TableNumber: table.TableNumber,
 		Seating:     table.Seating,
 	}
 }

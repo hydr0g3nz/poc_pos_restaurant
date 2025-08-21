@@ -9,13 +9,15 @@ import (
 type OrderStatus string
 
 const (
-	OrderStatusOpen   OrderStatus = "open"
-	OrderStatusClosed OrderStatus = "closed"
+	OrderStatusOpen      OrderStatus = "open"
+	OrderStatusOrdered   OrderStatus = "ordered"
+	OrderStatusCompleted OrderStatus = "completed"
+	OrderCancelled       OrderStatus = "cancelled"
 )
 
 func (s OrderStatus) IsValid() bool {
 	switch s {
-	case OrderStatusOpen, OrderStatusClosed:
+	case OrderStatusOpen, OrderStatusOrdered, OrderStatusCompleted, OrderCancelled:
 		return true
 	default:
 		return false
