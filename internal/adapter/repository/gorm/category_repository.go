@@ -7,7 +7,6 @@ import (
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/repository/gorm/model"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/entity"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/repository"
-	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/vo"
 	"gorm.io/gorm"
 )
 
@@ -95,7 +94,7 @@ func (r *categoryRepository) HasMenuItems(ctx context.Context, categoryID int) (
 func (r *categoryRepository) entityToModel(category *entity.Category) *model.Category {
 	return &model.Category{
 		ID:           category.ID,
-		Name:         category.Name.String(),
+		Name:         category.Name,
 		Description:  category.Description,
 		DisplayOrder: category.DisplayOrder,
 		IsActive:     category.IsActive,
@@ -105,14 +104,10 @@ func (r *categoryRepository) entityToModel(category *entity.Category) *model.Cat
 }
 
 func (r *categoryRepository) modelToEntity(dbCategory *model.Category) (*entity.Category, error) {
-	categoryType, err := vo.NewCategoryType(dbCategory.Name)
-	if err != nil {
-		return nil, err
-	}
 
 	return &entity.Category{
 		ID:           dbCategory.ID,
-		Name:         categoryType,
+		Name:         dbCategory.Name,
 		Description:  dbCategory.Description,
 		DisplayOrder: dbCategory.DisplayOrder,
 		IsActive:     dbCategory.IsActive,

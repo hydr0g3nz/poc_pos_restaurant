@@ -51,7 +51,10 @@ type LoginResponse struct {
 
 // Category DTOs
 type CreateCategoryRequest struct {
-	Name string `json:"name" validate:"required,min=1,max=50"`
+	Name         string `json:"name" validate:"required,min=1,max=50"`
+	Description  string `json:"description,omitempty" validate:"max=100"`
+	DisplayOrder int    `json:"display_order,omitempty"`
+	IsActive     bool   `json:"is_active"`
 }
 
 type UpdateCategoryRequest struct {

@@ -270,7 +270,7 @@ func (u *menuItemUsecase) toMenuItemResponse(menuItem *entity.MenuItem, category
 	if category != nil {
 		response.Category = &CategoryResponse{
 			ID:        category.ID,
-			Name:      category.Name.String(),
+			Name:      category.Name,
 			CreatedAt: category.CreatedAt,
 		}
 	}

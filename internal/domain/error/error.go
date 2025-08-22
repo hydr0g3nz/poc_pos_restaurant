@@ -63,7 +63,8 @@ var (
 	//
 	ErrInvalidOrderItemOption = NewValidationError("order_item_option", "must have valid order item ID, option ID, and value ID", nil)
 	//
-	ErrInvalidItemStatus = NewValidationError("item_status", "must be 'pending', 'preparing', 'ready', or 'served'", nil)
+	ErrInvalidItemStatus   = NewValidationError("item_status", "must be 'pending', 'preparing', 'ready', or 'served'", nil)
+	ErrInvalidCategoryName = NewValidationError("category_name", "must be non-empty", nil)
 )
 
 // ==========================================

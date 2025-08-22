@@ -47,7 +47,7 @@ func (u *categoryUsecase) CreateCategory(ctx context.Context, req *CreateCategor
 	}
 
 	// Create category entity
-	category, err := entity.NewCategory(req.Name)
+	category, err := entity.NewCategory(req.Name, req.Description, req.DisplayOrder, req.IsActive)
 	if err != nil {
 		u.logger.Error("Error creating category entity", "error", err, "name", req.Name)
 		return nil, err
@@ -114,7 +114,7 @@ func (u *categoryUsecase) UpdateCategory(ctx context.Context, id int, req *Updat
 	}
 
 	// Check if new name is different and unique
-	if req.Name != currentCategory.Name.String() {
+	if req.Name != currentCategory.Name {
 		existingCategory, err := u.categoryRepo.GetByName(ctx, req.Name)
 		if err != nil {
 			u.logger.Error("Error checking name uniqueness", "error", err, "name", req.Name)
@@ -198,7 +198,7 @@ func (u *categoryUsecase) ListCategories(ctx context.Context) ([]*CategoryRespon
 func (u *categoryUsecase) toCategoryResponse(category *entity.Category) *CategoryResponse {
 	return &CategoryResponse{
 		ID:        category.ID,
-		Name:      category.Name.String(),
+		Name:      category.Name,
 		CreatedAt: category.CreatedAt,
 	}
 }
