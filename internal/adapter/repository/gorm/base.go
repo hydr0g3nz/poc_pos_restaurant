@@ -25,6 +25,8 @@ type repositoryContainer struct {
 	paymentRepo         repository.PaymentRepository
 	revenueRepo         repository.RevenueRepository
 	kitchenRepo         repository.KitchenStationRepository
+
+	txRepo repository.TxManager
 }
 
 func NewRepositoryContainer(db *gorm.DB) repository.Repository {
@@ -43,6 +45,7 @@ func NewRepositoryContainer(db *gorm.DB) repository.Repository {
 		paymentRepo:         NewPaymentRepository(db),
 		revenueRepo:         NewRevenueRepository(db),
 		kitchenRepo:         NewKitchenStationRepository(db),
+		txRepo:              NewTxManagerGorm(db),
 	}
 }
 
@@ -97,18 +100,6 @@ func (r *repositoryContainer) KitchenStationRepository() repository.KitchenStati
 	return r.kitchenRepo
 }
 
-// Transaction handler
-type transactionHandler struct {
-	db *gorm.DB
-}
-
-func NewTransactionHandler(db *gorm.DB) repository.DBTransaction {
-	return &transactionHandler{db: db}
-}
-
-func (t *transactionHandler) DoInTransaction(fn func(repo repository.Repository) error) error {
-	return t.db.Transaction(func(tx *gorm.DB) error {
-		txRepo := NewRepositoryContainer(tx)
-		return fn(txRepo)
-	})
+func (r *repositoryContainer) TxManager() repository.TxManager {
+	return r.txRepo
 }

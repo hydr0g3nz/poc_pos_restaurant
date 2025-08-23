@@ -69,6 +69,7 @@ func main() {
 	orderItemOptionRepo := repoContainer.OrderItemOptionRepository()
 	menuOptionRepo := repoContainer.MenuOptionRepository()
 	optionValueRepo := repoContainer.OptionValueRepository()
+	txManager := repoContainer.TxManager()
 	// menuItemOptionRepo := repoContainer.MenuItemOptionRepository()
 
 	// Setup domain services
@@ -81,7 +82,7 @@ func main() {
 	categoryUsecase := usecase.NewCategoryUsecase(categoryRepo, logger, cfg)
 	menuItemUsecase := usecase.NewMenuItemUsecase(menuItemRepo, categoryRepo, kitchenStationRepo, logger, cfg)
 	tableUsecase := usecase.NewTableUsecase(tableRepo, logger, cfg)
-	orderUsecase := usecase.NewOrderUsecase(orderRepo, orderItemRepo, tableRepo, menuItemRepo, orderService, qrCodeService, printerMock, logger, cfg)
+	orderUsecase := usecase.NewOrderUsecase(orderRepo, orderItemRepo, tableRepo, menuItemRepo, orderService, qrCodeService, printerMock, txManager, logger, cfg)
 	paymentUsecase := usecase.NewPaymentUsecase(paymentRepo, orderRepo, orderService, logger, cfg)
 	// qrCodeUsecase := usecase.NewQRCodeUsecase(tableRepo, orderRepo, qrCodeService, orderUsecase, logger, cfg)
 	revenueUsecase := usecase.NewRevenueUsecase(revenueRepo, paymentRepo, orderRepo, logger, cfg) // New revenue usecase

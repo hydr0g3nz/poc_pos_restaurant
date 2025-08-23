@@ -25,6 +25,7 @@ type orderUsecase struct {
 	orderService   service.OrderService
 	qrCodeService  service.QRCodeService
 	printerService infra.PrinterService
+	tx             repository.TxManager
 	logger         infra.Logger
 	config         *config.Config
 }
@@ -38,6 +39,7 @@ func NewOrderUsecase(
 	orderService service.OrderService,
 	qrCodeService service.QRCodeService,
 	printerService infra.PrinterService,
+	tx repository.TxManager,
 	logger infra.Logger,
 	config *config.Config,
 ) OrderUsecase {
@@ -48,6 +50,7 @@ func NewOrderUsecase(
 		menuItemRepo:   menuItemRepo,
 		orderService:   orderService,
 		printerService: printerService,
+		tx:             tx,
 		logger:         logger,
 		config:         config,
 		qrCodeService:  qrCodeService,
@@ -383,6 +386,29 @@ func (u *orderUsecase) AddOrderItem(ctx context.Context, req *AddOrderItemReques
 	u.logger.Info("Order item added successfully", "orderItemID", createdItem.ID, "orderID", req.OrderID, "itemID", req.ItemID)
 
 	return u.toOrderItemResponse(createdItem), nil
+}
+
+// add order item list
+func (u *orderUsecase) AddOrderItemList(ctx context.Context, req *AddOrderItemListRequest) error {
+	txCtx, err := u.tx.BeginTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			u.tx.RollbackTx(txCtx)
+			panic(r)
+		}
+	}()
+
+	// for _, item := range req.Items {
+	// 	if _, err := u.AddOrderItem(txCtx, item); err != nil {
+	// 		u.logger.Error("Error adding order item", "error", err, "orderID", item.OrderID, "itemID", item.ItemID)
+	// 		u.tx.RollbackTx(txCtx)
+	// 		return err
+	// 	}
+	// }
+	return u.tx.CommitTx(txCtx)
 }
 
 // UpdateOrderItem updates an order item

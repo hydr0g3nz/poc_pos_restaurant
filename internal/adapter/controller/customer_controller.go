@@ -99,3 +99,29 @@ func (c *CustomerController) GetMenuItem(ctx *fiber.Ctx) error {
 
 	return SuccessResp(ctx, fiber.StatusOK, "Menu item retrieved successfully", response)
 }
+func (c *CustomerController) SearchMenuItems(ctx *fiber.Ctx) error {
+	query := ctx.Query("q")
+	if query == "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Status:  fiber.StatusBadRequest,
+			Message: "Search query parameter 'q' is required",
+		})
+	}
+
+	// Parse pagination parameters
+	limit, _ := strconv.Atoi(ctx.Query("limit", "10"))
+	page, _ := strconv.Atoi(ctx.Query("page", "1"))
+	offset := (page - 1) * limit
+
+	// Validate pagination parameters
+	if limit <= 0 || limit > 100 {
+		limit = 10
+	}
+
+	response, err := c.menuItemUseCase.SearchMenuItems(ctx.Context(), query, limit, offset)
+	if err != nil {
+		return HandleError(ctx, err, c.errorPresenter)
+	}
+
+	return SuccessResp(ctx, fiber.StatusOK, "Menu items search completed successfully", response)
+}

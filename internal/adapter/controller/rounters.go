@@ -170,6 +170,7 @@ func (c *CustomerController) RegisterRoutes(router fiber.Router) {
 	// Customer routes
 	customerGroup.Get("/menu", c.ListMenuItems)
 	customerGroup.Get("/menu/items/:id", c.GetMenuItem)
+	customerGroup.Get("/menu/search", c.SearchMenuItems)
 	customerGroup.Get("/category", c.ListCategory)
 	// customerGroup.Post("/", c.CreateCustomer)
 	// customerGroup.Put("/:id", c.UpdateCustomer)

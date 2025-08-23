@@ -59,6 +59,7 @@ type Repository interface {
 	PaymentRepository() PaymentRepository
 	RevenueRepository() RevenueRepository
 	KitchenStationRepository() KitchenStationRepository
+	TxManager() TxManager
 }
 
 type DBTransaction interface {
@@ -166,4 +167,18 @@ type KitchenStationRepository interface {
 	Update(ctx context.Context, option *entity.KitchenStation) (*entity.KitchenStation, error)
 	Delete(ctx context.Context, id int) error
 	List(ctx context.Context, limit, offset int) ([]*entity.KitchenStation, error)
+}
+type TxManager interface {
+	BeginTx(ctx context.Context) (context.Context, error) // Begin tx และ return ctx ใหม่ที่มี tx embed
+	CommitTx(ctx context.Context) error
+	RollbackTx(ctx context.Context) error
+}
+type txKey struct{}
+
+func WithTx(ctx context.Context, tx any) context.Context {
+	return context.WithValue(ctx, txKey{}, tx)
+}
+
+func GetTx(ctx context.Context) any {
+	return ctx.Value(txKey{})
 }

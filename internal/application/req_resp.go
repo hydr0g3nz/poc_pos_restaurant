@@ -494,3 +494,18 @@ type KitchenStationOnlyResponse struct {
 	Name        string `json:"name"`
 	IsAvailable bool   `json:"is_available"`
 }
+
+type AddOrderItemListRequest struct {
+	OrderID int                 `json:"order_id" validate:"required,gt=0"`
+	Items   []*OrderItemRequest `json:"items" validate:"required,dive,required"`
+}
+type OrderItemRequest struct {
+	MenuItemID int                       `json:"menu_item_id" validate:"required,gt=0"`
+	Quantity   int                       `json:"quantity" validate:"required,gt=0"`
+	Options    []*OrderItemOptionRequest `json:"options,omitempty"`
+}
+
+type OrderItemOptionRequest struct {
+	OptionID  int `json:"option_id" validate:"required,gt=0"`
+	OptionVal int `json:"option_val" validate:"required,gt=0"`
+}
