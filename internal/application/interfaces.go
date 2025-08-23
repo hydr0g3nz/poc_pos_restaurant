@@ -86,3 +86,49 @@ type QRCodeUsecase interface {
 	ScanQRCode(ctx context.Context, qrCode string) (*QRCodeScanResponse, error)
 	CreateOrderFromQRCode(ctx context.Context, qrCode string) (*OrderResponse, error)
 }
+
+// =========================== new
+// MenuOptionUsecase - จัดการตัวเลือกเมนู (เผ็ด, หวาน, เพิ่มผัก)
+type MenuOptionUsecase interface {
+	CreateMenuOption(ctx context.Context, req *CreateMenuOptionRequest) (*MenuOptionResponse, error)
+	GetMenuOption(ctx context.Context, id int) (*MenuOptionResponse, error)
+	UpdateMenuOption(ctx context.Context, id int, req *UpdateMenuOptionRequest) (*MenuOptionResponse, error)
+	DeleteMenuOption(ctx context.Context, id int) error
+	ListMenuOptions(ctx context.Context) ([]*MenuOptionResponse, error)
+	GetMenuOptionsByType(ctx context.Context, optionType string) ([]*MenuOptionResponse, error)
+}
+
+// OptionValueUsecase - จัดการค่าตัวเลือก (เผ็ดน้อย, เผ็ดปานกลาง, เผ็ดมาก)
+type OptionValueUsecase interface {
+	CreateOptionValue(ctx context.Context, req *CreateOptionValueRequest) (*OptionValueResponse, error)
+	GetOptionValue(ctx context.Context, id int) (*OptionValueResponse, error)
+	GetOptionValuesByOptionID(ctx context.Context, optionID int) ([]*OptionValueResponse, error)
+	UpdateOptionValue(ctx context.Context, id int, req *UpdateOptionValueRequest) (*OptionValueResponse, error)
+	DeleteOptionValue(ctx context.Context, id int) error
+}
+
+// MenuItemOptionUsecase - จัดการตัวเลือกของเมนูแต่ละรายการ
+type MenuItemOptionUsecase interface {
+	AddOptionToMenuItem(ctx context.Context, req *AddMenuItemOptionRequest) (*MenuItemOptionResponse, error)
+	RemoveOptionFromMenuItem(ctx context.Context, itemID, optionID int) error
+	GetMenuItemOptions(ctx context.Context, itemID int) ([]*MenuItemOptionResponse, error)
+	UpdateMenuItemOption(ctx context.Context, req *UpdateMenuItemOptionRequest) (*MenuItemOptionResponse, error)
+}
+
+// OrderItemOptionUsecase - จัดการตัวเลือกของรายการในคำสั่งซื้อ
+type OrderItemOptionUsecase interface {
+	AddOptionToOrderItem(ctx context.Context, req *AddOrderItemOptionRequest) (*OrderItemOptionResponse, error)
+	UpdateOrderItemOption(ctx context.Context, req *UpdateOrderItemOptionRequest) (*OrderItemOptionResponse, error)
+	RemoveOptionFromOrderItem(ctx context.Context, orderItemID, optionID, valueID int) error
+	GetOrderItemOptions(ctx context.Context, orderItemID int) ([]*OrderItemOptionResponse, error)
+}
+
+// KitchenUsecase - จัดการครัว/การเตรียมอาหาร
+type KitchenUsecase interface {
+	GetKitchenQueue(ctx context.Context) ([]*KitchenOrderResponse, error)
+	UpdateOrderItemStatus(ctx context.Context, orderItemID int, status string) (*OrderItemResponse, error)
+	GetOrderItemsByStatus(ctx context.Context, status string) ([]*OrderItemResponse, error)
+	MarkOrderItemAsReady(ctx context.Context, orderItemID int) (*OrderItemResponse, error)
+	MarkOrderItemAsServed(ctx context.Context, orderItemID int) (*OrderItemResponse, error)
+	GetKitchenOrdersByStation(ctx context.Context, station string) ([]*OrderItemResponse, error)
+}

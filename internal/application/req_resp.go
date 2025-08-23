@@ -270,3 +270,186 @@ type PaginationResponse struct {
 	Offset  int  `json:"offset"`
 	HasNext bool `json:"has_next"`
 }
+
+// Menu Option DTOs
+type CreateMenuOptionRequest struct {
+	Name       string `json:"name" validate:"required,min=1,max=100"`
+	Type       string `json:"type" validate:"required,min=1,max=50"` // เช่น "spice_level", "temperature", "size"
+	IsRequired bool   `json:"is_required"`
+}
+
+type UpdateMenuOptionRequest struct {
+	Name       string `json:"name" validate:"required,min=1,max=100"`
+	Type       string `json:"type" validate:"required,min=1,max=50"`
+	IsRequired bool   `json:"is_required"`
+}
+
+type MenuOptionResponse struct {
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	Type       string `json:"type"`
+	IsRequired bool   `json:"is_required"`
+}
+
+type MenuOptionListResponse struct {
+	Options []*MenuOptionResponse `json:"options"`
+	Total   int                   `json:"total"`
+	Limit   int                   `json:"limit"`
+	Offset  int                   `json:"offset"`
+}
+
+// Option Value DTOs
+type CreateOptionValueRequest struct {
+	OptionID        int     `json:"option_id" validate:"required,gt=0"`
+	Name            string  `json:"name" validate:"required,min=1,max=100"`
+	IsDefault       bool    `json:"is_default"`
+	AdditionalPrice float64 `json:"additional_price,omitempty" validate:"gte=0"`
+	DisplayOrder    int     `json:"display_order,omitempty"`
+}
+
+type UpdateOptionValueRequest struct {
+	Name            string  `json:"name" validate:"required,min=1,max=100"`
+	IsDefault       bool    `json:"is_default"`
+	AdditionalPrice float64 `json:"additional_price,omitempty" validate:"gte=0"`
+	DisplayOrder    int     `json:"display_order,omitempty"`
+}
+
+type OptionValueResponse struct {
+	ID              int                 `json:"id"`
+	OptionID        int                 `json:"option_id"`
+	Name            string              `json:"name"`
+	IsDefault       bool                `json:"is_default"`
+	AdditionalPrice float64             `json:"additional_price"`
+	DisplayOrder    int                 `json:"display_order"`
+	Option          *MenuOptionResponse `json:"option,omitempty"`
+}
+
+type OptionValueListResponse struct {
+	Values []*OptionValueResponse `json:"values"`
+	Total  int                    `json:"total"`
+	Limit  int                    `json:"limit"`
+	Offset int                    `json:"offset"`
+}
+
+// Menu Item Option DTOs
+type AddMenuItemOptionRequest struct {
+	ItemID   int  `json:"item_id" validate:"required,gt=0"`
+	OptionID int  `json:"option_id" validate:"required,gt=0"`
+	IsActive bool `json:"is_active"`
+}
+
+type UpdateMenuItemOptionRequest struct {
+	IsActive bool `json:"is_active"`
+}
+
+type MenuItemOptionResponse struct {
+	ItemID   int                    `json:"item_id"`
+	OptionID int                    `json:"option_id"`
+	IsActive bool                   `json:"is_active"`
+	Option   *MenuOptionResponse    `json:"option,omitempty"`
+	Values   []*OptionValueResponse `json:"values,omitempty"`
+}
+
+type MenuItemOptionListResponse struct {
+	ItemOptions []*MenuItemOptionResponse `json:"item_options"`
+	Total       int                       `json:"total"`
+}
+
+// Order Item Option DTOs
+type AddOrderItemOptionRequest struct {
+	OrderItemID     int     `json:"order_item_id" validate:"required,gt=0"`
+	OptionID        int     `json:"option_id" validate:"required,gt=0"`
+	ValueID         int     `json:"value_id" validate:"required,gt=0"`
+	AdditionalPrice float64 `json:"additional_price,omitempty" validate:"gte=0"`
+}
+
+type UpdateOrderItemOptionRequest struct {
+	ValueID         int     `json:"value_id" validate:"required,gt=0"`
+	AdditionalPrice float64 `json:"additional_price,omitempty" validate:"gte=0"`
+}
+
+type OrderItemOptionResponse struct {
+	OrderItemID     int                  `json:"order_item_id"`
+	OptionID        int                  `json:"option_id"`
+	ValueID         int                  `json:"value_id"`
+	AdditionalPrice float64              `json:"additional_price"`
+	Option          *MenuOptionResponse  `json:"option,omitempty"`
+	Value           *OptionValueResponse `json:"value,omitempty"`
+}
+
+type OrderItemOptionListResponse struct {
+	ItemOptions []*OrderItemOptionResponse `json:"item_options"`
+	Total       int                        `json:"total"`
+}
+
+// Kitchen Management DTOs
+type KitchenOrderResponse struct {
+	OrderID       int                         `json:"order_id"`
+	OrderNumber   int                         `json:"order_number"`
+	TableNumber   *int                        `json:"table_number,omitempty"`
+	CustomerName  string                      `json:"customer_name,omitempty"`
+	OrderType     string                      `json:"order_type"`
+	Items         []*KitchenOrderItemResponse `json:"items"`
+	CreatedAt     time.Time                   `json:"created_at"`
+	EstimatedTime int                         `json:"estimated_time,omitempty"` // minutes
+}
+
+type KitchenOrderItemResponse struct {
+	ID              int                        `json:"id"`
+	ItemID          int                        `json:"item_id"`
+	Name            string                     `json:"name"`
+	Quantity        int                        `json:"quantity"`
+	Status          string                     `json:"status"`
+	PreparationTime int                        `json:"preparation_time,omitempty"`
+	KitchenStation  string                     `json:"kitchen_station,omitempty"`
+	KitchenNotes    string                     `json:"kitchen_notes,omitempty"`
+	Notes           string                     `json:"notes,omitempty"`
+	Options         []*OrderItemOptionResponse `json:"options,omitempty"`
+	CreatedAt       time.Time                  `json:"created_at"`
+	StartedAt       *time.Time                 `json:"started_at,omitempty"`
+	ReadyAt         *time.Time                 `json:"ready_at,omitempty"`
+	ServedAt        *time.Time                 `json:"served_at,omitempty"`
+}
+
+type UpdateOrderItemStatusRequest struct {
+	Status       string `json:"status" validate:"required,oneof=pending preparing ready served cancelled"`
+	KitchenNotes string `json:"kitchen_notes,omitempty" validate:"max=200"`
+}
+
+type KitchenQueueResponse struct {
+	Queue          []*KitchenOrderResponse `json:"queue"`
+	TotalItems     int                     `json:"total_items"`
+	PendingItems   int                     `json:"pending_items"`
+	PreparingItems int                     `json:"preparing_items"`
+	ReadyItems     int                     `json:"ready_items"`
+}
+
+type KitchenStationResponse struct {
+	Station     string                  `json:"station"`
+	Orders      []*KitchenOrderResponse `json:"orders"`
+	TotalItems  int                     `json:"total_items"`
+	AverageTime int                     `json:"average_preparation_time"` // minutes
+}
+
+// Enhanced Search/Filter DTOs
+type OrderFilterRequest struct {
+	PaginationRequest
+	Status        string     `json:"status,omitempty" validate:"omitempty,oneof=open ordered completed cancelled"`
+	OrderType     string     `json:"order_type,omitempty" validate:"omitempty,oneof=dine_in phone online"`
+	PaymentStatus string     `json:"payment_status,omitempty" validate:"omitempty,oneof=unpaid paid refunded"`
+	TableID       *int       `json:"table_id,omitempty" validate:"omitempty,gt=0"`
+	StartDate     *time.Time `json:"start_date,omitempty"`
+	EndDate       *time.Time `json:"end_date,omitempty"`
+	CustomerName  string     `json:"customer_name,omitempty" validate:"max=100"`
+	CustomerPhone string     `json:"customer_phone,omitempty" validate:"max=20"`
+}
+
+type MenuItemFilterRequest struct {
+	PaginationRequest
+	CategoryID    *int     `json:"category_id,omitempty" validate:"omitempty,gt=0"`
+	IsActive      *bool    `json:"is_active,omitempty"`
+	MinPrice      *float64 `json:"min_price,omitempty" validate:"omitempty,gte=0"`
+	MaxPrice      *float64 `json:"max_price,omitempty" validate:"omitempty,gte=0"`
+	Search        string   `json:"search,omitempty" validate:"max=100"`
+	IsRecommended *bool    `json:"is_recommended,omitempty"`
+}
