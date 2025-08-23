@@ -55,13 +55,6 @@ func NewKitchenUsecase(
 func (u *kitchenUsecase) GetKitchenQueue(ctx context.Context) ([]*KitchenOrderResponse, error) {
 	u.logger.Debug("Getting kitchen queue")
 
-	// Get all open orders
-	openOrders, err := u.orderRepo.ListByStatus(ctx, string(vo.OrderStatusOpen), 100, 0)
-	if err != nil {
-		u.logger.Error("Error getting open orders", "error", err)
-		return nil, fmt.Errorf("failed to get open orders: %w", err)
-	}
-
 	// Also get orders that are ordered but not completed
 	orderedOrders, err := u.orderRepo.ListByStatus(ctx, string(vo.OrderStatusOrdered), 100, 0)
 	if err != nil {
@@ -69,10 +62,7 @@ func (u *kitchenUsecase) GetKitchenQueue(ctx context.Context) ([]*KitchenOrderRe
 		return nil, fmt.Errorf("failed to get ordered orders: %w", err)
 	}
 
-	// Combine all orders
-	allOrders := append(openOrders, orderedOrders...)
-
-	return u.toKitchenOrderResponses(ctx, allOrders), nil
+	return u.toKitchenOrderResponses(ctx, orderedOrders), nil
 }
 
 // UpdateOrderItemStatus updates the status of an order item
@@ -282,7 +272,7 @@ func (u *kitchenUsecase) toKitchenOrderResponses(ctx context.Context, orders []*
 					optionResponses[k].Option = &MenuOptionResponse{
 						ID:         menuOption.ID,
 						Name:       menuOption.Name,
-						Type:       menuOption.Type,
+						Type:       menuOption.Type.String(),
 						IsRequired: menuOption.IsRequired,
 					}
 				}

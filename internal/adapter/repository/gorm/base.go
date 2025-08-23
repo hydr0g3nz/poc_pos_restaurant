@@ -24,6 +24,7 @@ type repositoryContainer struct {
 	orderItemOptionRepo repository.OrderItemOptionRepository
 	paymentRepo         repository.PaymentRepository
 	revenueRepo         repository.RevenueRepository
+	kitchenRepo         repository.KitchenStationRepository
 }
 
 func NewRepositoryContainer(db *gorm.DB) repository.Repository {
@@ -41,6 +42,7 @@ func NewRepositoryContainer(db *gorm.DB) repository.Repository {
 		orderItemOptionRepo: NewOrderItemOptionRepository(db),
 		paymentRepo:         NewPaymentRepository(db),
 		revenueRepo:         NewRevenueRepository(db),
+		kitchenRepo:         NewKitchenStationRepository(db),
 	}
 }
 
@@ -90,6 +92,9 @@ func (r *repositoryContainer) PaymentRepository() repository.PaymentRepository {
 
 func (r *repositoryContainer) RevenueRepository() repository.RevenueRepository {
 	return r.revenueRepo
+}
+func (r *repositoryContainer) KitchenStationRepository() repository.KitchenStationRepository {
+	return r.kitchenRepo
 }
 
 // Transaction handler

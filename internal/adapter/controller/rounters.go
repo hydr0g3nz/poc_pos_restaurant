@@ -38,6 +38,7 @@ func (c *OrderController) RegisterRoutes(router fiber.Router) {
 	// Order routes
 	orderGroup.Post("/", c.CreateOrder)
 	orderGroup.Get("/", c.ListOrders)
+	orderGroup.Get("/items", c.ListOrdersWithItems)
 	orderGroup.Get("/search", c.GetOrdersByStatus)        // GET /orders/search?status=open
 	orderGroup.Get("/date-range", c.GetOrdersByDateRange) // GET /orders/date-range?start_date=2024-01-01&end_date=2024-01-31
 	orderGroup.Get("/:id", c.GetOrder)
@@ -104,4 +105,73 @@ func (c *TableController) RegisterRoutes(router fiber.Router) {
 	// QR code operations
 	tableGroup.Get("/qr", c.GetTableByQRCode)
 
+}
+
+// เพิ่มใน internal/adapter/controller/routers.go
+
+// RegisterRoutes registers the routes for the menu option controller
+func (c *MenuOptionController) RegisterRoutes(router fiber.Router) {
+	menuOptionGroup := router.Group("/menu-options")
+
+	// Public routes
+	menuOptionGroup.Get("/", c.ListMenuOptions)
+	menuOptionGroup.Get("/search", c.GetMenuOptionsByType) // GET /menu-options/search?type=spice_level
+	menuOptionGroup.Get("/:id", c.GetMenuOption)
+
+	// Admin routes
+	menuOptionGroup.Post("/", c.CreateMenuOption)
+	menuOptionGroup.Put("/:id", c.UpdateMenuOption)
+	menuOptionGroup.Delete("/:id", c.DeleteMenuOption)
+}
+
+// RegisterRoutes registers the routes for the option value controller
+func (c *OptionValueController) RegisterRoutes(router fiber.Router) {
+	optionValueGroup := router.Group("/option-values")
+
+	// Public routes
+	optionValueGroup.Get("/:id", c.GetOptionValue)
+	optionValueGroup.Get("/option/:optionId", c.GetOptionValuesByOptionID) // GET /option-values/option/1
+
+	// Admin routes
+	optionValueGroup.Post("/", c.CreateOptionValue)
+	optionValueGroup.Put("/:id", c.UpdateOptionValue)
+	optionValueGroup.Delete("/:id", c.DeleteOptionValue)
+}
+
+// RegisterRoutes registers the routes for the menu item option controller
+func (c *MenuItemOptionController) RegisterRoutes(router fiber.Router) {
+	menuItemOptionGroup := router.Group("/menu-item-options")
+
+	// Routes
+	menuItemOptionGroup.Get("/item/:itemId", c.GetMenuItemOptions)                           // GET /menu-item-options/item/1
+	menuItemOptionGroup.Post("/", c.AddOptionToMenuItem)                                     // POST /menu-item-options
+	menuItemOptionGroup.Delete("/item/:itemId/option/:optionId", c.RemoveOptionFromMenuItem) // DELETE /menu-item-options/item/1/option/2
+}
+
+// RegisterRoutes registers the routes for the kitchen controller
+func (c *KitchenController) RegisterRoutes(router fiber.Router) {
+	kitchenGroup := router.Group("/kitchen")
+
+	// Kitchen routes
+	kitchenGroup.Get("/", c.GetKitchenStatation)
+	kitchenGroup.Post("/", c.CreateKitchenStatation)
+	kitchenGroup.Put("/", c.UpdateKitchenStatation)
+	kitchenGroup.Delete("/", c.DeleteKitchenStatation)
+
+	kitchenGroup.Get("/queue", c.GetKitchenQueue)                           // GET /kitchen/queue
+	kitchenGroup.Get("/items", c.GetOrderItemsByStatus)                     // GET /kitchen/items?status=preparing
+	kitchenGroup.Get("/station/orders", c.GetKitchenOrdersByStation)        // GET /kitchen/station?station=grill
+	kitchenGroup.Put("/items/:orderItemId/status", c.UpdateOrderItemStatus) // PUT /kitchen/items/1/status
+	kitchenGroup.Put("/items/:orderItemId/ready", c.MarkOrderItemAsReady)   // PUT /kitchen/items/1/ready
+	kitchenGroup.Put("/items/:orderItemId/served", c.MarkOrderItemAsServed) // PUT /kitchen/items/1/served
+}
+func (c *CustomerController) RegisterRoutes(router fiber.Router) {
+	customerGroup := router.Group("/customers")
+	// Customer routes
+	customerGroup.Get("/menu", c.ListMenuItems)
+	customerGroup.Get("/menu/items/:id", c.GetMenuItem)
+	customerGroup.Get("/category", c.ListCategory)
+	// customerGroup.Post("/", c.CreateCustomer)
+	// customerGroup.Put("/:id", c.UpdateCustomer)
+	// customerGroup.Delete("/:id", c.DeleteCustomer)
 }

@@ -51,12 +51,18 @@ func (c *MenuItemController) CreateMenuItem(ctx *fiber.Ctx) error {
 			Message: "Price must be non-negative",
 		})
 	}
-
+	if req.KitchenStationID <= 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Status:  fiber.StatusBadRequest,
+			Message: "Kitchen station ID is required and must be greater than 0",
+		})
+	}
 	response, err := c.menuItemUseCase.CreateMenuItem(ctx.Context(), &usecase.CreateMenuItemRequest{
-		CategoryID:  req.CategoryID,
-		Name:        req.Name,
-		Description: req.Description,
-		Price:       req.Price,
+		CategoryID:       req.CategoryID,
+		KitchenStationID: req.KitchenStationID,
+		Name:             req.Name,
+		Description:      req.Description,
+		Price:            req.Price,
 	})
 	if err != nil {
 		return HandleError(ctx, err, c.errorPresenter)

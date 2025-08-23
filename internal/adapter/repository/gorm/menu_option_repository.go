@@ -7,6 +7,7 @@ import (
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/repository/gorm/model"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/entity"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/repository"
+	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/vo"
 	"gorm.io/gorm"
 )
 
@@ -90,7 +91,7 @@ func (r *menuOptionRepository) entityToModel(option *entity.MenuOption) *model.M
 	return &model.MenuOption{
 		ID:         option.ID,
 		Name:       option.Name,
-		Type:       option.Type,
+		Type:       option.Type.String(),
 		IsRequired: option.IsRequired,
 	}
 }
@@ -99,7 +100,7 @@ func (r *menuOptionRepository) modelToEntity(dbOption *model.MenuOption) *entity
 	return &entity.MenuOption{
 		ID:         dbOption.ID,
 		Name:       dbOption.Name,
-		Type:       dbOption.Type,
+		Type:       vo.OptionType(dbOption.Type),
 		IsRequired: dbOption.IsRequired,
 	}
 }

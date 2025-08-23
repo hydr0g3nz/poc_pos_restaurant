@@ -1,6 +1,10 @@
 package usecase
 
-import "time"
+import (
+	"time"
+
+	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/entity"
+)
 
 // Request DTOs
 
@@ -62,19 +66,24 @@ type UpdateCategoryRequest struct {
 }
 
 type CategoryResponse struct {
-	ID        int       `json:"id"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
+	ID           int    `json:"id"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	DisplayOrder int    `json:"display_order"`
+	IsActive     bool   `json:"is_active"`
+	// CreatedAt time.Time `json:"created_at"`
+
 }
 
 // internal/application/dto/menu_item_dto.go
 
 // Menu Item DTOs
 type CreateMenuItemRequest struct {
-	CategoryID  int     `json:"category_id" validate:"required,gt=0"`
-	Name        string  `json:"name" validate:"required,min=1,max=100"`
-	Description string  `json:"description,omitempty"`
-	Price       float64 `json:"price" validate:"required,gte=0"`
+	CategoryID       int     `json:"category_id" validate:"required,gt=0"`
+	KitchenStationID int     `json:"kitchen_station_id" validate:"required,gt=0"`
+	Name             string  `json:"name" validate:"required,min=1,max=100"`
+	Description      string  `json:"description,omitempty"`
+	Price            float64 `json:"price" validate:"required,gte=0"`
 }
 
 type UpdateMenuItemRequest struct {
@@ -85,13 +94,22 @@ type UpdateMenuItemRequest struct {
 }
 
 type MenuItemResponse struct {
-	ID          int               `json:"id"`
-	CategoryID  int               `json:"category_id"`
-	Name        string            `json:"name"`
-	Description string            `json:"description"`
-	Price       float64           `json:"price"`
-	CreatedAt   time.Time         `json:"created_at"`
-	Category    *CategoryResponse `json:"category,omitempty"`
+	ID          int     `json:"id"`
+	CategoryID  int     `json:"category_id"`
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Price       float64 `json:"price"`
+	// CreatedAt      time.Time                   `json:"created_at"`
+	Category       string                   `json:"category"`
+	KitchenStation string                   `json:"kitchen_station"`
+	IsActive       bool                     `json:"is_active"`
+	IsRecommended  bool                     `json:"is_recommended"`
+	DisplayOrder   int                      `json:"display_order"`
+	MenuOption     []*entity.MenuItemOption `json:"menu_option"`
+	// DiscountPercent float64 `json:"discount_percent"`
+	// IsDiscounted    bool    `json:"is_discounted"`
+	// Category       *CategoryResponse           `json:"category,omitempty"`
+	// KitchenStation *KitchenStationOnlyResponse `json:"kitchen_station,omitempty"`
 }
 
 type MenuItemListResponse struct {
@@ -157,6 +175,12 @@ type OrderListResponse struct {
 	Limit  int              `json:"limit"`
 	Offset int              `json:"offset"`
 }
+type OrderWithItemsListResponse struct {
+	Orders []*OrderWithItemsResponse `json:"orders"`
+	Total  int                       `json:"total"`
+	Limit  int                       `json:"limit"`
+	Offset int                       `json:"offset"`
+}
 
 // Order Item DTOs
 type AddOrderItemRequest struct {
@@ -170,15 +194,17 @@ type UpdateOrderItemRequest struct {
 }
 
 type OrderItemResponse struct {
-	ID        int               `json:"id"`
-	OrderID   int               `json:"order_id"`
-	ItemID    int               `json:"item_id"`
-	Quantity  int               `json:"quantity"`
-	UnitPrice float64           `json:"unit_price"`
-	Subtotal  float64           `json:"subtotal"`
-	CreatedAt time.Time         `json:"created_at"`
-	MenuItem  *MenuItemResponse `json:"menu_item,omitempty"`
-	Name      string            `json:"name"`
+	ID             int               `json:"id"`
+	OrderID        int               `json:"order_id"`
+	ItemID         int               `json:"item_id"`
+	Quantity       int               `json:"quantity"`
+	UnitPrice      float64           `json:"unit_price"`
+	Subtotal       float64           `json:"subtotal"`
+	CreatedAt      time.Time         `json:"created_at"`
+	MenuItem       *MenuItemResponse `json:"menu_item,omitempty"`
+	Name           string            `json:"name"`
+	KitchenStation string            `json:"kitchen_station,omitempty"` // optional kitchen ID for tracking
+
 }
 
 type OrderTotalResponse struct {
@@ -452,4 +478,19 @@ type MenuItemFilterRequest struct {
 	MaxPrice      *float64 `json:"max_price,omitempty" validate:"omitempty,gte=0"`
 	Search        string   `json:"search,omitempty" validate:"max=100"`
 	IsRecommended *bool    `json:"is_recommended,omitempty"`
+}
+
+type CreateKitchenStationRequest struct {
+	Name        string `json:"name" validate:"required,min=1,max=100"`
+	IsAvailable bool   `json:"is_available" validate:"required"`
+}
+
+type UpdateKitchenStationRequest struct {
+	Name        string `json:"name" validate:"required,min=1,max=100"`
+	IsAvailable bool   `json:"is_available" validate:"required"`
+}
+type KitchenStationOnlyResponse struct {
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	IsAvailable bool   `json:"is_available"`
 }

@@ -46,6 +46,7 @@ type OrderUsecase interface {
 	UpdateOrder(ctx context.Context, id int, req *UpdateOrderRequest) (*OrderResponse, error)
 	CloseOrder(ctx context.Context, id int) (*OrderResponse, error)
 	ListOrders(ctx context.Context, limit, offset int) (*OrderListResponse, error)
+	ListOrdersWithItems(ctx context.Context, limit, offset int) (*OrderWithItemsListResponse, error)
 	ListOrdersByTable(ctx context.Context, tableID int, limit, offset int) (*OrderListResponse, error)
 	GetOpenOrderByTable(ctx context.Context, tableID int) (*OrderResponse, error)
 	GetOrdersByStatus(ctx context.Context, status string, limit, offset int) (*OrderListResponse, error)
@@ -131,4 +132,11 @@ type KitchenUsecase interface {
 	MarkOrderItemAsReady(ctx context.Context, orderItemID int) (*OrderItemResponse, error)
 	MarkOrderItemAsServed(ctx context.Context, orderItemID int) (*OrderItemResponse, error)
 	GetKitchenOrdersByStation(ctx context.Context, station string) ([]*OrderItemResponse, error)
+}
+type KitchenStationUsecase interface {
+	CreateKitchenStation(ctx context.Context, req *CreateKitchenStationRequest) (*KitchenStationOnlyResponse, error)
+	GetKitchenStation(ctx context.Context, id int) (*KitchenStationOnlyResponse, error)
+	UpdateKitchenStation(ctx context.Context, id int, req *UpdateKitchenStationRequest) (*KitchenStationOnlyResponse, error)
+	DeleteKitchenStation(ctx context.Context, id int) error
+	ListKitchenStations(ctx context.Context) ([]*KitchenStationOnlyResponse, error)
 }

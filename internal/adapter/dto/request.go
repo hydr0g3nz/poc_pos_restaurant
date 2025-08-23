@@ -109,10 +109,11 @@ type CategoriesListResponse struct {
 
 // CreateMenuItemRequest represents menu item creation request DTO
 type CreateMenuItemRequest struct {
-	CategoryID  int     `json:"category_id" validate:"required,gt=0"`
-	Name        string  `json:"name" validate:"required,min=1,max=100"`
-	Description string  `json:"description,omitempty"`
-	Price       float64 `json:"price" validate:"required,gte=0"`
+	CategoryID       int     `json:"category_id" validate:"required,gt=0"`
+	KitchenStationID int     `json:"kitchen_station_id" validate:"required,gt=0"`
+	Name             string  `json:"name" validate:"required,min=1,max=100"`
+	Description      string  `json:"description,omitempty"`
+	Price            float64 `json:"price" validate:"required,gte=0"`
 }
 
 // UpdateMenuItemRequest represents menu item update request DTO
@@ -271,4 +272,51 @@ type PaymentListResponse struct {
 	Total    int                `json:"total"`
 	Limit    int                `json:"limit"`
 	Offset   int                `json:"offset"`
+}
+
+type CreateMenuOptionRequest struct {
+	Name       string `json:"name" validate:"required,min=1,max=100"`
+	Type       string `json:"type" validate:"required,min=1,max=50"`
+	IsRequired bool   `json:"is_required"`
+}
+
+type UpdateMenuOptionRequest struct {
+	Name       string `json:"name" validate:"required,min=1,max=100"`
+	Type       string `json:"type" validate:"required,min=1,max=50"`
+	IsRequired bool   `json:"is_required"`
+}
+
+type CreateOptionValueRequest struct {
+	OptionID        int     `json:"option_id" validate:"required,gt=0"`
+	Name            string  `json:"name" validate:"required,min=1,max=100"`
+	IsDefault       bool    `json:"is_default"`
+	AdditionalPrice float64 `json:"additional_price,omitempty" validate:"gte=0"`
+	DisplayOrder    int     `json:"display_order,omitempty"`
+}
+
+type UpdateOptionValueRequest struct {
+	Name            string  `json:"name" validate:"required,min=1,max=100"`
+	IsDefault       bool    `json:"is_default"`
+	AdditionalPrice float64 `json:"additional_price,omitempty" validate:"gte=0"`
+	DisplayOrder    int     `json:"display_order,omitempty"`
+}
+
+type AddMenuItemOptionRequest struct {
+	ItemID   int  `json:"item_id" validate:"required,gt=0"`
+	OptionID int  `json:"option_id" validate:"required,gt=0"`
+	IsActive bool `json:"is_active"`
+}
+
+type UpdateOrderItemStatusRequest struct {
+	Status       string `json:"status" validate:"required,oneof=pending preparing ready served cancelled"`
+	KitchenNotes string `json:"kitchen_notes,omitempty" validate:"max=200"`
+}
+
+type CreateKitchenStatationRequest struct {
+	Name        string `json:"name" validate:"required,min=1,max=100"`
+	IsAvailable bool   `json:"is_available"`
+}
+type UpdateKitchenStatationRequest struct {
+	Name        string `json:"name" validate:"required,min=1,max=100"`
+	IsAvailable bool   `json:"is_available"`
 }

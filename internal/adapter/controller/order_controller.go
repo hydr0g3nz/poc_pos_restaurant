@@ -194,6 +194,26 @@ func (c *OrderController) ListOrders(ctx *fiber.Ctx) error {
 
 	return SuccessResp(ctx, fiber.StatusOK, "Orders retrieved successfully", response)
 }
+func (c *OrderController) ListOrdersWithItems(ctx *fiber.Ctx) error {
+	// Parse pagination parameters
+	limit, _ := strconv.Atoi(ctx.Query("limit", "10"))
+	offset, _ := strconv.Atoi(ctx.Query("offset", "0"))
+
+	// Validate pagination parameters
+	if limit <= 0 || limit > 100 {
+		limit = 10
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
+	response, err := c.orderUseCase.ListOrdersWithItems(ctx.Context(), limit, offset)
+	if err != nil {
+		return HandleError(ctx, err, c.errorPresenter)
+	}
+
+	return SuccessResp(ctx, fiber.StatusOK, "Orders retrieved successfully", response)
+}
 
 // ListOrdersByTable handles getting orders by table ID
 func (c *OrderController) ListOrdersByTable(ctx *fiber.Ctx) error {

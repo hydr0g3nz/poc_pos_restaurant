@@ -5,6 +5,8 @@ type MenuItemOption struct {
 	ItemID   int  `json:"id"`
 	OptionID int  `json:"optionId"`
 	IsActive bool `json:"is_active"`
+
+	Option *MenuOption `json:"option"`
 }
 
 // IsValid checks whether the menu item option is valid

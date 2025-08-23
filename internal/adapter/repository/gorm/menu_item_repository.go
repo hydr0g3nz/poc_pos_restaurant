@@ -34,7 +34,13 @@ func (r *menuItemRepository) Create(ctx context.Context, item *entity.MenuItem) 
 func (r *menuItemRepository) GetByID(ctx context.Context, id int) (*entity.MenuItem, error) {
 	var dbItem model.MenuItem
 
-	if err := r.db.WithContext(ctx).First(&dbItem, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).
+		Preload("Category").
+		Preload("KitchenStation").
+		Preload("MenuItemOptions").
+		Preload("MenuItemOptions.MenuOption").
+		Preload("MenuItemOptions.MenuOption.OptionValues").
+		First(&dbItem, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -69,7 +75,7 @@ func (r *menuItemRepository) List(ctx context.Context, limit, offset int) ([]*en
 		query = query.Offset(offset)
 	}
 
-	if err := query.Find(&dbItems).Error; err != nil {
+	if err := query.Preload("Category").Preload("KitchenStation").Find(&dbItems).Error; err != nil {
 		return nil, err
 	}
 
@@ -87,7 +93,7 @@ func (r *menuItemRepository) ListByCategory(ctx context.Context, categoryID int,
 		query = query.Offset(offset)
 	}
 
-	if err := query.Find(&dbItems).Error; err != nil {
+	if err := query.Preload("Category").Preload("KitchenStation").Find(&dbItems).Error; err != nil {
 		return nil, err
 	}
 
@@ -136,8 +142,7 @@ func (r *menuItemRepository) modelToEntity(dbItem *model.MenuItem) (*entity.Menu
 	if err != nil {
 		return nil, err
 	}
-
-	return &entity.MenuItem{
+	m := &entity.MenuItem{
 		ID:              dbItem.ID,
 		CategoryID:      dbItem.CategoryID,
 		Name:            dbItem.Name,
@@ -151,7 +156,24 @@ func (r *menuItemRepository) modelToEntity(dbItem *model.MenuItem) (*entity.Menu
 		IsActive:        dbItem.IsActive,
 		CreatedAt:       dbItem.CreatedAt,
 		UpdatedAt:       dbItem.UpdatedAt,
-	}, nil
+	}
+	if dbItem.Category != nil {
+		m.Category = &entity.Category{
+			ID:   dbItem.Category.ID,
+			Name: dbItem.Category.Name,
+		}
+	}
+	if dbItem.KitchenStation != nil {
+		m.KitchenStation = &entity.KitchenStation{
+			ID:   dbItem.KitchenStation.ID,
+			Name: dbItem.KitchenStation.Name,
+		}
+	}
+	if len(dbItem.MenuItemOptions) > 0 {
+		options := model.ModelMenuItemOptionListToMenuItemOptionEntityList(dbItem.MenuItemOptions)
+		m.MenuItemOptions = options
+	}
+	return m, nil
 }
 
 func (r *menuItemRepository) modelsToEntities(dbItems []model.MenuItem) ([]*entity.MenuItem, error) {

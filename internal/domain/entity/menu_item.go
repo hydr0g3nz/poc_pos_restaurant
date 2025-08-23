@@ -15,12 +15,18 @@ type MenuItem struct {
 	Price           vo.Money  `json:"price"`
 	ImageURL        string    `json:"image_url,omitempty"`
 	IsRecommended   bool      `json:"is_recommended,omitempty"`
+	DiscountPercent float64   `json:"discount_percent,omitempty"`
+	IsDiscounted    bool      `json:"is_discounted,omitempty"`
 	PreparationTime int       `json:"preparation_time,omitempty"` // in minutes
 	DisplayOrder    int       `json:"display_order,omitempty"`
-	KitchenID       string    `json:"kitchen_station,omitempty"` // optional kitchen station for tracking
+	KitchenID       int       `json:"kitchen_station_id,omitempty"` // optional kitchen station for tracking
 	IsActive        bool      `json:"is_active"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
+	// relationships
+	Category        *Category         `json:"category,omitempty"`
+	KitchenStation  *KitchenStation   `json:"kitchen_station,omitempty"`
+	MenuItemOptions []*MenuItemOption `json:"menu_item_options,omitempty"`
 }
 
 // IsValid validates menu item data

@@ -197,9 +197,12 @@ func (u *categoryUsecase) ListCategories(ctx context.Context) ([]*CategoryRespon
 // toCategoryResponse converts entity to response
 func (u *categoryUsecase) toCategoryResponse(category *entity.Category) *CategoryResponse {
 	return &CategoryResponse{
-		ID:        category.ID,
-		Name:      category.Name,
-		CreatedAt: category.CreatedAt,
+		ID:           category.ID,
+		Name:         category.Name,
+		Description:  category.Description,
+		DisplayOrder: category.DisplayOrder,
+		IsActive:     category.IsActive,
+		// CreatedAt: category.CreatedAt,
 	}
 }
 

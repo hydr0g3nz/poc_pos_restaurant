@@ -4,6 +4,8 @@ package model
 import (
 	"time"
 
+	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/entity"
+	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/vo"
 	"gorm.io/gorm"
 )
 
@@ -44,26 +46,26 @@ type MenuItem struct {
 	IsRecommended   bool `gorm:"default:false"`
 	PreparationTime int  `gorm:"default:0"` // in minutes
 	DisplayOrder    int  `gorm:"default:0"`
-	KitchenID       string
+	KitchenID       int
+	DiscountPercent float64        `gorm:"default:0"`
+	IsDiscounted    bool           `gorm:"default:false"`
 	IsActive        bool           `gorm:"default:true"`
 	CreatedAt       time.Time      `gorm:"autoCreateTime"`
 	UpdatedAt       time.Time      `gorm:"autoUpdateTime"`
 	DeletedAt       gorm.DeletedAt `gorm:"index"`
 
 	// Relationships
-	Category        Category         `gorm:"foreignKey:CategoryID"`
+	Category        *Category        `gorm:"foreignKey:CategoryID"`
 	OrderItems      []OrderItem      `gorm:"foreignKey:ItemID"`
 	MenuItemOptions []MenuItemOption `gorm:"foreignKey:ItemID"`
+	KitchenStation  *KitchenStation  `gorm:"foreignKey:KitchenID"`
 }
 
 type MenuOption struct {
-	ID         int            `gorm:"primaryKey;autoIncrement"`
-	Name       string         `gorm:"not null"`
-	Type       string         `gorm:"not null"`
-	IsRequired bool           `gorm:"default:false"`
-	CreatedAt  time.Time      `gorm:"autoCreateTime"`
-	UpdatedAt  time.Time      `gorm:"autoUpdateTime"`
-	DeletedAt  gorm.DeletedAt `gorm:"index"`
+	ID         int    `gorm:"primaryKey;autoIncrement"`
+	Name       string `gorm:"not null"`
+	Type       string `gorm:"not null"`
+	IsRequired bool   `gorm:"default:false"`
 
 	// Relationships
 	OptionValues     []OptionValue     `gorm:"foreignKey:OptionID"`
@@ -93,8 +95,8 @@ type MenuItemOption struct {
 	IsActive bool `gorm:"default:true"`
 
 	// Relationships
-	MenuItem   MenuItem   `gorm:"foreignKey:ItemID"`
-	MenuOption MenuOption `gorm:"foreignKey:OptionID"`
+	MenuOption *MenuOption `gorm:"foreignKey:OptionID"`
+	MenuItem   *MenuItem   `gorm:"foreignKey:ItemID"`
 }
 
 type Table struct {
@@ -186,4 +188,58 @@ type Payment struct {
 
 	// Relationships
 	Order Order `gorm:"foreignKey:OrderID"`
+}
+
+type KitchenStation struct {
+	ID          int `gorm:"primaryKey;autoIncrement"`
+	Name        string
+	IsAvailable bool
+}
+
+func ModelMenuItemOptionToMenuItemOptionEntity(modelMenuItemOption MenuItemOption) *entity.MenuItemOption {
+	m := &entity.MenuItemOption{
+		ItemID:   modelMenuItemOption.ItemID,
+		OptionID: modelMenuItemOption.OptionID,
+		IsActive: modelMenuItemOption.IsActive,
+	}
+	if modelMenuItemOption.MenuOption != nil {
+		m.Option = ModelMenuOptionToMenuOptionEntity(*modelMenuItemOption.MenuOption)
+	}
+	return m
+}
+func ModelMenuItemOptionListToMenuItemOptionEntityList(modelMenuItemOptionList []MenuItemOption) []*entity.MenuItemOption {
+	var menuItemOptions []*entity.MenuItemOption
+	for _, modelMenuItemOption := range modelMenuItemOptionList {
+		menuItemOptions = append(menuItemOptions, ModelMenuItemOptionToMenuItemOptionEntity(modelMenuItemOption))
+	}
+	return menuItemOptions
+}
+func ModelMenuOptionToMenuOptionEntity(modelMenuOption MenuOption) *entity.MenuOption {
+	m := &entity.MenuOption{
+		ID:         modelMenuOption.ID,
+		Name:       modelMenuOption.Name,
+		Type:       vo.OptionType(modelMenuOption.Type),
+		IsRequired: modelMenuOption.IsRequired,
+	}
+	if len(modelMenuOption.OptionValues) > 0 {
+		m.OptionValues = ModelMenuOptionValueListToOptionValueEntityList(modelMenuOption.OptionValues)
+	}
+	return m
+}
+func ModelMenuOptionValueToOptionValueEntity(modelMenuOptionValue OptionValue) *entity.OptionValue {
+	p, _ := vo.NewMoneyFromSatang(modelMenuOptionValue.AdditionalPrice)
+	return &entity.OptionValue{
+		ID:              modelMenuOptionValue.ID,
+		Name:            modelMenuOptionValue.Name,
+		IsDefault:       modelMenuOptionValue.IsDefault,
+		AdditionalPrice: p,
+		DisplayOrder:    modelMenuOptionValue.DisplayOrder,
+	}
+}
+func ModelMenuOptionValueListToOptionValueEntityList(modelMenuOptionValueList []OptionValue) []*entity.OptionValue {
+	var optionValues []*entity.OptionValue
+	for _, modelMenuOptionValue := range modelMenuOptionValueList {
+		optionValues = append(optionValues, ModelMenuOptionValueToOptionValueEntity(modelMenuOptionValue))
+	}
+	return optionValues
 }

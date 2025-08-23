@@ -224,6 +224,22 @@ func (u *orderUsecase) ListOrders(ctx context.Context, limit, offset int) (*Orde
 		Offset: offset,
 	}, nil
 }
+func (u *orderUsecase) ListOrdersWithItems(ctx context.Context, limit, offset int) (*OrderWithItemsListResponse, error) {
+	u.logger.Debug("Listing orders", "limit", limit, "offset", offset)
+
+	orders, err := u.orderRepo.ListWithItems(ctx, limit, offset)
+	if err != nil {
+		u.logger.Error("Error listing orders", "error", err)
+		return nil, fmt.Errorf("failed to list orders: %w", err)
+	}
+
+	return &OrderWithItemsListResponse{
+		Orders: u.toOrderWithItemsResponses(orders),
+		Total:  len(orders),
+		Limit:  limit,
+		Offset: offset,
+	}, nil
+}
 
 // ListOrdersByTable retrieves orders for a specific table
 func (u *orderUsecase) ListOrdersByTable(ctx context.Context, tableID int, limit, offset int) (*OrderListResponse, error) {
@@ -556,18 +572,26 @@ func (u *orderUsecase) toOrderResponses(orders []*entity.Order) []*OrderResponse
 	}
 	return responses
 }
+func (u *orderUsecase) toOrderWithItemsResponses(orders []*entity.Order) []*OrderWithItemsResponse {
+	responses := make([]*OrderWithItemsResponse, len(orders))
+	for i, order := range orders {
+		responses[i] = u.toOrderWithItemsResponse(order)
+	}
+	return responses
+}
 
 // toOrderItemResponse converts entity to response
 func (u *orderUsecase) toOrderItemResponse(item *entity.OrderItem) *OrderItemResponse {
 	return &OrderItemResponse{
-		ID:        item.ID,
-		OrderID:   item.OrderID,
-		ItemID:    item.ItemID,
-		Quantity:  item.Quantity,
-		UnitPrice: item.UnitPrice.AmountBaht(),
-		Subtotal:  item.CalculateSubtotal().AmountBaht(),
-		CreatedAt: item.CreatedAt,
-		Name:      item.Name,
+		ID:             item.ID,
+		OrderID:        item.OrderID,
+		ItemID:         item.ItemID,
+		Quantity:       item.Quantity,
+		UnitPrice:      item.UnitPrice.AmountBaht(),
+		Subtotal:       item.CalculateSubtotal().AmountBaht(),
+		CreatedAt:      item.CreatedAt,
+		Name:           item.Name,
+		KitchenStation: item.KitchenStation,
 	}
 }
 

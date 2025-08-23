@@ -225,7 +225,7 @@ func (u *optionValueUsecase) toOptionValueResponse(value *entity.OptionValue, op
 		response.Option = &MenuOptionResponse{
 			ID:         option.ID,
 			Name:       option.Name,
-			Type:       option.Type,
+			Type:       option.Type.String(),
 			IsRequired: option.IsRequired,
 		}
 	}

@@ -9,6 +9,7 @@ import (
 	errs "github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/error"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/infra"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/repository"
+	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/vo"
 )
 
 // menuOptionUsecase implements MenuOptionUsecase interface
@@ -36,7 +37,7 @@ func (u *menuOptionUsecase) CreateMenuOption(ctx context.Context, req *CreateMen
 	u.logger.Info("Creating menu option", "name", req.Name, "type", req.Type)
 
 	// Create menu option entity
-	menuOption, err := entity.NewMenuOption(req.Name, req.Type, req.IsRequired)
+	menuOption, err := entity.NewMenuOption(req.Name, vo.OptionType(req.Type), req.IsRequired)
 	if err != nil {
 		u.logger.Error("Error creating menu option entity", "error", err, "name", req.Name, "type", req.Type)
 		return nil, err
@@ -87,7 +88,7 @@ func (u *menuOptionUsecase) UpdateMenuOption(ctx context.Context, id int, req *U
 
 	// Update fields
 	currentOption.Name = req.Name
-	currentOption.Type = req.Type
+	currentOption.Type = vo.OptionType(req.Type)
 	currentOption.IsRequired = req.IsRequired
 
 	// Validate updated entity
@@ -166,7 +167,7 @@ func (u *menuOptionUsecase) toMenuOptionResponse(option *entity.MenuOption) *Men
 	return &MenuOptionResponse{
 		ID:         option.ID,
 		Name:       option.Name,
-		Type:       option.Type,
+		Type:       option.Type.String(),
 		IsRequired: option.IsRequired,
 	}
 }

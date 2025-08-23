@@ -89,6 +89,23 @@ func (r *orderRepository) List(ctx context.Context, limit, offset int) ([]*entit
 
 	return r.modelsToEntities(dbOrders)
 }
+func (r *orderRepository) ListWithItems(ctx context.Context, limit, offset int) ([]*entity.Order, error) {
+	var dbOrders []model.Order
+
+	query := r.db.WithContext(ctx)
+	if limit > 0 {
+		query = query.Limit(limit)
+	}
+	if offset > 0 {
+		query = query.Offset(offset)
+	}
+
+	if err := query.Preload("OrderItems").Find(&dbOrders).Error; err != nil {
+		return nil, err
+	}
+
+	return r.modelsToEntities(dbOrders)
+}
 
 func (r *orderRepository) ListByTable(ctx context.Context, tableID int, limit, offset int) ([]*entity.Order, error) {
 	var dbOrders []model.Order
@@ -312,9 +329,18 @@ func (r *orderRepository) orderItemModelToEntity(dbItem *model.OrderItem) (*enti
 func (r *orderRepository) modelsToEntities(dbOrders []model.Order) ([]*entity.Order, error) {
 	entities := make([]*entity.Order, len(dbOrders))
 	for i, dbOrder := range dbOrders {
-		entity, err := r.modelToEntity(&dbOrder)
-		if err != nil {
-			return nil, err
+		var entity *entity.Order
+		var err error
+		if dbOrder.OrderItems != nil {
+			entity, err = r.modelToEntityWithItems(&dbOrder)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			entity, err = r.modelToEntity(&dbOrder)
+			if err != nil {
+				return nil, err
+			}
 		}
 		entities[i] = entity
 	}

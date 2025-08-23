@@ -10,3 +10,9 @@ func HashSha256(data []byte) string {
 	hasher.Write(data)
 	return hex.EncodeToString(hasher.Sum(nil))
 }
+func StringValue(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}

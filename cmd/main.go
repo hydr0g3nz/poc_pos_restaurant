@@ -65,6 +65,11 @@ func main() {
 	orderItemRepo := repoContainer.OrderItemRepository()
 	paymentRepo := repoContainer.PaymentRepository()
 	revenueRepo := repoContainer.RevenueRepository() // New revenue repository
+	kitchenStationRepo := repoContainer.KitchenStationRepository()
+	orderItemOptionRepo := repoContainer.OrderItemOptionRepository()
+	menuOptionRepo := repoContainer.MenuOptionRepository()
+	optionValueRepo := repoContainer.OptionValueRepository()
+	// menuItemOptionRepo := repoContainer.MenuItemOptionRepository()
 
 	// Setup domain services
 	orderService := service.NewOrderService(orderRepo, orderItemRepo, tableRepo, menuItemRepo)
@@ -74,13 +79,14 @@ func main() {
 	// Setup use cases
 	userUsecase := usecase.NewUserUsecase(userRepo, logger, cfg)
 	categoryUsecase := usecase.NewCategoryUsecase(categoryRepo, logger, cfg)
-	menuItemUsecase := usecase.NewMenuItemUsecase(menuItemRepo, categoryRepo, logger, cfg)
+	menuItemUsecase := usecase.NewMenuItemUsecase(menuItemRepo, categoryRepo, kitchenStationRepo, logger, cfg)
 	tableUsecase := usecase.NewTableUsecase(tableRepo, logger, cfg)
 	orderUsecase := usecase.NewOrderUsecase(orderRepo, orderItemRepo, tableRepo, menuItemRepo, orderService, qrCodeService, printerMock, logger, cfg)
 	paymentUsecase := usecase.NewPaymentUsecase(paymentRepo, orderRepo, orderService, logger, cfg)
 	// qrCodeUsecase := usecase.NewQRCodeUsecase(tableRepo, orderRepo, qrCodeService, orderUsecase, logger, cfg)
 	revenueUsecase := usecase.NewRevenueUsecase(revenueRepo, paymentRepo, orderRepo, logger, cfg) // New revenue usecase
-
+	kitchenUsecase := usecase.NewKitchenUsecase(orderItemRepo, orderRepo, menuItemRepo, tableRepo, orderItemOptionRepo, menuOptionRepo, optionValueRepo, logger, cfg)
+	kitchenStationUsecase := usecase.NewKitchenStationUsecase(kitchenStationRepo, logger, cfg)
 	// Setup controllers
 	userController := controller.NewUserController(userUsecase, errorPresenter)
 	categoryController := controller.NewCategoryController(categoryUsecase, errorPresenter)
@@ -89,7 +95,8 @@ func main() {
 	orderController := controller.NewOrderController(orderUsecase, errorPresenter)
 	paymentController := controller.NewPaymentController(paymentUsecase, errorPresenter)
 	revenueController := controller.NewRevenueController(revenueUsecase, errorPresenter) // New revenue controller
-
+	kitchenController := controller.NewKitchenController(kitchenUsecase, kitchenStationUsecase, errorPresenter)
+	customController := controller.NewCustomerController(categoryUsecase, menuItemUsecase, errorPresenter)
 	// Setup fiber server
 	app := infrastructure.NewFiber(infrastructure.ServerConfig{
 		Address:      cfg.Server.Port,
@@ -106,11 +113,12 @@ func main() {
 	orderController.RegisterRoutes(api)
 	paymentController.RegisterRoutes(api)
 	revenueController.RegisterRoutes(api) // Register revenue routes
-
+	kitchenController.RegisterRoutes(api)
+	customController.RegisterRoutes(api)
 	// Graceful shutdown
 	go func() {
 		logger.Info("Server starting", "port", cfg.Server.Port)
-		if err := app.Listen(":" + cfg.Server.Port); err != nil {
+		if err := app.Listen(cfg.Server.Host + ":" + cfg.Server.Port); err != nil {
 			logger.Fatal("Failed to start server", "error", err)
 		}
 	}()

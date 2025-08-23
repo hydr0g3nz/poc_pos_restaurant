@@ -15,6 +15,7 @@ import (
 type menuItemUsecase struct {
 	menuItemRepo repository.MenuItemRepository
 	categoryRepo repository.CategoryRepository
+	kitchenRepo  repository.KitchenStationRepository
 	logger       infra.Logger
 	config       *config.Config
 }
@@ -23,12 +24,14 @@ type menuItemUsecase struct {
 func NewMenuItemUsecase(
 	menuItemRepo repository.MenuItemRepository,
 	categoryRepo repository.CategoryRepository,
+	kitchenRepo repository.KitchenStationRepository,
 	logger infra.Logger,
 	config *config.Config,
 ) MenuItemUsecase {
 	return &menuItemUsecase{
 		menuItemRepo: menuItemRepo,
 		categoryRepo: categoryRepo,
+		kitchenRepo:  kitchenRepo,
 		logger:       logger,
 		config:       config,
 	}
@@ -48,7 +51,16 @@ func (u *menuItemUsecase) CreateMenuItem(ctx context.Context, req *CreateMenuIte
 		u.logger.Warn("Category not found", "categoryID", req.CategoryID)
 		return nil, errs.ErrCategoryNotFound
 	}
-
+	// validate kitchen exists
+	kitchen, err := u.kitchenRepo.GetByID(ctx, req.KitchenStationID)
+	if err != nil {
+		u.logger.Error("Error getting kitchen", "error", err, "kitchenID", req.KitchenStationID)
+		return nil, fmt.Errorf("failed to get kitchen: %w", err)
+	}
+	if kitchen == nil {
+		u.logger.Warn("Kitchen not found", "kitchenID", req.KitchenStationID)
+		return nil, errs.ErrKitchenNotFound
+	}
 	// Create menu item entity
 	menuItem, err := entity.NewMenuItem(req.CategoryID, req.Name, req.Description, req.Price)
 	if err != nil {
@@ -65,7 +77,7 @@ func (u *menuItemUsecase) CreateMenuItem(ctx context.Context, req *CreateMenuIte
 
 	u.logger.Info("Menu item created successfully", "menuItemID", createdMenuItem.ID, "name", createdMenuItem.Name)
 
-	return u.toMenuItemResponse(createdMenuItem, category), nil
+	return u.toMenuItemResponse(createdMenuItem), nil
 }
 
 // GetMenuItem retrieves menu item by ID
@@ -81,15 +93,7 @@ func (u *menuItemUsecase) GetMenuItem(ctx context.Context, id int) (*MenuItemRes
 		u.logger.Warn("Menu item not found", "menuItemID", id)
 		return nil, errs.ErrMenuItemNotFound
 	}
-
-	// Get category information
-	category, err := u.categoryRepo.GetByID(ctx, menuItem.CategoryID)
-	if err != nil {
-		u.logger.Error("Error getting category for menu item", "error", err, "categoryID", menuItem.CategoryID)
-		return nil, fmt.Errorf("failed to get category: %w", err)
-	}
-
-	return u.toMenuItemResponse(menuItem, category), nil
+	return u.toMenuItemResponse(menuItem), nil
 }
 
 // UpdateMenuItem updates menu item information
@@ -136,7 +140,7 @@ func (u *menuItemUsecase) UpdateMenuItem(ctx context.Context, id int, req *Updat
 
 	u.logger.Info("Menu item updated successfully", "menuItemID", id)
 
-	return u.toMenuItemResponse(updatedMenuItem, category), nil
+	return u.toMenuItemResponse(updatedMenuItem), nil
 }
 
 // DeleteMenuItem deletes a menu item
@@ -257,24 +261,29 @@ func (u *menuItemUsecase) SearchMenuItems(ctx context.Context, query string, lim
 // Helper methods
 
 // toMenuItemResponse converts entity to response
-func (u *menuItemUsecase) toMenuItemResponse(menuItem *entity.MenuItem, category *entity.Category) *MenuItemResponse {
+func (u *menuItemUsecase) toMenuItemResponse(menuItem *entity.MenuItem) *MenuItemResponse {
 	response := &MenuItemResponse{
-		ID:          menuItem.ID,
-		CategoryID:  menuItem.CategoryID,
-		Name:        menuItem.Name,
-		Description: menuItem.Description,
-		Price:       menuItem.Price.AmountBaht(),
-		CreatedAt:   menuItem.CreatedAt,
+		ID:            menuItem.ID,
+		CategoryID:    menuItem.CategoryID,
+		Name:          menuItem.Name,
+		Description:   menuItem.Description,
+		Price:         menuItem.Price.AmountBaht(),
+		IsActive:      menuItem.IsActive,
+		IsRecommended: menuItem.IsRecommended,
+		DisplayOrder:  menuItem.DisplayOrder,
+		// CreatedAt:   menuItem.CreatedAt,
 	}
 
-	if category != nil {
-		response.Category = &CategoryResponse{
-			ID:        category.ID,
-			Name:      category.Name,
-			CreatedAt: category.CreatedAt,
-		}
+	if menuItem.Category != nil {
+		response.Category = menuItem.Category.Name
 	}
 
+	if menuItem.KitchenStation != nil {
+		response.KitchenStation = menuItem.KitchenStation.Name
+	}
+	if menuItem.MenuItemOptions != nil {
+		response.MenuOption = menuItem.MenuItemOptions
+	}
 	return response
 }
 
@@ -282,29 +291,8 @@ func (u *menuItemUsecase) toMenuItemResponse(menuItem *entity.MenuItem, category
 func (u *menuItemUsecase) toMenuItemResponses(ctx context.Context, menuItems []*entity.MenuItem) ([]*MenuItemResponse, error) {
 	responses := make([]*MenuItemResponse, len(menuItems))
 
-	// Create a map to cache categories and avoid repeated database calls
-	categoryCache := make(map[int]*entity.Category)
-
 	for i, menuItem := range menuItems {
-		var category *entity.Category
-		var err error
-
-		// Check if category is already cached
-		if cachedCategory, exists := categoryCache[menuItem.CategoryID]; exists {
-			category = cachedCategory
-		} else {
-			// Get category from database and cache it
-			category, err = u.categoryRepo.GetByID(ctx, menuItem.CategoryID)
-			if err != nil {
-				u.logger.Error("Error getting category for menu item", "error", err, "categoryID", menuItem.CategoryID)
-				return nil, fmt.Errorf("failed to get category: %w", err)
-			}
-			if category != nil {
-				categoryCache[menuItem.CategoryID] = category
-			}
-		}
-
-		responses[i] = u.toMenuItemResponse(menuItem, category)
+		responses[i] = u.toMenuItemResponse(menuItem)
 	}
 
 	return responses, nil

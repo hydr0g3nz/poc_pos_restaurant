@@ -58,6 +58,7 @@ type Repository interface {
 	OrderItemOptionRepository() OrderItemOptionRepository
 	PaymentRepository() PaymentRepository
 	RevenueRepository() RevenueRepository
+	KitchenStationRepository() KitchenStationRepository
 }
 
 type DBTransaction interface {
@@ -118,6 +119,7 @@ type OrderRepository interface {
 	Update(ctx context.Context, order *entity.Order) (*entity.Order, error)
 	Delete(ctx context.Context, id int) error
 	List(ctx context.Context, limit, offset int) ([]*entity.Order, error)
+	ListWithItems(ctx context.Context, limit, offset int) ([]*entity.Order, error)
 	ListByTable(ctx context.Context, tableID int, limit, offset int) ([]*entity.Order, error)
 	GetOpenOrderByTable(ctx context.Context, tableID int) (*entity.Order, error)
 	GetOrderByQRCode(ctx context.Context, qrCode string) (*entity.Order, error)
@@ -155,4 +157,13 @@ type RevenueRepository interface {
 	GetDailyRevenueRange(ctx context.Context, startDate, endDate time.Time) ([]*entity.DailyRevenue, error)
 	GetMonthlyRevenueRange(ctx context.Context, startDate, endDate time.Time) ([]*entity.MonthlyRevenue, error)
 	GetTotalRevenue(ctx context.Context, startDate, endDate time.Time) (float64, error)
+}
+
+type KitchenStationRepository interface {
+	Create(ctx context.Context, option *entity.KitchenStation) (*entity.KitchenStation, error)
+	GetByID(ctx context.Context, id int) (*entity.KitchenStation, error)
+	GetByType(ctx context.Context, optionType string) ([]*entity.KitchenStation, error)
+	Update(ctx context.Context, option *entity.KitchenStation) (*entity.KitchenStation, error)
+	Delete(ctx context.Context, id int) error
+	List(ctx context.Context, limit, offset int) ([]*entity.KitchenStation, error)
 }

@@ -2,14 +2,16 @@ package entity
 
 import (
 	errs "github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/error"
+	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/vo"
 )
 
 // MenuOption represents a menu option domain entity
 type MenuOption struct {
-	ID         int    `json:"id"`
-	Name       string `json:"name"`
-	Type       string `json:"type"`
-	IsRequired bool   `json:"isRequired"`
+	ID           int            `json:"id"`
+	Name         string         `json:"name"`
+	Type         vo.OptionType  `json:"type"`
+	IsRequired   bool           `json:"isRequired"`
+	OptionValues []*OptionValue `json:"optionValues"`
 }
 
 func (mo *MenuOption) IsValid() bool {
@@ -17,7 +19,7 @@ func (mo *MenuOption) IsValid() bool {
 }
 
 // NewMenuOption creates a new menu option
-func NewMenuOption(name, optionType string, isRequired bool) (*MenuOption, error) {
+func NewMenuOption(name string, optionType vo.OptionType, isRequired bool) (*MenuOption, error) {
 	if name == "" || optionType == "" {
 		return nil, errs.ErrInvalidMenuOption
 	}

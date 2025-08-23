@@ -65,6 +65,7 @@ var (
 	//
 	ErrInvalidItemStatus   = NewValidationError("item_status", "must be 'pending', 'preparing', 'ready', or 'served'", nil)
 	ErrInvalidCategoryName = NewValidationError("category_name", "must be non-empty", nil)
+	ErrKitchenNotFound     = NewNotFoundError("kitchen", nil)
 )
 
 // ==========================================
