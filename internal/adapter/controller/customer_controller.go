@@ -180,3 +180,63 @@ func (c *CustomerController) ManageOrderItemList(ctx *fiber.Ctx) error {
 		"data":    responses,
 	})
 }
+
+func (c *CustomerController) GetOrderDetailWithOptions(ctx *fiber.Ctx) error {
+	orderIDParam := ctx.Params("id")
+	if orderIDParam == "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Status:  fiber.StatusBadRequest,
+			Message: "Order ID is required",
+		})
+	}
+
+	orderID, err := strconv.Atoi(orderIDParam)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Status:  fiber.StatusBadRequest,
+			Message: "Invalid order ID format",
+		})
+	}
+
+	response, err := c.orderUseCase.GetOrderDetailWithOptions(ctx.Context(), orderID)
+	if err != nil {
+		return HandleError(ctx, err, c.errorPresenter)
+	}
+
+	return SuccessResp(ctx, fiber.StatusOK, "Order detail retrieved successfully", response)
+}
+func (c *CustomerController) GetOrderDetailByStatus(ctx *fiber.Ctx) error {
+	status := ctx.Query("status")
+	if status == "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Status:  fiber.StatusBadRequest,
+			Message: "Status is required",
+		})
+	}
+	limit, _ := strconv.Atoi(ctx.Query("limit", "10"))
+	page, _ := strconv.Atoi(ctx.Query("page", "1"))
+	offset := (page - 1) * limit
+	if limit <= 0 || limit > 100 {
+		limit = 10
+	}
+	response, err := c.orderUseCase.GetOrdersByStatusWithDetails(ctx.Context(), status, limit, offset)
+	if err != nil {
+		return HandleError(ctx, err, c.errorPresenter)
+	}
+
+	return SuccessResp(ctx, fiber.StatusOK, "Order detail retrieved successfully", response)
+}
+func (c *CustomerController) ListOrderItems(ctx *fiber.Ctx) error {
+	limit, _ := strconv.Atoi(ctx.Query("limit", "10"))
+	page, _ := strconv.Atoi(ctx.Query("page", "1"))
+	offset := (page - 1) * limit
+	if limit <= 0 || limit > 100 {
+		limit = 10
+	}
+	response, err := c.orderUseCase.ListOrdersWithItemsAndCount(ctx.Context(), limit, offset)
+	if err != nil {
+		return HandleError(ctx, err, c.errorPresenter)
+	}
+
+	return SuccessResp(ctx, fiber.StatusOK, "Order items retrieved successfully", response)
+}

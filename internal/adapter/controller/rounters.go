@@ -174,9 +174,10 @@ func (c *CustomerController) RegisterRoutes(router fiber.Router) {
 	customerGroup.Get("/menu/search", c.SearchMenuItems)
 	customerGroup.Get("/category", c.ListCategory)
 	// order
-	// customerGroup.Post("/orders", c.CreateOrder)
+
 	customerGroup.Post("/orders/items", c.ManageOrderItemList)
-	// customerGroup.Post("/", c.CreateCustomer)
-	// customerGroup.Put("/:id", c.UpdateCustomer)
-	// customerGroup.Delete("/:id", c.DeleteCustomer)
+	customerGroup.Get("/orders/status", c.GetOrderDetailByStatus)
+	customerGroup.Get("/orders", c.ListOrderItems)
+	customerGroup.Get("/orders/:id", c.GetOrderDetailWithOptions)
+
 }

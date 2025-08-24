@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hydr0g3nz/poc_pos_restuarant/config"
@@ -1386,4 +1387,276 @@ func (u *orderUsecase) UpdateOrderItemList(ctx context.Context, req *UpdateOrder
 	}
 
 	return u.ManageOrderItemList(ctx, newReq)
+}
+
+// ListOrdersWithCount retrieves all orders with accurate count
+func (u *orderUsecase) ListOrdersWithCount(ctx context.Context, limit, offset int) (*OrderListResponse, error) {
+	u.logger.Debug("Listing orders with count", "limit", limit, "offset", offset)
+
+	orders, err := u.orderRepo.List(ctx, limit, offset)
+	if err != nil {
+		u.logger.Error("Error listing orders", "error", err)
+		return nil, fmt.Errorf("failed to list orders: %w", err)
+	}
+
+	// Get total count (assuming repository has this method)
+	total, err := u.orderRepo.Count(ctx)
+	if err != nil {
+		u.logger.Error("Error counting orders", "error", err)
+		// Fallback to length of current result
+		total = len(orders)
+	}
+
+	return &OrderListResponse{
+		Orders: u.toOrderResponses(orders),
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	}, nil
+}
+
+// ListOrdersWithItemsAndCount retrieves orders with items and accurate count
+func (u *orderUsecase) ListOrdersWithItemsAndCount(ctx context.Context, limit, offset int) (*OrderWithItemsListResponse, error) {
+	u.logger.Debug("Listing orders with items and count", "limit", limit, "offset", offset)
+
+	orders, err := u.orderRepo.ListWithItems(ctx, limit, offset)
+	if err != nil {
+		u.logger.Error("Error listing orders with items", "error", err)
+		return nil, fmt.Errorf("failed to list orders with items: %w", err)
+	}
+
+	// Get total count
+	total, err := u.orderRepo.Count(ctx)
+	if err != nil {
+		u.logger.Error("Error counting orders", "error", err)
+		total = len(orders)
+	}
+
+	return &OrderWithItemsListResponse{
+		Orders: u.toOrderWithItemsResponses(orders),
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	}, nil
+}
+
+// SearchOrders searches orders with filters
+func (u *orderUsecase) SearchOrders(ctx context.Context, req *OrderSearchRequest) (*OrderWithItemsListResponse, error) {
+	u.logger.Debug("Searching orders", "request", req)
+
+	var orders []*entity.Order
+	var err error
+
+	// Apply filters based on request
+	if req.TableID != nil {
+		orders, err = u.orderRepo.ListByTable(ctx, *req.TableID, req.Limit, req.Offset)
+	} else if req.Status != "" {
+		orders, err = u.orderRepo.ListByStatus(ctx, req.Status, req.Limit, req.Offset)
+	} else if req.StartDate != nil && req.EndDate != nil {
+		orders, err = u.orderRepo.ListByDateRange(ctx, *req.StartDate, *req.EndDate, req.Limit, req.Offset)
+	} else {
+		orders, err = u.orderRepo.ListWithItems(ctx, req.Limit, req.Offset)
+	}
+
+	if err != nil {
+		u.logger.Error("Error searching orders", "error", err)
+		return nil, fmt.Errorf("failed to search orders: %w", err)
+	}
+
+	// Filter by search term if provided
+	if req.Search != "" {
+		orders = u.filterOrdersBySearch(orders, req.Search)
+	}
+
+	return &OrderWithItemsListResponse{
+		Orders: u.toOrderWithItemsResponses(orders),
+		Total:  len(orders),
+		Limit:  req.Limit,
+		Offset: req.Offset,
+	}, nil
+}
+
+// GetOrderDetailWithOptions gets order with full details including item options
+func (u *orderUsecase) GetOrderDetailWithOptions(ctx context.Context, id int) (*OrderDetailResponse, error) {
+	u.logger.Debug("Getting order detail with options", "orderID", id)
+
+	order, err := u.orderRepo.GetByIDWithItems(ctx, id)
+	if err != nil {
+		u.logger.Error("Error getting order detail", "error", err, "orderID", id)
+		return nil, fmt.Errorf("failed to get order detail: %w", err)
+	}
+	if order == nil {
+		u.logger.Warn("Order not found", "orderID", id)
+		return nil, errs.ErrOrderNotFound
+	}
+
+	// Get table information
+	var table *entity.Table
+	if order.TableID > 0 {
+		table, err = u.tableRepo.GetByID(ctx, order.TableID)
+		if err != nil {
+			u.logger.Warn("Error getting table information", "error", err, "tableID", order.TableID)
+		}
+	}
+
+	// Get payment information if order is completed
+	var payment *entity.Payment
+	if order.IsClosed() {
+		// Assuming you have access to payment repository
+		// payment, err = u.paymentRepo.GetByOrderID(ctx, order.ID)
+		// if err != nil {
+		//     u.logger.Warn("Error getting payment information", "error", err, "orderID", order.ID)
+		// }
+	}
+
+	return u.toOrderDetailResponse(order, table, payment), nil
+}
+
+// GetOrdersByStatusWithDetails gets orders by status with full details
+func (u *orderUsecase) GetOrdersByStatusWithDetails(ctx context.Context, status string, limit, offset int) (*OrderWithItemsListResponse, error) {
+	u.logger.Debug("Getting orders by status with details", "status", status, "limit", limit, "offset", offset)
+
+	// Validate status
+	if _, err := vo.NewOrderStatus(status); err != nil {
+		u.logger.Error("Invalid order status", "error", err, "status", status)
+		return nil, err
+	}
+
+	orders, err := u.orderRepo.ListByStatus(ctx, status, limit, offset)
+	if err != nil {
+		u.logger.Error("Error getting orders by status", "error", err, "status", status)
+		return nil, fmt.Errorf("failed to get orders by status: %w", err)
+	}
+
+	// Load items for each order
+	for _, order := range orders {
+		items, err := u.orderItemRepo.ListByOrder(ctx, order.ID)
+		if err != nil {
+			u.logger.Warn("Error loading items for order", "error", err, "orderID", order.ID)
+			continue
+		}
+		order.Items = items
+	}
+
+	return &OrderWithItemsListResponse{
+		Orders: u.toOrderWithItemsResponses(orders),
+		Total:  len(orders),
+		Limit:  limit,
+		Offset: offset,
+	}, nil
+}
+
+// Helper methods
+
+// filterOrdersBySearch filters orders by search term
+func (u *orderUsecase) filterOrdersBySearch(orders []*entity.Order, search string) []*entity.Order {
+	if search == "" {
+		return orders
+	}
+
+	var filtered []*entity.Order
+	searchLower := strings.ToLower(search)
+
+	for _, order := range orders {
+		// Search by order ID or order number
+		if strings.Contains(strings.ToLower(fmt.Sprintf("%d", order.ID)), searchLower) ||
+			strings.Contains(strings.ToLower(fmt.Sprintf("%d", order.OrderNumber)), searchLower) ||
+			strings.Contains(strings.ToLower(order.Notes), searchLower) {
+			filtered = append(filtered, order)
+			continue
+		}
+
+		// Search in order items
+		for _, item := range order.Items {
+			if strings.Contains(strings.ToLower(item.Name), searchLower) {
+				filtered = append(filtered, order)
+				break
+			}
+		}
+	}
+
+	return filtered
+}
+
+// toOrderDetailResponse converts entity to detailed response
+func (u *orderUsecase) toOrderDetailResponse(order *entity.Order, table *entity.Table, payment *entity.Payment) *OrderDetailResponse {
+	response := &OrderDetailResponse{
+		ID:                  order.ID,
+		OrderNumber:         order.OrderNumber,
+		TableID:             order.TableID,
+		Status:              order.OrderStatus.String(),
+		Notes:               order.Notes,
+		SpecialInstructions: order.SpecialInstructions,
+		Items:               u.toOrderItemDetailResponses(order.Items),
+		ItemCount:           order.GetItemCount(),
+		Subtotal:            order.CalculateTotal().AmountBaht(),
+		Discount:            order.CalculateDiscount().AmountBaht(),
+		Tax:                 order.CalculateTax().AmountBaht(),
+		Total:               order.CalculateTotal().AmountBaht(), // Adjust based on your business logic
+		CreatedAt:           order.CreatedAt,
+		UpdatedAt:           order.UpdatedAt,
+		ClosedAt:            order.ClosedAt,
+	}
+
+	if order.PaymentStatus != "" {
+		response.PaymentStatus = order.PaymentStatus.String()
+	}
+
+	if table != nil {
+		response.TableNumber = table.TableNumber
+		response.Table = &TableResponse{
+			ID:          table.ID,
+			TableNumber: table.TableNumber,
+			Seating:     table.Seating,
+		}
+	}
+
+	if payment != nil {
+		response.Payment = &PaymentResponse{
+			ID:      payment.ID,
+			OrderID: payment.OrderID,
+			Amount:  payment.Amount.AmountBaht(),
+			Method:  payment.Method.String(),
+			PaidAt:  payment.PaidAt,
+		}
+	}
+
+	return response
+}
+
+// toOrderItemDetailResponses converts order items to detailed responses with options
+func (u *orderUsecase) toOrderItemDetailResponses(items []*entity.OrderItem) []*OrderItemDetailResponse {
+	responses := make([]*OrderItemDetailResponse, len(items))
+
+	for i, item := range items {
+		response := &OrderItemDetailResponse{
+			ID:             item.ID,
+			OrderID:        item.OrderID,
+			ItemID:         item.ItemID,
+			Name:           item.Name,
+			Quantity:       item.Quantity,
+			UnitPrice:      item.UnitPrice.AmountBaht(),
+			Subtotal:       item.CalculateSubtotal().AmountBaht(),
+			KitchenStation: item.KitchenStation,
+			KitchenNotes:   item.KitchenNotes,
+			CreatedAt:      item.CreatedAt,
+			UpdatedAt:      item.UpdatedAt,
+		}
+
+		if item.ItemStatus != "" {
+			response.Status = item.ItemStatus.String()
+		}
+
+		// Get item options if needed
+		if u.orderItemOptionUsecase != nil {
+			options, err := u.orderItemOptionUsecase.GetOrderItemOptions(context.Background(), item.ID)
+			if err == nil {
+				response.Options = options
+			}
+		}
+
+		responses[i] = response
+	}
+
+	return responses
 }

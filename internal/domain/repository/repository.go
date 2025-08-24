@@ -126,6 +126,10 @@ type OrderRepository interface {
 	GetOrderByQRCode(ctx context.Context, qrCode string) (*entity.Order, error)
 	ListByStatus(ctx context.Context, status string, limit, offset int) ([]*entity.Order, error)
 	ListByDateRange(ctx context.Context, startDate, endDate time.Time, limit, offset int) ([]*entity.Order, error)
+	Count(ctx context.Context) (int, error)
+	CountByStatus(ctx context.Context, status string) (int, error)
+	CountByTable(ctx context.Context, tableID int) (int, error)
+	CountByDateRange(ctx context.Context, startDate, endDate time.Time) (int, error)
 }
 
 // OrderItemRepository handles order item operations

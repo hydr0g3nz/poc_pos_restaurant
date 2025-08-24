@@ -356,3 +356,37 @@ func (r *orderRepository) modelsToEntities(dbOrders []model.Order) ([]*entity.Or
 	}
 	return entities, nil
 }
+
+// Count(ctx context.Context) (int, error)
+//
+//	CountByStatus(ctx context.Context, status string) (int, error)
+//	CountByTable(ctx context.Context, tableID int) (int, error)
+//	CountByDateRange(ctx context.Context, startDate, endDate time.Time) (int, error)
+func (r *orderRepository) CountByStatus(ctx context.Context, status string) (int, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).Model(&model.Order{}).Where("order_status = ?", status).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return int(count), nil
+}
+func (r *orderRepository) CountByTable(ctx context.Context, tableID int) (int, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).Model(&model.Order{}).Where("table_id = ?", tableID).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return int(count), nil
+}
+func (r *orderRepository) CountByDateRange(ctx context.Context, startDate, endDate time.Time) (int, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).Model(&model.Order{}).Where("created_at BETWEEN ? AND ?", startDate, endDate).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return int(count), nil
+}
+func (r *orderRepository) Count(ctx context.Context) (int, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).Model(&model.Order{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return int(count), nil
+}

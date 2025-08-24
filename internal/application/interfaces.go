@@ -63,6 +63,19 @@ type OrderUsecase interface {
 	ManageOrderItemList(ctx context.Context, req *ManageOrderItemListRequest) ([]*OrderItemResponse, error)
 	// Calculate bill
 	CalculateOrderTotal(ctx context.Context, orderID int) (*OrderTotalResponse, error)
+
+	// Enhanced listing with better pagination and filters
+	ListOrdersWithCount(ctx context.Context, limit, offset int) (*OrderListResponse, error)
+	ListOrdersWithItemsAndCount(ctx context.Context, limit, offset int) (*OrderWithItemsListResponse, error)
+
+	// Search and filter orders
+	SearchOrders(ctx context.Context, req *OrderSearchRequest) (*OrderWithItemsListResponse, error)
+
+	// Get order detail with full information including options
+	GetOrderDetailWithOptions(ctx context.Context, id int) (*OrderDetailResponse, error)
+
+	// Get orders by status with enhanced information
+	GetOrdersByStatusWithDetails(ctx context.Context, status string, limit, offset int) (*OrderWithItemsListResponse, error)
 }
 
 // PaymentUsecase handles payment business logic

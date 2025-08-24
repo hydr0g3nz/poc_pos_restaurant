@@ -552,3 +552,55 @@ type OrderItemOptionManageRequest struct {
 	OptionValID int    `json:"option_val_id" validate:"required,gt=0"`
 	Action      string `json:"action,omitempty" validate:"omitempty,oneof=add update delete"` // default: add
 }
+
+// Order Search Request
+type OrderSearchRequest struct {
+	PaginationRequest
+	TableID   *int       `json:"table_id,omitempty"`
+	Status    string     `json:"status,omitempty"`
+	StartDate *time.Time `json:"start_date,omitempty"`
+	EndDate   *time.Time `json:"end_date,omitempty"`
+	Search    string     `json:"search,omitempty"` // search by order number or customer info
+}
+
+// Enhanced Order Detail Response with full information
+type OrderDetailResponse struct {
+	ID                  int                        `json:"id"`
+	OrderNumber         int                        `json:"order_number,omitempty"`
+	TableID             int                        `json:"table_id"`
+	TableNumber         int                        `json:"table_number,omitempty"`
+	Status              string                     `json:"status"`
+	PaymentStatus       string                     `json:"payment_status,omitempty"`
+	Notes               string                     `json:"notes,omitempty"`
+	SpecialInstructions string                     `json:"special_instructions,omitempty"`
+	Items               []*OrderItemDetailResponse `json:"items"`
+	ItemCount           int                        `json:"item_count"`
+	Subtotal            float64                    `json:"subtotal"`
+	Discount            float64                    `json:"discount,omitempty"`
+	Tax                 float64                    `json:"tax,omitempty"`
+	ServiceCharge       float64                    `json:"service_charge,omitempty"`
+	Total               float64                    `json:"total"`
+	CreatedAt           time.Time                  `json:"created_at"`
+	UpdatedAt           time.Time                  `json:"updated_at"`
+	ClosedAt            *time.Time                 `json:"closed_at,omitempty"`
+	Table               *TableResponse             `json:"table,omitempty"`
+	Payment             *PaymentResponse           `json:"payment,omitempty"`
+}
+
+// Enhanced Order Item Response with options
+type OrderItemDetailResponse struct {
+	ID             int                        `json:"id"`
+	OrderID        int                        `json:"order_id"`
+	ItemID         int                        `json:"item_id"`
+	Name           string                     `json:"name"`
+	Quantity       int                        `json:"quantity"`
+	UnitPrice      float64                    `json:"unit_price"`
+	Subtotal       float64                    `json:"subtotal"`
+	Status         string                     `json:"status,omitempty"`
+	KitchenStation string                     `json:"kitchen_station,omitempty"`
+	KitchenNotes   string                     `json:"kitchen_notes,omitempty"`
+	Options        []*OrderItemOptionResponse `json:"options,omitempty"`
+	CreatedAt      time.Time                  `json:"created_at"`
+	UpdatedAt      time.Time                  `json:"updated_at"`
+	MenuItem       *MenuItemResponse          `json:"menu_item,omitempty"`
+}
