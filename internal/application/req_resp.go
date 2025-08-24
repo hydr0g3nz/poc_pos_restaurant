@@ -530,3 +530,25 @@ type OrderItemOptionUpdateRequest struct {
 	OptionValID int    `json:"option_val_id" validate:"required,gt=0"`
 	Action      string `json:"action,omitempty" validate:"omitempty,oneof=add update delete"` // add, update, delete
 }
+
+// เพิ่มใน internal/application/req_resp.go
+
+// ManageOrderItemListRequest - รวม add และ update เข้าด้วยกัน
+type ManageOrderItemListRequest struct {
+	OrderID int                           `json:"order_id" validate:"required,gt=0"`
+	Items   []*ManageOrderItemItemRequest `json:"items" validate:"required,dive,required"`
+}
+
+type ManageOrderItemItemRequest struct {
+	OrderItemID *int                            `json:"order_item_id,omitempty"` // nil สำหรับ add, มีค่าสำหรับ update/delete
+	MenuItemID  int                             `json:"menu_item_id" validate:"required,gt=0"`
+	Quantity    int                             `json:"quantity" validate:"required,gte=0"` // 0 หมายถึง delete
+	Options     []*OrderItemOptionManageRequest `json:"options,omitempty"`
+	Action      string                          `json:"action,omitempty" validate:"omitempty,oneof=add update delete"` // default: add
+}
+
+type OrderItemOptionManageRequest struct {
+	OptionID    int    `json:"option_id" validate:"required,gt=0"`
+	OptionValID int    `json:"option_val_id" validate:"required,gt=0"`
+	Action      string `json:"action,omitempty" validate:"omitempty,oneof=add update delete"` // default: add
+}

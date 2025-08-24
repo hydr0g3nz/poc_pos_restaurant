@@ -60,6 +60,7 @@ type OrderUsecase interface {
 	RemoveOrderItem(ctx context.Context, id int) error
 	ListOrderItems(ctx context.Context, orderID int) ([]*OrderItemResponse, error)
 	UpdateOrderItemList(ctx context.Context, req *UpdateOrderItemListRequest) ([]*OrderItemResponse, error)
+	ManageOrderItemList(ctx context.Context, req *ManageOrderItemListRequest) ([]*OrderItemResponse, error)
 	// Calculate bill
 	CalculateOrderTotal(ctx context.Context, orderID int) (*OrderTotalResponse, error)
 }

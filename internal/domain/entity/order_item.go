@@ -45,16 +45,22 @@ func (oi *OrderItem) IsValid() bool {
 
 // NewOrderItem creates a new order item
 func NewOrderItem(orderID, itemID int, quantity int, unitPrice float64, name string) (*OrderItem, error) {
-	money, err := vo.NewMoneyFromBaht(unitPrice)
+	p, err := vo.NewMoneyFromBaht(unitPrice)
 	if err != nil {
 		return nil, err
 	}
+	// d, err := vo.NewMoneyFromBaht(discount)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return &OrderItem{
 		OrderID:   orderID,
 		ItemID:    itemID,
 		Quantity:  quantity,
-		UnitPrice: money,
+		UnitPrice: p,
+		Name:      name,
+		// Discount:  d,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}, nil
