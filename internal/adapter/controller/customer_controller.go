@@ -146,3 +146,20 @@ func (c *CustomerController) AddOrderItemList(ctx *fiber.Ctx) error {
 		"data":    responses,
 	})
 }
+func (c *CustomerController) UpdateOrderItemList(ctx *fiber.Ctx) error {
+	var req usecase.UpdateOrderItemListRequest
+	if err := ctx.BodyParser(&req); err != nil {
+		return HandleError(ctx, err, c.errorPresenter)
+	}
+
+	responses, err := c.orderUseCase.UpdateOrderItemList(ctx.Context(), &req)
+	if err != nil {
+		return HandleError(ctx, err, c.errorPresenter)
+	}
+
+	return ctx.JSON(fiber.Map{
+		"status":  "success",
+		"message": "Order items updated successfully",
+		"data":    responses,
+	})
+}

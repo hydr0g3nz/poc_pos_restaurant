@@ -33,8 +33,8 @@ func (r *orderItemOptionRepository) Create(ctx context.Context, itemOption *enti
 
 func (r *orderItemOptionRepository) GetByOrderItemID(ctx context.Context, orderItemID int) ([]*entity.OrderItemOption, error) {
 	var dbItemOptions []model.OrderItemOption
-
-	if err := r.db.WithContext(ctx).Where("order_item_id = ?", orderItemID).Find(&dbItemOptions).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Where("order_item_id = ?", orderItemID).Find(&dbItemOptions).Error; err != nil {
 		return nil, err
 	}
 

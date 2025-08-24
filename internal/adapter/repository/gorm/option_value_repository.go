@@ -34,7 +34,8 @@ func (r *optionValueRepository) Create(ctx context.Context, value *entity.Option
 func (r *optionValueRepository) GetByID(ctx context.Context, id int) (*entity.OptionValue, error) {
 	var dbValue model.OptionValue
 
-	if err := r.db.WithContext(ctx).First(&dbValue, id).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).First(&dbValue, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -47,7 +48,8 @@ func (r *optionValueRepository) GetByID(ctx context.Context, id int) (*entity.Op
 func (r *optionValueRepository) GetByOptionID(ctx context.Context, optionID int) ([]*entity.OptionValue, error) {
 	var dbValues []model.OptionValue
 
-	if err := r.db.WithContext(ctx).Where("option_id = ?", optionID).Find(&dbValues).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Where("option_id = ?", optionID).Find(&dbValues).Error; err != nil {
 		return nil, err
 	}
 
@@ -72,7 +74,8 @@ func (r *optionValueRepository) Delete(ctx context.Context, id int) error {
 func (r *optionValueRepository) List(ctx context.Context, limit, offset int) ([]*entity.OptionValue, error) {
 	var dbValues []model.OptionValue
 
-	query := r.db.WithContext(ctx)
+	db := getDB(r.db, ctx)
+	query := db.WithContext(ctx)
 	if limit > 0 {
 		query = query.Limit(limit)
 	}

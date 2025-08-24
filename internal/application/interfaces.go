@@ -59,7 +59,7 @@ type OrderUsecase interface {
 	UpdateOrderItem(ctx context.Context, id int, req *UpdateOrderItemRequest) (*OrderItemResponse, error)
 	RemoveOrderItem(ctx context.Context, id int) error
 	ListOrderItems(ctx context.Context, orderID int) ([]*OrderItemResponse, error)
-
+	UpdateOrderItemList(ctx context.Context, req *UpdateOrderItemListRequest) ([]*OrderItemResponse, error)
 	// Calculate bill
 	CalculateOrderTotal(ctx context.Context, orderID int) (*OrderTotalResponse, error)
 }
@@ -123,6 +123,8 @@ type OrderItemOptionUsecase interface {
 	UpdateOrderItemOption(ctx context.Context, req *UpdateOrderItemOptionRequest) (*OrderItemOptionResponse, error)
 	RemoveOptionFromOrderItem(ctx context.Context, orderItemID, optionID, valueID int) error
 	GetOrderItemOptions(ctx context.Context, orderItemID int) ([]*OrderItemOptionResponse, error)
+	RemoveAllOptionsFromOrderItem(ctx context.Context, orderItemID int) error
+	RemoveSpecificOptionFromOrderItem(ctx context.Context, orderItemID, optionID int) error
 }
 
 // KitchenUsecase - จัดการครัว/การเตรียมอาหาร

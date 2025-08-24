@@ -509,3 +509,24 @@ type OrderItemOptionRequest struct {
 	OptionID    int `json:"option_id" validate:"required,gt=0"`
 	OptionValID int `json:"option_val_id" validate:"required,gt=0"`
 }
+
+type UpdateOrderItemListRequest struct {
+	OrderID int                        `json:"order_id" validate:"required,gt=0"`
+	Items   []*UpdateOrderItemRequest2 `json:"items" validate:"required,dive,required"`
+}
+
+// เพิ่มใน internal/application/req_resp.go
+
+type UpdateOrderItemRequest2 struct {
+	OrderItemID int                             `json:"order_item_id" validate:"required,gt=0"`
+	MenuItemID  int                             `json:"menu_item_id" validate:"required,gt=0"`
+	Quantity    int                             `json:"quantity" validate:"required,gt=0"`
+	Options     []*OrderItemOptionUpdateRequest `json:"options,omitempty"`
+	Action      string                          `json:"action,omitempty" validate:"omitempty,oneof=update delete"`
+}
+
+type OrderItemOptionUpdateRequest struct {
+	OptionID    int    `json:"option_id" validate:"required,gt=0"`
+	OptionValID int    `json:"option_val_id" validate:"required,gt=0"`
+	Action      string `json:"action,omitempty" validate:"omitempty,oneof=add update delete"` // add, update, delete
+}

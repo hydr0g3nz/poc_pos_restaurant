@@ -34,7 +34,8 @@ func (r *orderItemRepository) Create(ctx context.Context, item *entity.OrderItem
 func (r *orderItemRepository) GetByID(ctx context.Context, id int) (*entity.OrderItem, error) {
 	var dbItem model.OrderItem
 
-	if err := r.db.WithContext(ctx).First(&dbItem, id).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).First(&dbItem, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -60,7 +61,8 @@ func (r *orderItemRepository) Delete(ctx context.Context, id int) error {
 
 func (r *orderItemRepository) ListByOrder(ctx context.Context, orderID int) ([]*entity.OrderItem, error) {
 	var dbItems []model.OrderItem
-	if err := r.db.WithContext(ctx).Where("order_id = ?", orderID).Find(&dbItems).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Where("order_id = ?", orderID).Find(&dbItems).Error; err != nil {
 		return nil, err
 	}
 
@@ -75,7 +77,8 @@ func (r *orderItemRepository) DeleteByOrder(ctx context.Context, orderID int) er
 func (r *orderItemRepository) GetByOrderAndItem(ctx context.Context, orderID, itemID int) (*entity.OrderItem, error) {
 	var dbItem model.OrderItem
 
-	if err := r.db.WithContext(ctx).Where("order_id = ? AND item_id = ?", orderID, itemID).First(&dbItem).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Where("order_id = ? AND item_id = ?", orderID, itemID).First(&dbItem).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}

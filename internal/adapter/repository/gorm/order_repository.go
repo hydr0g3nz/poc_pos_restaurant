@@ -35,7 +35,8 @@ func (r *orderRepository) Create(ctx context.Context, order *entity.Order) (*ent
 func (r *orderRepository) GetByID(ctx context.Context, id int) (*entity.Order, error) {
 	var dbOrder model.Order
 
-	if err := r.db.WithContext(ctx).First(&dbOrder, id).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).First(&dbOrder, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -48,7 +49,8 @@ func (r *orderRepository) GetByID(ctx context.Context, id int) (*entity.Order, e
 func (r *orderRepository) GetByIDWithItems(ctx context.Context, id int) (*entity.Order, error) {
 	var dbOrder model.Order
 
-	if err := r.db.WithContext(ctx).Preload("OrderItems").First(&dbOrder, id).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Preload("OrderItems").First(&dbOrder, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -76,7 +78,8 @@ func (r *orderRepository) Delete(ctx context.Context, id int) error {
 func (r *orderRepository) List(ctx context.Context, limit, offset int) ([]*entity.Order, error) {
 	var dbOrders []model.Order
 
-	query := r.db.WithContext(ctx)
+	db := getDB(r.db, ctx)
+	query := db.WithContext(ctx)
 	if limit > 0 {
 		query = query.Limit(limit)
 	}
@@ -93,7 +96,8 @@ func (r *orderRepository) List(ctx context.Context, limit, offset int) ([]*entit
 func (r *orderRepository) ListWithItems(ctx context.Context, limit, offset int) ([]*entity.Order, error) {
 	var dbOrders []model.Order
 
-	query := r.db.WithContext(ctx)
+	db := getDB(r.db, ctx)
+	query := db.WithContext(ctx)
 	if limit > 0 {
 		query = query.Limit(limit)
 	}
@@ -111,7 +115,8 @@ func (r *orderRepository) ListWithItems(ctx context.Context, limit, offset int) 
 func (r *orderRepository) ListByTable(ctx context.Context, tableID int, limit, offset int) ([]*entity.Order, error) {
 	var dbOrders []model.Order
 
-	query := r.db.WithContext(ctx).Where("table_id = ?", tableID)
+	db := getDB(r.db, ctx)
+	query := db.WithContext(ctx).Where("table_id = ?", tableID)
 	if limit > 0 {
 		query = query.Limit(limit)
 	}
@@ -129,7 +134,8 @@ func (r *orderRepository) ListByTable(ctx context.Context, tableID int, limit, o
 func (r *orderRepository) GetOpenOrderByTable(ctx context.Context, tableID int) (*entity.Order, error) {
 	var dbOrder model.Order
 
-	if err := r.db.WithContext(ctx).Where("table_id = ? AND order_status = ?", tableID, "open").First(&dbOrder).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Where("table_id = ? AND order_status = ?", tableID, "open").First(&dbOrder).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -142,7 +148,8 @@ func (r *orderRepository) GetOpenOrderByTable(ctx context.Context, tableID int) 
 func (r *orderRepository) GetOrderByQRCode(ctx context.Context, qrCode string) (*entity.Order, error) {
 	var dbOrder model.Order
 
-	if err := r.db.WithContext(ctx).Where("qr_code = ?", qrCode).First(&dbOrder).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Where("qr_code = ?", qrCode).First(&dbOrder).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -154,7 +161,8 @@ func (r *orderRepository) GetOrderByQRCode(ctx context.Context, qrCode string) (
 func (r *orderRepository) ListByStatus(ctx context.Context, status string, limit, offset int) ([]*entity.Order, error) {
 	var dbOrders []model.Order
 
-	query := r.db.WithContext(ctx).Where("order_status = ?", status)
+	db := getDB(r.db, ctx)
+	query := db.WithContext(ctx).Where("order_status = ?", status)
 	if limit > 0 {
 		query = query.Limit(limit)
 	}
@@ -172,7 +180,8 @@ func (r *orderRepository) ListByStatus(ctx context.Context, status string, limit
 func (r *orderRepository) ListByDateRange(ctx context.Context, startDate, endDate time.Time, limit, offset int) ([]*entity.Order, error) {
 	var dbOrders []model.Order
 
-	query := r.db.WithContext(ctx).Where("created_at BETWEEN ? AND ?", startDate, endDate)
+	db := getDB(r.db, ctx)
+	query := db.WithContext(ctx).Where("created_at BETWEEN ? AND ?", startDate, endDate)
 	if limit > 0 {
 		query = query.Limit(limit)
 	}

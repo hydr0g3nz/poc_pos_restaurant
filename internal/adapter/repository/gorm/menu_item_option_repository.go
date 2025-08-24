@@ -33,7 +33,8 @@ func (r *menuItemOptionRepository) Create(ctx context.Context, itemOption *entit
 func (r *menuItemOptionRepository) GetByItemID(ctx context.Context, itemID int) ([]*entity.MenuItemOption, error) {
 	var dbItemOptions []model.MenuItemOption
 
-	if err := r.db.WithContext(ctx).Where("item_id = ?", itemID).Find(&dbItemOptions).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Where("item_id = ?", itemID).Find(&dbItemOptions).Error; err != nil {
 		return nil, err
 	}
 
@@ -43,7 +44,8 @@ func (r *menuItemOptionRepository) GetByItemID(ctx context.Context, itemID int) 
 func (r *menuItemOptionRepository) GetByItemAndOption(ctx context.Context, itemID, optionID int) (*entity.MenuItemOption, error) {
 	var dbItemOption model.MenuItemOption
 
-	if err := r.db.WithContext(ctx).Where("item_id = ? AND option_id = ?", itemID, optionID).First(&dbItemOption).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Where("item_id = ? AND option_id = ?", itemID, optionID).First(&dbItemOption).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}

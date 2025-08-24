@@ -176,6 +176,7 @@ func (c *CustomerController) RegisterRoutes(router fiber.Router) {
 	// order
 	// customerGroup.Post("/orders", c.CreateOrder)
 	customerGroup.Post("/orders/items", c.AddOrderItemList)
+	customerGroup.Patch("/orders/items", c.UpdateOrderItemList)
 	// customerGroup.Post("/", c.CreateCustomer)
 	// customerGroup.Put("/:id", c.UpdateCustomer)
 	// customerGroup.Delete("/:id", c.DeleteCustomer)

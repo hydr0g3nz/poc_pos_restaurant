@@ -34,7 +34,8 @@ func (r *menuOptionRepository) Create(ctx context.Context, option *entity.MenuOp
 func (r *menuOptionRepository) GetByID(ctx context.Context, id int) (*entity.MenuOption, error) {
 	var dbOption model.MenuOption
 
-	if err := r.db.WithContext(ctx).First(&dbOption, id).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).First(&dbOption, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -62,7 +63,8 @@ func (r *menuOptionRepository) Delete(ctx context.Context, id int) error {
 func (r *menuOptionRepository) List(ctx context.Context, limit, offset int) ([]*entity.MenuOption, error) {
 	var dbOptions []model.MenuOption
 
-	query := r.db.WithContext(ctx)
+	db := getDB(r.db, ctx)
+	query := db.WithContext(ctx)
 	if limit > 0 {
 		query = query.Limit(limit)
 	}
@@ -80,7 +82,8 @@ func (r *menuOptionRepository) List(ctx context.Context, limit, offset int) ([]*
 func (r *menuOptionRepository) GetByType(ctx context.Context, optionType string) ([]*entity.MenuOption, error) {
 	var dbOptions []model.MenuOption
 
-	if err := r.db.WithContext(ctx).Where("type = ?", optionType).Find(&dbOptions).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Where("type = ?", optionType).Find(&dbOptions).Error; err != nil {
 		return nil, err
 	}
 

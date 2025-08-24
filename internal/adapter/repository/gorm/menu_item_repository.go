@@ -34,7 +34,8 @@ func (r *menuItemRepository) Create(ctx context.Context, item *entity.MenuItem) 
 func (r *menuItemRepository) GetByID(ctx context.Context, id int) (*entity.MenuItem, error) {
 	var dbItem model.MenuItem
 
-	if err := r.db.WithContext(ctx).
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).
 		Preload("Category").
 		Preload("KitchenStation").
 		Preload("MenuItemOptions").
@@ -68,7 +69,8 @@ func (r *menuItemRepository) Delete(ctx context.Context, id int) error {
 func (r *menuItemRepository) List(ctx context.Context, limit, offset int) ([]*entity.MenuItem, error) {
 	var dbItems []model.MenuItem
 
-	query := r.db.WithContext(ctx)
+	db := getDB(r.db, ctx)
+	query := db.WithContext(ctx)
 	if limit > 0 {
 		query = query.Limit(limit)
 	}
@@ -86,7 +88,8 @@ func (r *menuItemRepository) List(ctx context.Context, limit, offset int) ([]*en
 func (r *menuItemRepository) ListByCategory(ctx context.Context, categoryID int, limit, offset int) ([]*entity.MenuItem, error) {
 	var dbItems []model.MenuItem
 
-	query := r.db.WithContext(ctx).Where("category_id = ?", categoryID)
+	db := getDB(r.db, ctx)
+	query := db.WithContext(ctx).Where("category_id = ?", categoryID)
 	if limit > 0 {
 		query = query.Limit(limit)
 	}
@@ -104,7 +107,8 @@ func (r *menuItemRepository) ListByCategory(ctx context.Context, categoryID int,
 func (r *menuItemRepository) Search(ctx context.Context, query string, limit, offset int) ([]*entity.MenuItem, error) {
 	var dbItems []model.MenuItem
 
-	dbQuery := r.db.WithContext(ctx).Where("name ILIKE ? OR description ILIKE ?", "%"+query+"%", "%"+query+"%")
+	db := getDB(r.db, ctx)
+	dbQuery := db.WithContext(ctx).Where("name ILIKE ? OR description ILIKE ?", "%"+query+"%", "%"+query+"%")
 	if limit > 0 {
 		dbQuery = dbQuery.Limit(limit)
 	}

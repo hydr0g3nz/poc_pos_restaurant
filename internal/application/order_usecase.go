@@ -796,3 +796,250 @@ func (u *orderUsecase) AddOrderItemList(ctx context.Context, req *AddOrderItemLi
 	u.logger.Info("Order items list added successfully", "orderID", req.OrderID, "totalItems", len(responses))
 	return responses, nil
 }
+
+// เพิ่มในไฟล์ internal/application/order_usecase.go
+
+func (u *orderUsecase) UpdateOrderItemList(ctx context.Context, req *UpdateOrderItemListRequest) ([]*OrderItemResponse, error) {
+	u.logger.Info("Updating order items list", "orderID", req.OrderID, "itemCount", len(req.Items))
+
+	// ตรวจสอบว่า order มีอยู่และยังเปิดอยู่
+	order, err := u.orderRepo.GetByID(ctx, req.OrderID)
+	if err != nil {
+		u.logger.Error("Error getting order", "error", err, "orderID", req.OrderID)
+		return nil, fmt.Errorf("failed to get order: %w", err)
+	}
+	if order == nil {
+		return nil, errs.ErrOrderNotFound
+	}
+	if order.IsClosed() {
+		return nil, errs.ErrCannotModifyClosedOrder
+	}
+
+	// เริ่ม transaction
+	txCtx, err := u.tx.BeginTx(ctx)
+	if err != nil {
+		u.logger.Error("Error beginning transaction", "error", err)
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			u.tx.RollbackTx(txCtx)
+			panic(r)
+		}
+	}()
+
+	var responses []*OrderItemResponse
+
+	// วนลูปอัปเดตแต่ละ item
+	for i, item := range req.Items {
+		u.logger.Debug("Processing order item update", "index", i, "orderItemID", item.OrderItemID, "action", item.Action)
+
+		// หาก action เป็น delete ให้ลบ item
+		if item.Action == "delete" {
+			err := u.processDeleteOrderItem(txCtx, item.OrderItemID)
+			if err != nil {
+				u.logger.Error("Error deleting order item", "error", err, "orderItemID", item.OrderItemID)
+				u.tx.RollbackTx(txCtx)
+				return nil, fmt.Errorf("failed to delete order item %d: %w", item.OrderItemID, err)
+			}
+			continue // ไม่เพิ่มใน response เพราะถูกลบแล้ว
+		}
+
+		// Default action เป็น update
+		updatedItem, err := u.processUpdateOrderItem(txCtx, req.OrderID, item)
+		if err != nil {
+			u.logger.Error("Error updating order item", "error", err, "orderItemID", item.OrderItemID)
+			u.tx.RollbackTx(txCtx)
+			return nil, fmt.Errorf("failed to update order item %d: %w", item.OrderItemID, err)
+		}
+
+		responses = append(responses, u.toOrderItemResponse(updatedItem))
+	}
+
+	// Commit transaction
+	if err := u.tx.CommitTx(txCtx); err != nil {
+		u.logger.Error("Error committing transaction", "error", err)
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	u.logger.Info("Order items list updated successfully", "orderID", req.OrderID, "updatedItems", len(responses))
+	return responses, nil
+}
+
+// Helper function สำหรับลบ order item
+func (u *orderUsecase) processDeleteOrderItem(ctx context.Context, orderItemID int) error {
+	// ตรวจสอบว่า order item มีอยู่จริง
+	orderItem, err := u.orderItemRepo.GetByID(ctx, orderItemID)
+	if err != nil {
+		return fmt.Errorf("failed to get order item: %w", err)
+	}
+	if orderItem == nil {
+		return errs.ErrOrderItemNotFound
+	}
+
+	// ลบ order item options ก่อน (ถ้ามี)
+	err = u.orderItemOptionUsecase.RemoveAllOptionsFromOrderItem(ctx, orderItemID)
+	if err != nil {
+		u.logger.Warn("Error removing options from order item", "error", err, "orderItemID", orderItemID)
+		// ไม่ return error เพราะอาจไม่มี options
+	}
+
+	// ลบ order item
+	return u.orderItemRepo.Delete(ctx, orderItemID)
+}
+
+// อัปเดตใน internal/application/order_usecase.go
+
+// Helper function สำหรับอัปเดต order item (แก้ไข)
+func (u *orderUsecase) processUpdateOrderItem(ctx context.Context, orderID int, item *UpdateOrderItemRequest2) (*entity.OrderItem, error) {
+	// ตรวจสอบว่า order item มีอยู่จริง
+	currentItem, err := u.orderItemRepo.GetByID(ctx, item.OrderItemID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get order item: %w", err)
+	}
+	if currentItem == nil {
+		return nil, errs.ErrOrderItemNotFound
+	}
+
+	// ตรวจสอบว่า order item นี้เป็นของ order ที่ถูกต้อง
+	if currentItem.OrderID != orderID {
+		return nil, fmt.Errorf("order item %d does not belong to order %d", item.OrderItemID, orderID)
+	}
+
+	// หาก menu item เปลี่ยน ต้อง validate menu item ใหม่
+	if currentItem.ItemID != item.MenuItemID {
+		if err := u.orderService.ValidateOrderItem(ctx, orderID, item.MenuItemID, item.Quantity); err != nil {
+			return nil, fmt.Errorf("validation failed for new menu item: %w", err)
+		}
+
+		// อัปเดต menu item และราคา
+		menuItem, err := u.menuItemRepo.GetByID(ctx, item.MenuItemID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get menu item: %w", err)
+		}
+		if menuItem == nil {
+			return nil, errs.ErrMenuItemNotFound
+		}
+
+		currentItem.ItemID = item.MenuItemID
+		currentItem.Name = menuItem.Name
+		price, err := vo.NewMoneyFromBaht(menuItem.Price.AmountBaht())
+		if err != nil {
+			return nil, fmt.Errorf("failed to create price: %w", err)
+		}
+		currentItem.UnitPrice = price
+	}
+
+	// อัปเดต quantity
+	if err := currentItem.UpdateQuantity(item.Quantity); err != nil {
+		return nil, fmt.Errorf("failed to update quantity: %w", err)
+	}
+
+	// บันทึกการเปลี่ยนแปลงของ order item
+	updatedItem, err := u.orderItemRepo.Update(ctx, currentItem)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update order item: %w", err)
+	}
+
+	// จัดการ options แบบละเอียด
+	if len(item.Options) > 0 {
+		err = u.processOrderItemOptionsUpdate(ctx, item.OrderItemID, item.Options)
+		if err != nil {
+			return nil, fmt.Errorf("failed to update options: %w", err)
+		}
+	}
+
+	return updatedItem, nil
+}
+
+// อัปเดตใน internal/application/order_usecase.go
+
+// Helper function สำหรับจัดการ options แบบละเอียด (แก้ไข)
+func (u *orderUsecase) processOrderItemOptionsUpdate(ctx context.Context, orderItemID int, options []*OrderItemOptionUpdateRequest) error {
+	for i, option := range options {
+		u.logger.Debug("Processing option", "optionIndex", i, "optionID", option.OptionID, "valueID", option.OptionValID, "action", option.Action)
+
+		switch option.Action {
+		case "delete":
+			if option.OptionValID != 0 {
+				// ลบ option เฉพาะ value (แบบเดิม)
+				err := u.orderItemOptionUsecase.RemoveOptionFromOrderItem(ctx, orderItemID, option.OptionID, option.OptionValID)
+				if err != nil {
+					u.logger.Error("Error deleting specific option value", "error", err, "orderItemID", orderItemID, "optionID", option.OptionID, "valueID", option.OptionValID)
+					return fmt.Errorf("failed to delete option %d (value %d) from order item %d: %w", option.OptionID, option.OptionValID, orderItemID, err)
+				}
+			} else {
+				// ลบทุก option ที่มี optionID เดียวกัน (ใช้ฟังก์ชันใหม่)
+				err := u.orderItemOptionUsecase.RemoveSpecificOptionFromOrderItem(ctx, orderItemID, option.OptionID)
+				if err != nil {
+					u.logger.Error("Error deleting all options with optionID", "error", err, "orderItemID", orderItemID, "optionID", option.OptionID)
+					return fmt.Errorf("failed to delete all options %d from order item %d: %w", option.OptionID, orderItemID, err)
+				}
+			}
+
+		case "update":
+			// อัปเดต option (ลบตัวเก่า แล้วเพิ่มตัวใหม่)
+			if option.OptionValID == 0 {
+				return fmt.Errorf("option_val_id is required for update action")
+			}
+
+			// หา option เก่าที่มี optionID เดียวกัน
+			existingOptions, err := u.orderItemOptionUsecase.GetOrderItemOptions(ctx, orderItemID)
+			if err != nil {
+				return fmt.Errorf("failed to get existing options: %w", err)
+			}
+
+			// ลบ option เก่าที่มี optionID เดียวกันทั้งหมด
+			var oldValueFound bool
+			for _, existingOpt := range existingOptions {
+				if existingOpt.OptionID == option.OptionID {
+					err = u.orderItemOptionUsecase.RemoveOptionFromOrderItem(ctx, orderItemID, option.OptionID, existingOpt.ValueID)
+					if err != nil {
+						u.logger.Warn("Error removing old option for update", "error", err, "orderItemID", orderItemID, "optionID", option.OptionID, "valueID", existingOpt.ValueID)
+					} else {
+						oldValueFound = true
+					}
+				}
+			}
+
+			if !oldValueFound {
+				u.logger.Warn("No existing option found to update", "orderItemID", orderItemID, "optionID", option.OptionID)
+			}
+
+			// เพิ่ม option ใหม่
+			optionReq := &AddOrderItemOptionRequest{
+				OrderItemID: orderItemID,
+				OptionID:    option.OptionID,
+				ValueID:     option.OptionValID,
+			}
+
+			_, err = u.orderItemOptionUsecase.AddOptionToOrderItem(ctx, optionReq)
+			if err != nil {
+				return fmt.Errorf("failed to add updated option: %w", err)
+			}
+
+		case "add", "": // default action เป็น add
+			// เพิ่ม option ใหม่
+			if option.OptionValID == 0 {
+				return fmt.Errorf("option_val_id is required for add action")
+			}
+
+			optionReq := &AddOrderItemOptionRequest{
+				OrderItemID: orderItemID,
+				OptionID:    option.OptionID,
+				ValueID:     option.OptionValID,
+			}
+
+			_, err := u.orderItemOptionUsecase.AddOptionToOrderItem(ctx, optionReq)
+			if err != nil {
+				return fmt.Errorf("failed to add option: %w", err)
+			}
+
+		default:
+			return fmt.Errorf("invalid option action: %s", option.Action)
+		}
+	}
+
+	return nil
+}

@@ -255,3 +255,96 @@ func (u *orderItemOptionUsecase) toOrderItemOptionResponses(ctx context.Context,
 
 	return responses
 }
+
+// เพิ่มใน internal/application/order_item_option_usecase.go
+
+// RemoveAllOptionsFromOrderItem removes all options from an order item
+func (u *orderItemOptionUsecase) RemoveAllOptionsFromOrderItem(ctx context.Context, orderItemID int) error {
+	u.logger.Info("Removing all options from order item", "orderItemID", orderItemID)
+
+	// ตรวจสอบว่า order item มีอยู่จริง
+	orderItem, err := u.orderItemRepo.GetByID(ctx, orderItemID)
+	if err != nil {
+		u.logger.Error("Error getting order item", "error", err, "orderItemID", orderItemID)
+		return fmt.Errorf("failed to get order item: %w", err)
+	}
+	if orderItem == nil {
+		return errs.ErrOrderItemNotFound
+	}
+
+	// ตรวจสอบว่า order ยังเปิดอยู่
+	order, err := u.orderRepo.GetByID(ctx, orderItem.OrderID)
+	if err != nil {
+		u.logger.Error("Error getting order", "error", err, "orderID", orderItem.OrderID)
+		return fmt.Errorf("failed to get order: %w", err)
+	}
+	if order == nil {
+		return errs.ErrOrderNotFound
+	}
+	if order.IsClosed() {
+		return errs.ErrCannotModifyClosedOrder
+	}
+
+	// ลบ options ทั้งหมด
+	if err := u.orderItemOptionRepo.DeleteByOrderItemID(ctx, orderItemID); err != nil {
+		u.logger.Error("Error removing all options from order item", "error", err, "orderItemID", orderItemID)
+		return fmt.Errorf("failed to remove all options from order item: %w", err)
+	}
+
+	u.logger.Info("All options removed from order item successfully", "orderItemID", orderItemID)
+	return nil
+}
+
+// เพิ่มใน internal/application/order_item_option_usecase.go
+
+// RemoveSpecificOptionFromOrderItem removes a specific option from an order item
+func (u *orderItemOptionUsecase) RemoveSpecificOptionFromOrderItem(ctx context.Context, orderItemID, optionID int) error {
+	u.logger.Info("Removing specific option from order item", "orderItemID", orderItemID, "optionID", optionID)
+
+	// ตรวจสอบว่า order item มีอยู่จริงและ order ยังเปิดอยู่
+	orderItem, err := u.orderItemRepo.GetByID(ctx, orderItemID)
+	if err != nil {
+		u.logger.Error("Error getting order item", "error", err, "orderItemID", orderItemID)
+		return fmt.Errorf("failed to get order item: %w", err)
+	}
+	if orderItem == nil {
+		return errs.ErrOrderItemNotFound
+	}
+
+	order, err := u.orderRepo.GetByID(ctx, orderItem.OrderID)
+	if err != nil {
+		u.logger.Error("Error getting order", "error", err, "orderID", orderItem.OrderID)
+		return fmt.Errorf("failed to get order: %w", err)
+	}
+	if order == nil {
+		return errs.ErrOrderNotFound
+	}
+	if order.IsClosed() {
+		return errs.ErrCannotModifyClosedOrder
+	}
+
+	// หา options ที่มี optionID ตรงกัน
+	existingOptions, err := u.orderItemOptionRepo.GetByOrderItemID(ctx, orderItemID)
+	if err != nil {
+		return fmt.Errorf("failed to get existing options: %w", err)
+	}
+
+	// ลบทุก option ที่มี optionID ตรงกัน
+	deleted := false
+	for _, opt := range existingOptions {
+		if opt.OptionID == optionID {
+			if err := u.orderItemOptionRepo.Delete(ctx, orderItemID, optionID, opt.ValueID); err != nil {
+				u.logger.Error("Error deleting option", "error", err, "orderItemID", orderItemID, "optionID", optionID, "valueID", opt.ValueID)
+				return fmt.Errorf("failed to delete option: %w", err)
+			}
+			deleted = true
+		}
+	}
+
+	if !deleted {
+		return errs.NewNotFoundError("order item option", fmt.Sprintf("orderItemID: %d, optionID: %d", orderItemID, optionID))
+	}
+
+	u.logger.Info("Specific option removed from order item successfully", "orderItemID", orderItemID, "optionID", optionID)
+	return nil
+}
