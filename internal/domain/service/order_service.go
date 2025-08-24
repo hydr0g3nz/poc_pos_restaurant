@@ -40,23 +40,32 @@ type OrderService interface {
 }
 
 type orderService struct {
-	orderRepo     repository.OrderRepository
-	orderItemRepo repository.OrderItemRepository
-	tableRepo     repository.TableRepository
-	menuItemRepo  repository.MenuItemRepository
+	orderRepo           repository.OrderRepository
+	orderItemRepo       repository.OrderItemRepository
+	orderItemOptionRepo repository.OrderItemOptionRepository
+	menuOptionRepo      repository.MenuOptionRepository
+	optionValueRepo     repository.OptionValueRepository
+	tableRepo           repository.TableRepository
+	menuItemRepo        repository.MenuItemRepository
 }
 
 func NewOrderService(
 	orderRepo repository.OrderRepository,
 	orderItemRepo repository.OrderItemRepository,
+	orderItemOptionRepo repository.OrderItemOptionRepository,
+	menuOptionRepo repository.MenuOptionRepository,
+	optionValueRepo repository.OptionValueRepository,
 	tableRepo repository.TableRepository,
 	menuItemRepo repository.MenuItemRepository,
 ) OrderService {
 	return &orderService{
-		orderRepo:     orderRepo,
-		orderItemRepo: orderItemRepo,
-		tableRepo:     tableRepo,
-		menuItemRepo:  menuItemRepo,
+		orderRepo:           orderRepo,
+		orderItemRepo:       orderItemRepo,
+		orderItemOptionRepo: orderItemOptionRepo,
+		menuOptionRepo:      menuOptionRepo,
+		optionValueRepo:     optionValueRepo,
+		tableRepo:           tableRepo,
+		menuItemRepo:        menuItemRepo,
 	}
 }
 
@@ -96,7 +105,23 @@ func (s *orderService) CalculateOrderTotal(ctx context.Context, order *entity.Or
 		order.Items = items
 	}
 
-	return order.CalculateTotal(), nil
+	// Calculate total including options
+	total, _ := vo.NewMoneyFromSatang(0)
+	for _, item := range order.Items {
+		itemSubtotal := item.CalculateSubtotal()
+
+		// Add option prices
+		options, err := s.orderItemOptionRepo.GetByOrderItemID(ctx, item.ID)
+		if err == nil { // Don't fail if options can't be loaded
+			for _, option := range options {
+				itemSubtotal = itemSubtotal.Add(option.AdditionalPrice.Multiply(float64(item.Quantity)))
+			}
+		}
+
+		total = total.Add(itemSubtotal)
+	}
+
+	return total, nil
 }
 
 func (s *orderService) ValidateOrderItem(ctx context.Context, orderID, itemID int, quantity int) error {
@@ -160,7 +185,7 @@ func (s *orderService) ReceiptPdf(ctx context.Context, order *entity.Order) ([]b
 		return nil, errs.ErrOrderNotFound
 	}
 	w := &bytes.Buffer{}
-	if err := generateReceiptPDF(order, w); err != nil {
+	if err := s.generateReceiptPDF(order, w); err != nil {
 		return nil, fmt.Errorf("failed to generate receipt PDF: %w", err)
 	}
 	return w.Bytes(), nil
@@ -175,14 +200,72 @@ func (s *orderService) QRCodePdf(ctx context.Context, receipt *entity.Order) ([]
 	}
 	return w.Bytes(), nil
 }
-func generateReceiptPDF(receipt *entity.Order, writer io.Writer) error {
+
+// Helper struct to hold item with its options
+type ItemWithOptions struct {
+	Item    *entity.OrderItem
+	Options []OptionWithDetails
+}
+
+type OptionWithDetails struct {
+	Option          *entity.MenuOption
+	Value           *entity.OptionValue
+	AdditionalPrice vo.Money
+}
+
+// loadOrderItemsWithOptions loads order items and their options
+func (s *orderService) loadOrderItemsWithOptions(ctx context.Context, order *entity.Order) error {
+	if order.Items == nil {
+		items, err := s.orderItemRepo.ListByOrder(ctx, order.ID)
+		if err != nil {
+			return fmt.Errorf("failed to get order items: %w", err)
+		}
+		order.Items = items
+	}
+	return nil
+}
+
+// getItemOptions retrieves options for a specific order item
+func (s *orderService) getItemOptions(ctx context.Context, itemID int) ([]OptionWithDetails, error) {
+	var optionDetails []OptionWithDetails
+
+	// Get order item options
+	itemOptions, err := s.orderItemOptionRepo.GetByOrderItemID(ctx, itemID)
+	if err != nil {
+		return optionDetails, err
+	}
+
+	for _, itemOption := range itemOptions {
+		// Get option details
+		option, err := s.menuOptionRepo.GetByID(ctx, itemOption.OptionID)
+		if err != nil {
+			continue // Skip if option not found
+		}
+
+		// Get value details
+		value, err := s.optionValueRepo.GetByID(ctx, itemOption.ValueID)
+		if err != nil {
+			continue // Skip if value not found
+		}
+
+		optionDetails = append(optionDetails, OptionWithDetails{
+			Option:          option,
+			Value:           value,
+			AdditionalPrice: itemOption.AdditionalPrice,
+		})
+	}
+
+	return optionDetails, nil
+}
+
+func (s *orderService) generateReceiptPDF(order *entity.Order, writer io.Writer) error {
 	pdf := fpdf.NewCustom(&fpdf.InitType{
 		OrientationStr: "P",
 		UnitStr:        "mm",
 		SizeStr:        "",
 		Size: fpdf.SizeType{
 			Wd: 80,  // 80mm width
-			Ht: 250, // adjustable height
+			Ht: 300, // increased height to accommodate options
 		},
 	})
 	pdf.AddPage()
@@ -205,46 +288,74 @@ func generateReceiptPDF(receipt *entity.Order, writer io.Writer) error {
 
 	// Receipt info
 	pdf.SetFont("NotoSansThai", "", 8)
-	pdf.CellFormat(0, 5, fmt.Sprintf("เลขที่: %d", receipt.ID), "", 1, "L", false, 0, "")
-	pdf.CellFormat(0, 5, fmt.Sprintf("วันที่: %s", receipt.CreatedAt.Format("02/01/2006 15:04")), "", 1, "L", false, 0, "")
-	pdf.CellFormat(0, 5, fmt.Sprintf("ลูกค้า: %s", "test"), "", 1, "L", false, 0, "")
+	pdf.CellFormat(0, 5, fmt.Sprintf("เลขที่: %d", order.ID), "", 1, "L", false, 0, "")
+	pdf.CellFormat(0, 5, fmt.Sprintf("วันที่: %s", order.CreatedAt.Format("02/01/2006 15:04")), "", 1, "L", false, 0, "")
+	pdf.CellFormat(0, 5, fmt.Sprintf("โต๊ะ: %d", order.TableID), "", 1, "L", false, 0, "")
 	pdf.Ln(2)
 	pdf.Line(0, pdf.GetY(), 80, pdf.GetY())
 	pdf.Ln(2)
 
-	// Items (simple list)
-	for _, item := range receipt.Items {
-		line := fmt.Sprintf("%s x%d   %.2f บาท", item.Name, item.Quantity, float64(item.Quantity)*item.UnitPrice.AmountBaht())
-		pdf.CellFormat(0, 5, line, "", 1, "L", false, 0, "")
-	}
-	pdf.Ln(2)
-	pdf.Line(0, pdf.GetY(), 80, pdf.GetY())
-	pdf.Ln(2)
+	// Items with options
+	ctx := context.Background()
+	var totalWithOptions float64
 
-	// Summary
-	subtotal := receipt.CalculateTotal()
-	discount := receipt.CalculateDiscount()
-	tax := receipt.CalculateTax()
-	var total vo.Money
-	var err error
-	if !discount.IsZero() {
-		if total, err = subtotal.Subtract(discount); err != nil {
-			return fmt.Errorf("failed to calculate total after discount: %w", err)
+	for _, item := range order.Items {
+		// Main item
+		itemPrice := item.UnitPrice.AmountBaht()
+		itemSubtotal := float64(item.Quantity) * itemPrice
+
+		pdf.SetFont("NotoSansThai", "", 8)
+		pdf.CellFormat(0, 4, item.Name, "", 1, "L", false, 0, "")
+		pdf.CellFormat(0, 4, fmt.Sprintf("  %d x %.2f บาท = %.2f บาท",
+			item.Quantity, itemPrice, itemSubtotal), "", 1, "L", false, 0, "")
+
+		// Get and display options
+		options, err := s.getItemOptions(ctx, item.ID)
+		if err == nil && len(options) > 0 {
+			pdf.SetFont("NotoSansThai", "", 7)
+			for _, opt := range options {
+				optionPrice := opt.AdditionalPrice.AmountBaht()
+				optionTotal := float64(item.Quantity) * optionPrice
+
+				if optionPrice > 0 {
+					pdf.CellFormat(0, 3, fmt.Sprintf("    + %s: %s (+%.2f บาท x%d = +%.2f บาท)",
+						opt.Option.Name, opt.Value.Name, optionPrice, item.Quantity, optionTotal), "", 1, "L", false, 0, "")
+					itemSubtotal += optionTotal
+				} else {
+					pdf.CellFormat(0, 3, fmt.Sprintf("    + %s: %s",
+						opt.Option.Name, opt.Value.Name), "", 1, "L", false, 0, "")
+				}
+			}
 		}
-	}
-	if !tax.IsZero() {
-		total = total.Add(tax)
+
+		totalWithOptions += itemSubtotal
+		pdf.Ln(1)
 	}
 
+	pdf.Ln(2)
+	pdf.Line(0, pdf.GetY(), 80, pdf.GetY())
+	pdf.Ln(2)
+
+	// Summary with corrected calculations
+	subtotal, _ := vo.NewMoneyFromBaht(totalWithOptions)
+	discount := subtotal.Multiply(DISCOUNT_RATE)
+	afterDiscount, _ := subtotal.Subtract(discount)
+	tax := afterDiscount.Multiply(TAX_RATE)
+	finalTotal := afterDiscount.Add(tax)
+
+	pdf.SetFont("NotoSansThai", "", 8)
 	pdf.CellFormat(0, 5, fmt.Sprintf("ยอดรวม: %.2f บาท", subtotal.AmountBaht()), "", 1, "R", false, 0, "")
+
 	if discount.AmountBaht() > 0 {
-		pdf.CellFormat(0, 5, fmt.Sprintf("ส่วนลด %.1f%%: -%.2f บาท", DISCOUNT_RATE, discount.AmountBaht()), "", 1, "R", false, 0, "")
+		pdf.CellFormat(0, 5, fmt.Sprintf("ส่วนลด %.0f%%: -%.2f บาท", DISCOUNT_RATE*100, discount.AmountBaht()), "", 1, "R", false, 0, "")
 	}
+
 	if tax.AmountBaht() > 0 {
-		pdf.CellFormat(0, 5, fmt.Sprintf("VAT %.1f%%: %.2f บาท", TAX_RATE, tax.AmountBaht()), "", 1, "R", false, 0, "")
+		pdf.CellFormat(0, 5, fmt.Sprintf("VAT %.0f%%: %.2f บาท", TAX_RATE*100, tax.AmountBaht()), "", 1, "R", false, 0, "")
 	}
+
 	pdf.SetFont("NotoSansThai", "B", 10)
-	pdf.CellFormat(0, 6, fmt.Sprintf("ยอดสุทธิ: %.2f บาท", total.AmountBaht()), "", 1, "R", false, 0, "")
+	pdf.CellFormat(0, 6, fmt.Sprintf("ยอดสุทธิ: %.2f บาท", finalTotal.AmountBaht()), "", 1, "R", false, 0, "")
 	pdf.Ln(4)
 
 	// Footer
