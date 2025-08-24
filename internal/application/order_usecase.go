@@ -18,20 +18,22 @@ import (
 
 // orderUsecase implements OrderUsecase interface
 type orderUsecase struct {
-	orderRepo      repository.OrderRepository
-	orderItemRepo  repository.OrderItemRepository
-	tableRepo      repository.TableRepository
-	menuItemRepo   repository.MenuItemRepository
-	orderService   service.OrderService
-	qrCodeService  service.QRCodeService
-	printerService infra.PrinterService
-	tx             repository.TxManager
-	logger         infra.Logger
-	config         *config.Config
+	orderRepo              repository.OrderRepository
+	orderItemRepo          repository.OrderItemRepository
+	tableRepo              repository.TableRepository
+	menuItemRepo           repository.MenuItemRepository
+	orderItemOptionUsecase OrderItemOptionUsecase
+	orderService           service.OrderService
+	qrCodeService          service.QRCodeService
+	printerService         infra.PrinterService
+	tx                     repository.TxManager
+	logger                 infra.Logger
+	config                 *config.Config
 }
 
 // NewOrderUsecase creates a new order usecase
 func NewOrderUsecase(
+	orderItemOptionUsecase OrderItemOptionUsecase,
 	orderRepo repository.OrderRepository,
 	orderItemRepo repository.OrderItemRepository,
 	tableRepo repository.TableRepository,
@@ -44,16 +46,17 @@ func NewOrderUsecase(
 	config *config.Config,
 ) OrderUsecase {
 	return &orderUsecase{
-		orderRepo:      orderRepo,
-		orderItemRepo:  orderItemRepo,
-		tableRepo:      tableRepo,
-		menuItemRepo:   menuItemRepo,
-		orderService:   orderService,
-		printerService: printerService,
-		tx:             tx,
-		logger:         logger,
-		config:         config,
-		qrCodeService:  qrCodeService,
+		orderItemOptionUsecase: orderItemOptionUsecase,
+		orderRepo:              orderRepo,
+		orderItemRepo:          orderItemRepo,
+		tableRepo:              tableRepo,
+		menuItemRepo:           menuItemRepo,
+		orderService:           orderService,
+		printerService:         printerService,
+		tx:                     tx,
+		logger:                 logger,
+		config:                 config,
+		qrCodeService:          qrCodeService,
 	}
 }
 
@@ -388,29 +391,6 @@ func (u *orderUsecase) AddOrderItem(ctx context.Context, req *AddOrderItemReques
 	return u.toOrderItemResponse(createdItem), nil
 }
 
-// add order item list
-func (u *orderUsecase) AddOrderItemList(ctx context.Context, req *AddOrderItemListRequest) error {
-	txCtx, err := u.tx.BeginTx(ctx)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			u.tx.RollbackTx(txCtx)
-			panic(r)
-		}
-	}()
-
-	// for _, item := range req.Items {
-	// 	if _, err := u.AddOrderItem(txCtx, item); err != nil {
-	// 		u.logger.Error("Error adding order item", "error", err, "orderID", item.OrderID, "itemID", item.ItemID)
-	// 		u.tx.RollbackTx(txCtx)
-	// 		return err
-	// 	}
-	// }
-	return u.tx.CommitTx(txCtx)
-}
-
 // UpdateOrderItem updates an order item
 func (u *orderUsecase) UpdateOrderItem(ctx context.Context, id int, req *UpdateOrderItemRequest) (*OrderItemResponse, error) {
 	u.logger.Info("Updating order item", "orderItemID", id, "quantity", req.Quantity)
@@ -689,4 +669,130 @@ func (u *orderUsecase) PrintOrderQRCode(ctx context.Context, orderID int) error 
 		return fmt.Errorf("failed to print receipt: %w", err)
 	}
 	return nil
+}
+func (u *orderUsecase) AddOrderItemList(ctx context.Context, req *AddOrderItemListRequest) ([]*OrderItemResponse, error) {
+	u.logger.Info("Adding order items list", "orderID", req.OrderID, "itemCount", len(req.Items))
+
+	// เริ่ม transaction
+	txCtx, err := u.tx.BeginTx(ctx)
+	if err != nil {
+		u.logger.Error("Error beginning transaction", "error", err)
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			u.tx.RollbackTx(txCtx)
+			panic(r)
+		}
+	}()
+
+	var responses []*OrderItemResponse
+	var addedOrderItems []*entity.OrderItem // เก็บ order items ที่เพิ่มแล้ว
+
+	// วนลูปเพิ่มแต่ละ item
+	for i, item := range req.Items {
+		u.logger.Debug("Processing order item", "index", i, "menuItemID", item.MenuItemID, "quantity", item.Quantity)
+
+		// Validate order item
+		if err := u.orderService.ValidateOrderItem(txCtx, req.OrderID, item.MenuItemID, item.Quantity); err != nil {
+			u.logger.Error("Order item validation failed", "error", err, "orderID", req.OrderID, "menuItemID", item.MenuItemID, "index", i)
+			u.tx.RollbackTx(txCtx)
+			return nil, fmt.Errorf("validation failed for item %d: %w", i, err)
+		}
+
+		// Get menu item เพื่อเอาราคา
+		menuItem, err := u.menuItemRepo.GetByID(txCtx, item.MenuItemID)
+		if err != nil {
+			u.logger.Error("Error getting menu item", "error", err, "menuItemID", item.MenuItemID, "index", i)
+			u.tx.RollbackTx(txCtx)
+			return nil, fmt.Errorf("failed to get menu item %d: %w", item.MenuItemID, err)
+		}
+		if menuItem == nil {
+			u.tx.RollbackTx(txCtx)
+			return nil, errs.ErrMenuItemNotFound
+		}
+
+		// ตรวจสอบว่ามี order item นี้อยู่แล้วหรือไม่
+		existingItem, err := u.orderItemRepo.GetByOrderAndItem(txCtx, req.OrderID, item.MenuItemID)
+		if err != nil {
+			u.logger.Error("Error checking existing order item", "error", err, "orderID", req.OrderID, "menuItemID", item.MenuItemID, "index", i)
+			u.tx.RollbackTx(txCtx)
+			return nil, fmt.Errorf("failed to check existing order item: %w", err)
+		}
+
+		var orderItem *entity.OrderItem
+
+		if existingItem != nil {
+			// อัปเดตจำนวนของ item ที่มีอยู่แล้ว
+			if err := existingItem.UpdateQuantity(existingItem.Quantity + item.Quantity); err != nil {
+				u.logger.Error("Error updating order item quantity", "error", err, "orderItemID", existingItem.ID, "index", i)
+				u.tx.RollbackTx(txCtx)
+				return nil, fmt.Errorf("failed to update order item quantity: %w", err)
+			}
+
+			updatedItem, err := u.orderItemRepo.Update(txCtx, existingItem)
+			if err != nil {
+				u.logger.Error("Error updating order item", "error", err, "orderItemID", existingItem.ID, "index", i)
+				u.tx.RollbackTx(txCtx)
+				return nil, fmt.Errorf("failed to update order item: %w", err)
+			}
+			orderItem = updatedItem
+		} else {
+			// สร้าง order item ใหม่
+			newOrderItem, err := entity.NewOrderItem(req.OrderID, item.MenuItemID, item.Quantity, menuItem.Price.AmountBaht(), menuItem.Name)
+			if err != nil {
+				u.logger.Error("Error creating order item entity", "error", err, "orderID", req.OrderID, "menuItemID", item.MenuItemID, "index", i)
+				u.tx.RollbackTx(txCtx)
+				return nil, fmt.Errorf("failed to create order item entity: %w", err)
+			}
+
+			// Save to database
+			createdItem, err := u.orderItemRepo.Create(txCtx, newOrderItem)
+			if err != nil {
+				u.logger.Error("Error creating order item", "error", err, "orderID", req.OrderID, "menuItemID", item.MenuItemID, "index", i)
+				u.tx.RollbackTx(txCtx)
+				return nil, fmt.Errorf("failed to create order item: %w", err)
+			}
+			orderItem = createdItem
+		}
+
+		addedOrderItems = append(addedOrderItems, orderItem)
+
+		// เพิ่ม options สำหรับ order item นี้ (ถ้ามี)
+		if len(item.Options) > 0 {
+			u.logger.Debug("Adding options to order item", "orderItemID", orderItem.ID, "optionsCount", len(item.Options))
+
+			for j, option := range item.Options {
+				u.logger.Debug("Processing option", "optionIndex", j, "optionID", option.OptionID, "valueID", option.OptionValID)
+
+				optionReq := &AddOrderItemOptionRequest{
+					OrderItemID: orderItem.ID,
+					OptionID:    option.OptionID,
+					ValueID:     option.OptionValID,
+				}
+
+				_, err := u.orderItemOptionUsecase.AddOptionToOrderItem(txCtx, optionReq)
+				if err != nil {
+					u.logger.Error("Error adding option to order item", "error", err, "orderItemID", orderItem.ID, "optionID", option.OptionID, "valueID", option.OptionValID)
+					u.tx.RollbackTx(txCtx)
+					return nil, fmt.Errorf("failed to add option to order item %d: %w", orderItem.ID, err)
+				}
+			}
+		}
+
+		// เพิ่ม response
+		responses = append(responses, u.toOrderItemResponse(orderItem))
+
+		u.logger.Info("Order item added successfully", "orderItemID", orderItem.ID, "orderID", req.OrderID, "menuItemID", item.MenuItemID, "quantity", item.Quantity, "optionsCount", len(item.Options))
+	}
+
+	// Commit transaction
+	if err := u.tx.CommitTx(txCtx); err != nil {
+		u.logger.Error("Error committing transaction", "error", err)
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	u.logger.Info("Order items list added successfully", "orderID", req.OrderID, "totalItems", len(responses))
+	return responses, nil
 }

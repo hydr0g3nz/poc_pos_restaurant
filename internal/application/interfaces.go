@@ -55,6 +55,7 @@ type OrderUsecase interface {
 	PrintOrderQRCode(ctx context.Context, orderID int) error
 	// Order item operations
 	AddOrderItem(ctx context.Context, req *AddOrderItemRequest) (*OrderItemResponse, error)
+	AddOrderItemList(ctx context.Context, req *AddOrderItemListRequest) ([]*OrderItemResponse, error)
 	UpdateOrderItem(ctx context.Context, id int, req *UpdateOrderItemRequest) (*OrderItemResponse, error)
 	RemoveOrderItem(ctx context.Context, id int) error
 	ListOrderItems(ctx context.Context, orderID int) ([]*OrderItemResponse, error)

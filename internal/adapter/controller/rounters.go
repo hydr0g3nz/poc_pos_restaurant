@@ -52,7 +52,7 @@ func (c *OrderController) RegisterRoutes(router fiber.Router) {
 	orderGroup.Get("/table/:tableId/open", c.GetOpenOrderByTable)
 
 	// Order items routes
-	orderGroup.Post("/items", c.AddOrderItem)
+	// orderGroup.Post("/items", c.AddOrderItem)
 	orderGroup.Put("/items/:id", c.UpdateOrderItem)
 	orderGroup.Delete("/items/:id", c.RemoveOrderItem)
 	orderGroup.Get("/:orderId/items", c.ListOrderItems)
@@ -168,10 +168,14 @@ func (c *KitchenController) RegisterRoutes(router fiber.Router) {
 func (c *CustomerController) RegisterRoutes(router fiber.Router) {
 	customerGroup := router.Group("/customers")
 	// Customer routes
+	// menu
 	customerGroup.Get("/menu", c.ListMenuItems)
 	customerGroup.Get("/menu/items/:id", c.GetMenuItem)
 	customerGroup.Get("/menu/search", c.SearchMenuItems)
 	customerGroup.Get("/category", c.ListCategory)
+	// order
+	// customerGroup.Post("/orders", c.CreateOrder)
+	customerGroup.Post("/orders/items", c.AddOrderItemList)
 	// customerGroup.Post("/", c.CreateCustomer)
 	// customerGroup.Put("/:id", c.UpdateCustomer)
 	// customerGroup.Delete("/:id", c.DeleteCustomer)

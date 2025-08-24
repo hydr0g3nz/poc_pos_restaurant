@@ -12,12 +12,14 @@ import (
 type CustomerController struct {
 	categoryUseCase usecase.CategoryUsecase
 	menuItemUseCase usecase.MenuItemUsecase
+	orderUseCase    usecase.OrderUsecase
 	errorPresenter  presenter.ErrorPresenter
 }
 
 // NewCategoryController creates a new instance of CategoryController
-func NewCustomerController(categoryUseCase usecase.CategoryUsecase, menuItemUseCase usecase.MenuItemUsecase, errorPresenter presenter.ErrorPresenter) *CustomerController {
+func NewCustomerController(categoryUseCase usecase.CategoryUsecase, menuItemUseCase usecase.MenuItemUsecase, orderUseCase usecase.OrderUsecase, errorPresenter presenter.ErrorPresenter) *CustomerController {
 	return &CustomerController{
+		orderUseCase:    orderUseCase,
 		categoryUseCase: categoryUseCase,
 		menuItemUseCase: menuItemUseCase,
 		errorPresenter:  errorPresenter,
@@ -124,4 +126,23 @@ func (c *CustomerController) SearchMenuItems(ctx *fiber.Ctx) error {
 	}
 
 	return SuccessResp(ctx, fiber.StatusOK, "Menu items search completed successfully", response)
+}
+
+// ใน controller
+func (c *CustomerController) AddOrderItemList(ctx *fiber.Ctx) error {
+	var req usecase.AddOrderItemListRequest
+	if err := ctx.BodyParser(&req); err != nil {
+		return HandleError(ctx, err, c.errorPresenter)
+	}
+
+	responses, err := c.orderUseCase.AddOrderItemList(ctx.Context(), &req)
+	if err != nil {
+		return HandleError(ctx, err, c.errorPresenter)
+	}
+
+	return ctx.JSON(fiber.Map{
+		"status":  "success",
+		"message": "Order items added successfully",
+		"data":    responses,
+	})
 }

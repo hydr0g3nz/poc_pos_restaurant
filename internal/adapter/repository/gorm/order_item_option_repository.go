@@ -23,8 +23,8 @@ func NewOrderItemOptionRepository(db *gorm.DB) repository.OrderItemOptionReposit
 
 func (r *orderItemOptionRepository) Create(ctx context.Context, itemOption *entity.OrderItemOption) (*entity.OrderItemOption, error) {
 	dbItemOption := r.entityToModel(itemOption)
-
-	if err := r.db.WithContext(ctx).Create(dbItemOption).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Create(dbItemOption).Error; err != nil {
 		return nil, err
 	}
 
@@ -43,8 +43,8 @@ func (r *orderItemOptionRepository) GetByOrderItemID(ctx context.Context, orderI
 
 func (r *orderItemOptionRepository) Update(ctx context.Context, itemOption *entity.OrderItemOption) (*entity.OrderItemOption, error) {
 	dbItemOption := r.entityToModel(itemOption)
-
-	if err := r.db.WithContext(ctx).Save(dbItemOption).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Save(dbItemOption).Error; err != nil {
 		return nil, err
 	}
 
@@ -52,11 +52,13 @@ func (r *orderItemOptionRepository) Update(ctx context.Context, itemOption *enti
 }
 
 func (r *orderItemOptionRepository) Delete(ctx context.Context, orderItemID, optionID, valueID int) error {
-	return r.db.WithContext(ctx).Where("order_item_id = ? AND option_id = ? AND value_id = ?", orderItemID, optionID, valueID).Delete(&model.OrderItemOption{}).Error
+	db := getDB(r.db, ctx)
+	return db.WithContext(ctx).Where("order_item_id = ? AND option_id = ? AND value_id = ?", orderItemID, optionID, valueID).Delete(&model.OrderItemOption{}).Error
 }
 
 func (r *orderItemOptionRepository) DeleteByOrderItemID(ctx context.Context, orderItemID int) error {
-	return r.db.WithContext(ctx).Where("order_item_id = ?", orderItemID).Delete(&model.OrderItemOption{}).Error
+	db := getDB(r.db, ctx)
+	return db.WithContext(ctx).Where("order_item_id = ?", orderItemID).Delete(&model.OrderItemOption{}).Error
 }
 
 // Helper methods

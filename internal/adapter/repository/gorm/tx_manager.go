@@ -37,3 +37,10 @@ func (tm *txManagerGorm) RollbackTx(ctx context.Context) error {
 	}
 	return nil
 }
+
+func getDB(db *gorm.DB, ctx context.Context) *gorm.DB {
+	if tx, ok := IRepository.GetTx(ctx).(*gorm.DB); ok {
+		return tx
+	}
+	return db.WithContext(ctx)
+}

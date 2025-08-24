@@ -23,8 +23,8 @@ func NewMenuOptionRepository(db *gorm.DB) repository.MenuOptionRepository {
 
 func (r *menuOptionRepository) Create(ctx context.Context, option *entity.MenuOption) (*entity.MenuOption, error) {
 	dbOption := r.entityToModel(option)
-
-	if err := r.db.WithContext(ctx).Create(dbOption).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Create(dbOption).Error; err != nil {
 		return nil, err
 	}
 
@@ -46,8 +46,8 @@ func (r *menuOptionRepository) GetByID(ctx context.Context, id int) (*entity.Men
 
 func (r *menuOptionRepository) Update(ctx context.Context, option *entity.MenuOption) (*entity.MenuOption, error) {
 	dbOption := r.entityToModel(option)
-
-	if err := r.db.WithContext(ctx).Save(dbOption).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Save(dbOption).Error; err != nil {
 		return nil, err
 	}
 
@@ -55,7 +55,8 @@ func (r *menuOptionRepository) Update(ctx context.Context, option *entity.MenuOp
 }
 
 func (r *menuOptionRepository) Delete(ctx context.Context, id int) error {
-	return r.db.WithContext(ctx).Delete(&model.MenuOption{}, id).Error
+	db := getDB(r.db, ctx)
+	return db.WithContext(ctx).Delete(&model.MenuOption{}, id).Error
 }
 
 func (r *menuOptionRepository) List(ctx context.Context, limit, offset int) ([]*entity.MenuOption, error) {

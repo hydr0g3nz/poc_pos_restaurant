@@ -23,8 +23,8 @@ func NewMenuItemRepository(db *gorm.DB) repository.MenuItemRepository {
 
 func (r *menuItemRepository) Create(ctx context.Context, item *entity.MenuItem) (*entity.MenuItem, error) {
 	dbItem := r.entityToModel(item)
-
-	if err := r.db.WithContext(ctx).Create(dbItem).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Create(dbItem).Error; err != nil {
 		return nil, err
 	}
 
@@ -52,8 +52,8 @@ func (r *menuItemRepository) GetByID(ctx context.Context, id int) (*entity.MenuI
 
 func (r *menuItemRepository) Update(ctx context.Context, item *entity.MenuItem) (*entity.MenuItem, error) {
 	dbItem := r.entityToModel(item)
-
-	if err := r.db.WithContext(ctx).Save(dbItem).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Save(dbItem).Error; err != nil {
 		return nil, err
 	}
 
@@ -61,7 +61,8 @@ func (r *menuItemRepository) Update(ctx context.Context, item *entity.MenuItem) 
 }
 
 func (r *menuItemRepository) Delete(ctx context.Context, id int) error {
-	return r.db.WithContext(ctx).Delete(&model.MenuItem{}, id).Error
+	db := getDB(r.db, ctx)
+	return db.WithContext(ctx).Delete(&model.MenuItem{}, id).Error
 }
 
 func (r *menuItemRepository) List(ctx context.Context, limit, offset int) ([]*entity.MenuItem, error) {

@@ -22,8 +22,8 @@ func NewMenuItemOptionRepository(db *gorm.DB) repository.MenuItemOptionRepositor
 
 func (r *menuItemOptionRepository) Create(ctx context.Context, itemOption *entity.MenuItemOption) (*entity.MenuItemOption, error) {
 	dbItemOption := r.entityToModel(itemOption)
-
-	if err := r.db.WithContext(ctx).Create(dbItemOption).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Create(dbItemOption).Error; err != nil {
 		return nil, err
 	}
 
@@ -55,8 +55,8 @@ func (r *menuItemOptionRepository) GetByItemAndOption(ctx context.Context, itemI
 
 func (r *menuItemOptionRepository) Update(ctx context.Context, itemOption *entity.MenuItemOption) (*entity.MenuItemOption, error) {
 	dbItemOption := r.entityToModel(itemOption)
-
-	if err := r.db.WithContext(ctx).Save(dbItemOption).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Save(dbItemOption).Error; err != nil {
 		return nil, err
 	}
 
@@ -64,11 +64,13 @@ func (r *menuItemOptionRepository) Update(ctx context.Context, itemOption *entit
 }
 
 func (r *menuItemOptionRepository) Delete(ctx context.Context, itemID, optionID int) error {
-	return r.db.WithContext(ctx).Where("item_id = ? AND option_id = ?", itemID, optionID).Delete(&model.MenuItemOption{}).Error
+	db := getDB(r.db, ctx)
+	return db.WithContext(ctx).Where("item_id = ? AND option_id = ?", itemID, optionID).Delete(&model.MenuItemOption{}).Error
 }
 
 func (r *menuItemOptionRepository) DeleteByItemID(ctx context.Context, itemID int) error {
-	return r.db.WithContext(ctx).Where("item_id = ?", itemID).Delete(&model.MenuItemOption{}).Error
+	db := getDB(r.db, ctx)
+	return db.WithContext(ctx).Where("item_id = ?", itemID).Delete(&model.MenuItemOption{}).Error
 }
 
 // Helper methods

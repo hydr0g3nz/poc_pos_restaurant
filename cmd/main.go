@@ -82,7 +82,18 @@ func main() {
 	categoryUsecase := usecase.NewCategoryUsecase(categoryRepo, logger, cfg)
 	menuItemUsecase := usecase.NewMenuItemUsecase(menuItemRepo, categoryRepo, kitchenStationRepo, logger, cfg)
 	tableUsecase := usecase.NewTableUsecase(tableRepo, logger, cfg)
-	orderUsecase := usecase.NewOrderUsecase(orderRepo, orderItemRepo, tableRepo, menuItemRepo, orderService, qrCodeService, printerMock, txManager, logger, cfg)
+	orderItemOptionUsecase := usecase.NewOrderItemOptionUsecase(orderItemOptionRepo, orderItemRepo, menuOptionRepo, optionValueRepo, orderRepo, logger, cfg)
+	orderUsecase := usecase.NewOrderUsecase(
+		orderItemOptionUsecase,
+		orderRepo,
+		orderItemRepo,
+		tableRepo,
+		menuItemRepo,
+		orderService,
+		qrCodeService,
+		printerMock,
+		txManager,
+		logger, cfg)
 	paymentUsecase := usecase.NewPaymentUsecase(paymentRepo, orderRepo, orderService, logger, cfg)
 	// qrCodeUsecase := usecase.NewQRCodeUsecase(tableRepo, orderRepo, qrCodeService, orderUsecase, logger, cfg)
 	revenueUsecase := usecase.NewRevenueUsecase(revenueRepo, paymentRepo, orderRepo, logger, cfg) // New revenue usecase
@@ -97,7 +108,7 @@ func main() {
 	paymentController := controller.NewPaymentController(paymentUsecase, errorPresenter)
 	revenueController := controller.NewRevenueController(revenueUsecase, errorPresenter) // New revenue controller
 	kitchenController := controller.NewKitchenController(kitchenUsecase, kitchenStationUsecase, errorPresenter)
-	customController := controller.NewCustomerController(categoryUsecase, menuItemUsecase, errorPresenter)
+	customController := controller.NewCustomerController(categoryUsecase, menuItemUsecase, orderUsecase, errorPresenter)
 	// Setup fiber server
 	app := infrastructure.NewFiber(infrastructure.ServerConfig{
 		Address:      cfg.Server.Port,

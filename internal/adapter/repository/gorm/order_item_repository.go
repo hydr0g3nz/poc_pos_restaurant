@@ -23,8 +23,8 @@ func NewOrderItemRepository(db *gorm.DB) repository.OrderItemRepository {
 
 func (r *orderItemRepository) Create(ctx context.Context, item *entity.OrderItem) (*entity.OrderItem, error) {
 	dbItem := r.entityToModel(item)
-
-	if err := r.db.WithContext(ctx).Create(dbItem).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Create(dbItem).Error; err != nil {
 		return nil, err
 	}
 
@@ -46,8 +46,8 @@ func (r *orderItemRepository) GetByID(ctx context.Context, id int) (*entity.Orde
 
 func (r *orderItemRepository) Update(ctx context.Context, item *entity.OrderItem) (*entity.OrderItem, error) {
 	dbItem := r.entityToModel(item)
-
-	if err := r.db.WithContext(ctx).Save(dbItem).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Save(dbItem).Error; err != nil {
 		return nil, err
 	}
 
@@ -60,7 +60,6 @@ func (r *orderItemRepository) Delete(ctx context.Context, id int) error {
 
 func (r *orderItemRepository) ListByOrder(ctx context.Context, orderID int) ([]*entity.OrderItem, error) {
 	var dbItems []model.OrderItem
-
 	if err := r.db.WithContext(ctx).Where("order_id = ?", orderID).Find(&dbItems).Error; err != nil {
 		return nil, err
 	}
@@ -69,7 +68,8 @@ func (r *orderItemRepository) ListByOrder(ctx context.Context, orderID int) ([]*
 }
 
 func (r *orderItemRepository) DeleteByOrder(ctx context.Context, orderID int) error {
-	return r.db.WithContext(ctx).Where("order_id = ?", orderID).Delete(&model.OrderItem{}).Error
+	db := getDB(r.db, ctx)
+	return db.WithContext(ctx).Where("order_id = ?", orderID).Delete(&model.OrderItem{}).Error
 }
 
 func (r *orderItemRepository) GetByOrderAndItem(ctx context.Context, orderID, itemID int) (*entity.OrderItem, error) {

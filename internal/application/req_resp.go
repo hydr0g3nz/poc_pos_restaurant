@@ -506,6 +506,6 @@ type OrderItemRequest struct {
 }
 
 type OrderItemOptionRequest struct {
-	OptionID  int `json:"option_id" validate:"required,gt=0"`
-	OptionVal int `json:"option_val" validate:"required,gt=0"`
+	OptionID    int `json:"option_id" validate:"required,gt=0"`
+	OptionValID int `json:"option_val_id" validate:"required,gt=0"`
 }

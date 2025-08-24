@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/coder/websocket"
@@ -11,6 +12,7 @@ import (
 
 type printerServer struct {
 	con *websocket.Conn
+	mu  *sync.Mutex
 }
 
 func NewPrinterService(url string) (*printerServer, error) {
@@ -19,12 +21,15 @@ func NewPrinterService(url string) (*printerServer, error) {
 		return nil, err
 	}
 	log.Println("Printer service connected to", url)
+	p.mu = &sync.Mutex{}
 	return p, nil
 }
 func (s *printerServer) Print(ctx context.Context, content []byte, contentType string) error {
 	if s.con == nil {
 		return fmt.Errorf("printer connection is not established")
 	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	return s.con.Write(ctx, websocket.MessageText, content)
 }
 func (s *printerServer) Close() error {

@@ -23,8 +23,8 @@ func NewOptionValueRepository(db *gorm.DB) repository.OptionValueRepository {
 
 func (r *optionValueRepository) Create(ctx context.Context, value *entity.OptionValue) (*entity.OptionValue, error) {
 	dbValue := r.entityToModel(value)
-
-	if err := r.db.WithContext(ctx).Create(dbValue).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Create(dbValue).Error; err != nil {
 		return nil, err
 	}
 
@@ -56,8 +56,8 @@ func (r *optionValueRepository) GetByOptionID(ctx context.Context, optionID int)
 
 func (r *optionValueRepository) Update(ctx context.Context, value *entity.OptionValue) (*entity.OptionValue, error) {
 	dbValue := r.entityToModel(value)
-
-	if err := r.db.WithContext(ctx).Save(dbValue).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Save(dbValue).Error; err != nil {
 		return nil, err
 	}
 
@@ -65,7 +65,8 @@ func (r *optionValueRepository) Update(ctx context.Context, value *entity.Option
 }
 
 func (r *optionValueRepository) Delete(ctx context.Context, id int) error {
-	return r.db.WithContext(ctx).Delete(&model.OptionValue{}, id).Error
+	db := getDB(r.db, ctx)
+	return db.WithContext(ctx).Delete(&model.OptionValue{}, id).Error
 }
 
 func (r *optionValueRepository) List(ctx context.Context, limit, offset int) ([]*entity.OptionValue, error) {

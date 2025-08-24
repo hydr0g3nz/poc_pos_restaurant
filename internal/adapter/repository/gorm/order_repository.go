@@ -24,8 +24,8 @@ func NewOrderRepository(db *gorm.DB) repository.OrderRepository {
 
 func (r *orderRepository) Create(ctx context.Context, order *entity.Order) (*entity.Order, error) {
 	dbOrder := r.entityToModel(order)
-
-	if err := r.db.WithContext(ctx).Create(dbOrder).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Create(dbOrder).Error; err != nil {
 		return nil, err
 	}
 
@@ -60,8 +60,8 @@ func (r *orderRepository) GetByIDWithItems(ctx context.Context, id int) (*entity
 
 func (r *orderRepository) Update(ctx context.Context, order *entity.Order) (*entity.Order, error) {
 	dbOrder := r.entityToModel(order)
-
-	if err := r.db.WithContext(ctx).Save(dbOrder).Error; err != nil {
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Save(dbOrder).Error; err != nil {
 		return nil, err
 	}
 
@@ -69,7 +69,8 @@ func (r *orderRepository) Update(ctx context.Context, order *entity.Order) (*ent
 }
 
 func (r *orderRepository) Delete(ctx context.Context, id int) error {
-	return r.db.WithContext(ctx).Delete(&model.Order{}, id).Error
+	db := getDB(r.db, ctx)
+	return db.WithContext(ctx).Delete(&model.Order{}, id).Error
 }
 
 func (r *orderRepository) List(ctx context.Context, limit, offset int) ([]*entity.Order, error) {
