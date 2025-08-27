@@ -4,7 +4,6 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/dto"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/presenter"
 	usecase "github.com/hydr0g3nz/poc_pos_restuarant/internal/application"
 )
@@ -25,7 +24,7 @@ func NewCategoryController(categoryUseCase usecase.CategoryUsecase, errorPresent
 
 // CreateCategory handles category creation
 func (c *CategoryController) CreateCategory(ctx *fiber.Ctx) error {
-	var req dto.CreateCategoryRequest
+	var req usecase.CreateCategoryRequest
 	if err := ctx.BodyParser(&req); err != nil {
 		return HandleError(ctx, err, c.errorPresenter)
 	}
@@ -37,9 +36,7 @@ func (c *CategoryController) CreateCategory(ctx *fiber.Ctx) error {
 		})
 	}
 
-	response, err := c.categoryUseCase.CreateCategory(ctx.Context(), &usecase.CreateCategoryRequest{
-		Name: req.Name,
-	})
+	response, err := c.categoryUseCase.CreateCategory(ctx.Context(), &req)
 	if err != nil {
 		return HandleError(ctx, err, c.errorPresenter)
 	}
@@ -109,7 +106,7 @@ func (c *CategoryController) UpdateCategory(ctx *fiber.Ctx) error {
 		})
 	}
 
-	var req dto.UpdateCategoryRequest
+	var req usecase.UpdateCategoryRequest
 	if err := ctx.BodyParser(&req); err != nil {
 		return HandleError(ctx, err, c.errorPresenter)
 	}
@@ -121,9 +118,7 @@ func (c *CategoryController) UpdateCategory(ctx *fiber.Ctx) error {
 		})
 	}
 
-	response, err := c.categoryUseCase.UpdateCategory(ctx.Context(), categoryID, &usecase.UpdateCategoryRequest{
-		Name: req.Name,
-	})
+	response, err := c.categoryUseCase.UpdateCategory(ctx.Context(), categoryID, &req)
 	if err != nil {
 		return HandleError(ctx, err, c.errorPresenter)
 	}

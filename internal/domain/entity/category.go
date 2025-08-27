@@ -28,9 +28,11 @@ func NewCategory(name string, description string, displayOrder int, isActive boo
 		return nil, errs.ErrInvalidCategoryName
 	}
 	return &Category{
-		Name:      name,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-		IsActive:  isActive,
+		Name:         name,
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+		Description:  description,
+		DisplayOrder: displayOrder,
+		IsActive:     isActive,
 	}, nil
 }

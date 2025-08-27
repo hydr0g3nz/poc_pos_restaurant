@@ -62,7 +62,10 @@ type CreateCategoryRequest struct {
 }
 
 type UpdateCategoryRequest struct {
-	Name string `json:"name" validate:"required,min=1,max=50"`
+	Name         string `json:"name" validate:"required,min=1,max=50"`
+	Description  string `json:"description,omitempty" validate:"max=100"`
+	DisplayOrder int    `json:"display_order,omitempty"`
+	IsActive     bool   `json:"is_active"`
 }
 
 type CategoryResponse struct {

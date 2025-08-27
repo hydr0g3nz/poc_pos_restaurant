@@ -132,9 +132,14 @@ func (u *categoryUsecase) UpdateCategory(ctx context.Context, id int, req *Updat
 		// }
 		// currentCategory.Name = categoryType
 	}
-
+	update, err := entity.NewCategory(req.Name, req.Description, req.DisplayOrder, req.IsActive)
+	if err != nil {
+		u.logger.Error("Error creating category entity", "error", err, "name", req.Name)
+		return nil, err
+	}
+	update.ID = currentCategory.ID
 	// Update category
-	updatedCategory, err := u.categoryRepo.Update(ctx, currentCategory)
+	updatedCategory, err := u.categoryRepo.Update(ctx, update)
 	if err != nil {
 		u.logger.Error("Error updating category", "error", err, "categoryID", id)
 		return nil, fmt.Errorf("failed to update category: %w", err)
