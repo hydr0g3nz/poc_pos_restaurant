@@ -108,6 +108,7 @@ func main() {
 	revenueUsecase := usecase.NewRevenueUsecase(revenueRepo, paymentRepo, orderRepo, logger, cfg) // New revenue usecase
 	kitchenUsecase := usecase.NewKitchenUsecase(orderItemRepo, orderRepo, menuItemRepo, tableRepo, orderItemOptionRepo, menuOptionRepo, optionValueRepo, logger, cfg)
 	kitchenStationUsecase := usecase.NewKitchenStationUsecase(kitchenStationRepo, logger, cfg)
+	menuOptionUsecase := usecase.NewMenuOptionUsecase(menuOptionRepo, logger, cfg)
 	// Setup controllers
 	userController := controller.NewUserController(userUsecase, errorPresenter)
 	categoryController := controller.NewCategoryController(categoryUsecase, errorPresenter)
@@ -118,6 +119,7 @@ func main() {
 	revenueController := controller.NewRevenueController(revenueUsecase, errorPresenter) // New revenue controller
 	kitchenController := controller.NewKitchenController(kitchenUsecase, kitchenStationUsecase, errorPresenter)
 	customController := controller.NewCustomerController(categoryUsecase, menuItemUsecase, orderUsecase, errorPresenter)
+	menuOptionController := controller.NewMenuOptionController(menuOptionUsecase, errorPresenter)
 	// Setup fiber server
 	app := infrastructure.NewFiber(infrastructure.ServerConfig{
 		Address:      cfg.Server.Port,
@@ -136,6 +138,7 @@ func main() {
 	revenueController.RegisterRoutes(api) // Register revenue routes
 	kitchenController.RegisterRoutes(api)
 	customController.RegisterRoutes(api)
+	menuOptionController.RegisterRoutes(api)
 	// Graceful shutdown
 	go func() {
 		logger.Info("Server starting", "port", cfg.Server.Port)

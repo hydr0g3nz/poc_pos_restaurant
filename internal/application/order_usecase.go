@@ -1168,35 +1168,35 @@ func (u *orderUsecase) processAddOrderItem(ctx context.Context, orderID int, ite
 		return nil, errs.ErrMenuItemNotFound
 	}
 
-	// ตรวจสอบว่ามี order item นี้อยู่แล้วหรือไม่
-	existingItem, err := u.orderItemRepo.GetByOrderAndItem(ctx, orderID, item.MenuItemID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to check existing order item: %w", err)
-	}
+	// // ตรวจสอบว่ามี order item นี้อยู่แล้วหรือไม่
+	// existingItem, err := u.orderItemRepo.GetByOrderAndItem(ctx, orderID, item.MenuItemID)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to check existing order item: %w", err)
+	// }
 
 	var orderItem *entity.OrderItem
 
-	if existingItem != nil {
-		// อัปเดตจำนวนของ item ที่มีอยู่แล้ว
-		if err := existingItem.UpdateQuantity(existingItem.Quantity + item.Quantity); err != nil {
-			return nil, fmt.Errorf("failed to update order item quantity: %w", err)
-		}
+	// if existingItem != nil {
+	// 	// อัปเดตจำนวนของ item ที่มีอยู่แล้ว
+	// 	if err := existingItem.UpdateQuantity(existingItem.Quantity + item.Quantity); err != nil {
+	// 		return nil, fmt.Errorf("failed to update order item quantity: %w", err)
+	// 	}
 
-		orderItem, err = u.orderItemRepo.Update(ctx, existingItem)
-		if err != nil {
-			return nil, fmt.Errorf("failed to update order item: %w", err)
-		}
-	} else {
-		// สร้าง order item ใหม่
-		newOrderItem, err := entity.NewOrderItem(orderID, item.MenuItemID, item.Quantity, menuItem.Price.AmountBaht(), menuItem.Name)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create order item entity: %w", err)
-		}
+	// 	orderItem, err = u.orderItemRepo.Update(ctx, existingItem)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("failed to update order item: %w", err)
+	// 	}
+	// }
 
-		orderItem, err = u.orderItemRepo.Create(ctx, newOrderItem)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create order item: %w", err)
-		}
+	// สร้าง order item ใหม่
+	newOrderItem, err := entity.NewOrderItem(orderID, item.MenuItemID, item.Quantity, menuItem.Price.AmountBaht(), menuItem.Name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create order item entity: %w", err)
+	}
+
+	orderItem, err = u.orderItemRepo.Create(ctx, newOrderItem)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create order item: %w", err)
 	}
 
 	// เพิ่ม options
