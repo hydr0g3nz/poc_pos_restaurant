@@ -190,11 +190,11 @@ func (c *MenuWithOptionsController) RegisterRoutes(router fiber.Router) {
 	menuGroup := router.Group("/menu-with-options")
 
 	// Menu Item Management with Options
-	menuGroup.Post("/items", c.CreateMenuItemWithOptions)    // POST /menu-with-options/items
-	menuGroup.Put("/items/:id", c.UpdateMenuItemWithOptions) // PUT /menu-with-options/items/1
-	menuGroup.Get("/items/:id", c.GetMenuItemWithOptions)    // GET /menu-with-options/items/1
-	menuGroup.Get("/items", c.ListMenuItemsWithOptions)      // GET /menu-with-options/items
-	// menuGroup.Post("/items/bulk-assign", c.BulkAssignOptionsToMenuItems) // POST /menu-with-options/items/bulk-assign
+	menuGroup.Post("/items", c.CreateMenuItemWithOptions)                // POST /menu-with-options/items
+	menuGroup.Put("/items/:id", c.UpdateMenuItemWithOptions)             // PUT /menu-with-options/items/1
+	menuGroup.Get("/items/:id", c.GetMenuItemWithOptions)                // GET /menu-with-options/items/1
+	menuGroup.Get("/items", c.ListMenuItemsWithOptions)                  // GET /menu-with-options/items
+	menuGroup.Post("/items/bulk-assign", c.BulkAssignOptionsToMenuItems) // POST /menu-with-options/items/bulk-assign
 
 	// Option Management with Values
 	menuGroup.Post("/options", c.CreateOptionWithValues)       // POST /menu-with-options/options
