@@ -62,10 +62,13 @@ type MenuItem struct {
 }
 
 type MenuOption struct {
-	ID         int    `gorm:"primaryKey;autoIncrement"`
-	Name       string `gorm:"not null"`
-	Type       string `gorm:"not null"`
-	IsRequired bool   `gorm:"default:false"`
+	ID         int            `gorm:"primaryKey;autoIncrement"`
+	Name       string         `gorm:"not null"`
+	Type       string         `gorm:"not null"`
+	IsRequired bool           `gorm:"default:false"`
+	CreatedAt  time.Time      `gorm:"autoCreateTime"`
+	UpdatedAt  time.Time      `gorm:"autoUpdateTime"`
+	DeletedAt  gorm.DeletedAt `gorm:"index"`
 
 	// Relationships
 	OptionValues     []OptionValue     `gorm:"foreignKey:OptionID"`

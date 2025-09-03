@@ -99,3 +99,7 @@ func (r *menuItemOptionRepository) modelsToEntities(dbItemOptions []model.MenuIt
 	}
 	return entities
 }
+func (r *menuItemOptionRepository) DeleteByOptionID(ctx context.Context, optionID int) error {
+	db := getDB(r.db, ctx)
+	return db.WithContext(ctx).Where("option_id = ?", optionID).Delete(&model.MenuItemOption{}).Error
+}

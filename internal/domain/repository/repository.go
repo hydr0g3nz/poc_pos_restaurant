@@ -34,6 +34,7 @@ type MenuItemOptionRepository interface {
 	Update(ctx context.Context, itemOption *entity.MenuItemOption) (*entity.MenuItemOption, error)
 	Delete(ctx context.Context, itemID, optionID int) error
 	DeleteByItemID(ctx context.Context, itemID int) error
+	DeleteByOptionID(ctx context.Context, optionID int) error
 }
 
 type OrderItemOptionRepository interface {

@@ -157,3 +157,42 @@ type KitchenStationUsecase interface {
 	DeleteKitchenStation(ctx context.Context, id int) error
 	ListKitchenStations(ctx context.Context) ([]*KitchenStationOnlyResponse, error)
 }
+
+// MenuWithOptionsUsecase - รวมการจัดการ menu item พร้อม options ในที่เดียว
+type MenuWithOptionsUsecase interface {
+	// Create menu item with options in one go
+	CreateMenuItemWithOptions(ctx context.Context, req *CreateMenuItemWithOptionsRequest) (*MenuItemWithOptionsResponse, error)
+
+	// Update menu item and its options
+	UpdateMenuItemWithOptions(ctx context.Context, itemID int, req *UpdateMenuItemWithOptionsRequest) (*MenuItemWithOptionsResponse, error)
+
+	// Get menu item with all its available options and values
+	GetMenuItemWithOptions(ctx context.Context, itemID int) (*MenuItemWithOptionsResponse, error)
+
+	// List menu items with their options (for menu display)
+	ListMenuItemsWithOptions(ctx context.Context, req *ListMenuItemsRequest) (*MenuItemWithOptionsListResponse, error)
+
+	// Bulk assign options to multiple menu items
+	BulkAssignOptionsToMenuItems(ctx context.Context, req *BulkAssignOptionsRequest) error
+
+	// Remove option from menu item
+	RemoveOptionFromMenuItem(ctx context.Context, itemID, optionID int) error
+}
+
+// MenuOptionManagementUsecase - รวมการจัดการ options และ values
+type MenuOptionManagementUsecase interface {
+	// Create option with values in one go
+	CreateOptionWithValues(ctx context.Context, req *CreateOptionWithValuesRequest) (*OptionWithValuesResponse, error)
+
+	// Update option and its values
+	UpdateOptionWithValues(ctx context.Context, optionID int, req *UpdateOptionWithValuesRequest) (*OptionWithValuesResponse, error)
+
+	// Get option with all its values
+	GetOptionWithValues(ctx context.Context, optionID int) (*OptionWithValuesResponse, error)
+
+	// List all options with their values
+	ListOptionsWithValues(ctx context.Context) ([]*OptionWithValuesResponse, error)
+
+	// Delete option and all its values
+	DeleteOptionWithValues(ctx context.Context, optionID int) error
+}

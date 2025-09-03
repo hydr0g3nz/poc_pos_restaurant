@@ -328,13 +328,6 @@ type MenuOptionListResponse struct {
 }
 
 // Option Value DTOs
-type CreateOptionValueRequest struct {
-	OptionID        int     `json:"option_id" validate:"required,gt=0"`
-	Name            string  `json:"name" validate:"required,min=1,max=100"`
-	IsDefault       bool    `json:"is_default"`
-	AdditionalPrice float64 `json:"additional_price,omitempty" validate:"gte=0"`
-	DisplayOrder    int     `json:"display_order,omitempty"`
-}
 
 type UpdateOptionValueRequest struct {
 	Name            string  `json:"name" validate:"required,min=1,max=100"`
@@ -606,4 +599,220 @@ type OrderItemDetailResponse struct {
 	CreatedAt      time.Time                  `json:"created_at"`
 	UpdatedAt      time.Time                  `json:"updated_at"`
 	MenuItem       *MenuItemResponse          `json:"menu_item,omitempty"`
+}
+
+// ==================== Menu Item with Options DTOs ====================
+
+type CreateMenuItemWithOptionsRequest struct {
+	CategoryID       int                            `json:"category_id" validate:"required,gt=0"`
+	KitchenStationID int                            `json:"kitchen_station_id" validate:"required,gt=0"`
+	Name             string                         `json:"name" validate:"required,min=1,max=100"`
+	Description      string                         `json:"description,omitempty"`
+	Price            float64                        `json:"price" validate:"required,gte=0"`
+	IsActive         bool                           `json:"is_active"`
+	IsRecommended    bool                           `json:"is_recommended"`
+	DisplayOrder     int                            `json:"display_order,omitempty"`
+	AssignedOptions  []*AssignMenuItemOptionRequest `json:"assigned_options,omitempty"`
+}
+
+type UpdateMenuItemWithOptionsRequest struct {
+	CategoryID       int                            `json:"category_id" validate:"required,gt=0"`
+	KitchenStationID int                            `json:"kitchen_station_id" validate:"required,gt=0"`
+	Name             string                         `json:"name" validate:"required,min=1,max=100"`
+	Description      string                         `json:"description,omitempty"`
+	Price            float64                        `json:"price" validate:"required,gte=0"`
+	IsActive         bool                           `json:"is_active"`
+	IsRecommended    bool                           `json:"is_recommended"`
+	DisplayOrder     int                            `json:"display_order,omitempty"`
+	AssignedOptions  []*AssignMenuItemOptionRequest `json:"assigned_options,omitempty"`
+}
+
+type AssignMenuItemOptionRequest struct {
+	OptionID int  `json:"option_id" validate:"required,gt=0"`
+	IsActive bool `json:"is_active"`
+}
+
+type MenuItemWithOptionsResponse struct {
+	ID               int                             `json:"id"`
+	CategoryID       int                             `json:"category_id"`
+	KitchenStationID int                             `json:"kitchen_station_id"`
+	Name             string                          `json:"name"`
+	Description      string                          `json:"description"`
+	Price            float64                         `json:"price"`
+	IsActive         bool                            `json:"is_active"`
+	IsRecommended    bool                            `json:"is_recommended"`
+	DisplayOrder     int                             `json:"display_order"`
+	Category         string                          `json:"category"`
+	KitchenStation   string                          `json:"kitchen_station"`
+	AvailableOptions []*MenuItemOptionDetailResponse `json:"available_options"`
+	CreatedAt        time.Time                       `json:"created_at"`
+	UpdatedAt        time.Time                       `json:"updated_at"`
+}
+
+type MenuItemOptionDetailResponse struct {
+	OptionID   int                    `json:"option_id"`
+	OptionName string                 `json:"option_name"`
+	OptionType string                 `json:"option_type"`
+	IsRequired bool                   `json:"is_required"`
+	IsActive   bool                   `json:"is_active"`
+	Values     []*OptionValueResponse `json:"values"`
+}
+
+type MenuItemWithOptionsListResponse struct {
+	Items  []*MenuItemWithOptionsResponse `json:"items"`
+	Total  int                            `json:"total"`
+	Limit  int                            `json:"limit"`
+	Offset int                            `json:"offset"`
+}
+
+type ListMenuItemsRequest struct {
+	CategoryID    *int   `json:"category_id,omitempty"`
+	IsActive      *bool  `json:"is_active,omitempty"`
+	IsRecommended *bool  `json:"is_recommended,omitempty"`
+	Search        string `json:"search,omitempty"`
+	Limit         int    `json:"limit" validate:"min=1,max=100"`
+	Offset        int    `json:"offset" validate:"min=0"`
+}
+
+type BulkAssignOptionsRequest struct {
+	MenuItemIDs []int `json:"menu_item_ids" validate:"required,dive,gt=0"`
+	OptionIDs   []int `json:"option_ids" validate:"required,dive,gt=0"`
+	IsActive    bool  `json:"is_active"`
+}
+
+// ==================== Option with Values DTOs ====================
+
+type CreateOptionWithValuesRequest struct {
+	Name       string                      `json:"name" validate:"required,min=1,max=100"`
+	Type       string                      `json:"type" validate:"required,min=1,max=50"`
+	IsRequired bool                        `json:"is_required"`
+	Values     []*CreateOptionValueRequest `json:"values" validate:"required,dive,required"`
+}
+type CreateOptionValueRequest struct {
+	OptionID        int     `json:"option_id" validate:"required,gt=0"`
+	Name            string  `json:"name" validate:"required,min=1,max=100"`
+	IsDefault       bool    `json:"is_default"`
+	AdditionalPrice float64 `json:"additional_price,omitempty" validate:"gte=0"`
+	DisplayOrder    int     `json:"display_order,omitempty"`
+}
+type UpdateOptionWithValuesRequest struct {
+	Name       string                       `json:"name" validate:"required,min=1,max=100"`
+	Type       string                       `json:"type" validate:"required,min=1,max=50"`
+	IsRequired bool                         `json:"is_required"`
+	Values     []*UpdateOptionValueRequest2 `json:"values" validate:"required,dive,required"`
+}
+
+type UpdateOptionValueRequest2 struct {
+	ID              *int    `json:"id,omitempty"` // nil = create new, มีค่า = update existing
+	Name            string  `json:"name" validate:"required,min=1,max=100"`
+	IsDefault       bool    `json:"is_default"`
+	AdditionalPrice float64 `json:"additional_price,omitempty" validate:"gte=0"`
+	DisplayOrder    int     `json:"display_order,omitempty"`
+	Action          string  `json:"action,omitempty" validate:"omitempty,oneof=add update delete"`
+}
+
+type OptionWithValuesResponse struct {
+	ID         int                    `json:"id"`
+	Name       string                 `json:"name"`
+	Type       string                 `json:"type"`
+	IsRequired bool                   `json:"is_required"`
+	Values     []*OptionValueResponse `json:"values"`
+	CreatedAt  time.Time              `json:"created_at,omitempty"`
+	UpdatedAt  time.Time              `json:"updated_at,omitempty"`
+}
+
+// ==================== Enhanced Option Value Response ====================
+type EnhancedOptionValueResponse struct {
+	ID              int     `json:"id"`
+	OptionID        int     `json:"option_id"`
+	Name            string  `json:"name"`
+	IsDefault       bool    `json:"is_default"`
+	AdditionalPrice float64 `json:"additional_price"`
+	DisplayOrder    int     `json:"display_order"`
+}
+
+// ==================== Quick Setup DTOs ====================
+
+// สำหรับ setup เริ่มต้น - สร้าง options พื้นฐานทั้งหมดในครั้งเดียว
+type QuickSetupMenuOptionsRequest struct {
+	RestaurantType string                           `json:"restaurant_type"` // "thai", "western", "chinese", etc.
+	Options        []*CreateOptionWithValuesRequest `json:"options"`
+}
+
+type QuickSetupMenuOptionsResponse struct {
+	CreatedOptions []*OptionWithValuesResponse `json:"created_options"`
+	SuccessCount   int                         `json:"success_count"`
+	FailedCount    int                         `json:"failed_count"`
+	FailedReasons  []string                    `json:"failed_reasons,omitempty"`
+}
+
+// ==================== Menu Display DTOs ====================
+
+// สำหรับแสดงเมนูให้ลูกค้า - รวมทุกอย่างไว้
+type CustomerMenuResponse struct {
+	Categories []*CategoryWithMenuItemsResponse `json:"categories"`
+	Total      int                              `json:"total"`
+}
+
+type CategoryWithMenuItemsResponse struct {
+	ID           int                            `json:"id"`
+	Name         string                         `json:"name"`
+	Description  string                         `json:"description"`
+	DisplayOrder int                            `json:"display_order"`
+	MenuItems    []*MenuItemWithOptionsResponse `json:"menu_items"`
+}
+
+// ==================== Order with Options DTOs ====================
+
+// สำหรับสั่งอาหารพร้อม options
+type CreateOrderWithOptionsRequest struct {
+	TableID int                            `json:"table_id" validate:"required,gt=0"`
+	Items   []*OrderItemWithOptionsRequest `json:"items" validate:"required,dive,required"`
+}
+
+type OrderItemWithOptionsRequest struct {
+	MenuItemID int                      `json:"menu_item_id" validate:"required,gt=0"`
+	Quantity   int                      `json:"quantity" validate:"required,gt=0"`
+	Notes      string                   `json:"notes,omitempty"`
+	Options    []*SelectedOptionRequest `json:"options,omitempty"`
+}
+
+type SelectedOptionRequest struct {
+	OptionID int `json:"option_id" validate:"required,gt=0"`
+	ValueID  int `json:"value_id" validate:"required,gt=0"`
+}
+
+type OrderWithOptionsResponse struct {
+	ID        int                             `json:"id"`
+	TableID   int                             `json:"table_id"`
+	Status    string                          `json:"status"`
+	Items     []*OrderItemWithOptionsResponse `json:"items"`
+	Total     float64                         `json:"total"`
+	CreatedAt time.Time                       `json:"created_at"`
+	Table     *TableResponse                  `json:"table,omitempty"`
+}
+
+type OrderItemWithOptionsResponse struct {
+	ID              int                       `json:"id"`
+	OrderID         int                       `json:"order_id"`
+	MenuItemID      int                       `json:"menu_item_id"`
+	MenuItemName    string                    `json:"menu_item_name"`
+	Quantity        int                       `json:"quantity"`
+	UnitPrice       float64                   `json:"unit_price"`
+	OptionsTotal    float64                   `json:"options_total"`
+	Subtotal        float64                   `json:"subtotal"`
+	Notes           string                    `json:"notes,omitempty"`
+	Status          string                    `json:"status"`
+	KitchenStation  string                    `json:"kitchen_station,omitempty"`
+	SelectedOptions []*SelectedOptionResponse `json:"selected_options"`
+	CreatedAt       time.Time                 `json:"created_at"`
+}
+
+type SelectedOptionResponse struct {
+	OptionID        int     `json:"option_id"`
+	OptionName      string  `json:"option_name"`
+	OptionType      string  `json:"option_type"`
+	ValueID         int     `json:"value_id"`
+	ValueName       string  `json:"value_name"`
+	AdditionalPrice float64 `json:"additional_price"`
 }

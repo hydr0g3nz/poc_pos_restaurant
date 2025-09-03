@@ -36,9 +36,9 @@ func (r *menuOptionRepository) GetByID(ctx context.Context, id int) (*entity.Men
 
 	db := getDB(r.db, ctx)
 	if err := db.WithContext(ctx).First(&dbOption, id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, nil
-		}
+		// if err == gorm.ErrRecordNotFound {
+		// 	return nil, nil
+		// }
 		return nil, err
 	}
 
