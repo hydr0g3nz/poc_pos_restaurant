@@ -38,7 +38,7 @@ func (r *menuItemRepository) GetByID(ctx context.Context, id int) (*entity.MenuI
 	if err := db.WithContext(ctx).
 		Preload("Category").
 		Preload("KitchenStation").
-		Preload("MenuItemOptions").
+		Preload("MenuItemOptions", "is_active = ?", "true").
 		Preload("MenuItemOptions.MenuOption").
 		Preload("MenuItemOptions.MenuOption.OptionValues").
 		First(&dbItem, id).Error; err != nil {

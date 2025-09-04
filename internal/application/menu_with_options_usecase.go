@@ -94,21 +94,35 @@ func (u *menuWithOptionsUsecase) UpdateMenuItemWithOptions(ctx context.Context, 
 			return nil, fmt.Errorf("failed to update menu item: %w", err)
 		}
 
-		// 3. Update options - ลบเก่าแล้วเพิ่มใหม่
-		err = u.menuItemOptionRepo.DeleteByItemID(ctx, itemID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to remove existing options: %w", err)
-		}
-
+		// // 3. Update options - ลบเก่าแล้วเพิ่มใหม่
+		// err = u.menuItemOptionRepo.DeleteByItemID(ctx, itemID)
+		// if err != nil {
+		// 	return nil, fmt.Errorf("failed to remove existing options: %w", err)
+		// }
 		// 4. เพิ่ม options ใหม่
 		for _, optionReq := range req.AssignedOptions {
-			_, err := u.menuItemOptionRepo.Create(ctx, &entity.MenuItemOption{
-				ItemID:   itemID,
-				OptionID: optionReq.OptionID,
-				IsActive: optionReq.IsActive,
-			})
-			if err != nil {
-				return nil, fmt.Errorf("failed to assign option %d to menu item: %w", optionReq.OptionID, err)
+			if optionReq.OptionID == 0 {
+				continue
+			}
+			if optionReq.IsActive {
+				_, err := u.menuItemOptionRepo.Create(ctx, &entity.MenuItemOption{
+					ItemID:   itemID,
+					OptionID: optionReq.OptionID,
+					IsActive: true,
+				})
+				if err != nil {
+					return nil, fmt.Errorf("failed to assign option %d to menu item: %w", optionReq.OptionID, err)
+				}
+			} else {
+				update := &entity.MenuItemOption{
+					ItemID:   itemID,
+					OptionID: optionReq.OptionID,
+					IsActive: false,
+				}
+				_, err := u.menuItemOptionRepo.Update(ctx, update)
+				if err != nil {
+					return nil, fmt.Errorf("failed to remove option %d from menu item: %w", optionReq.OptionID, err)
+				}
 			}
 		}
 

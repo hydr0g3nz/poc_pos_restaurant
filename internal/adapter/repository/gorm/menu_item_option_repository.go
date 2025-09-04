@@ -8,6 +8,7 @@ import (
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/entity"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/repository"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type menuItemOptionRepository struct {
@@ -23,7 +24,10 @@ func NewMenuItemOptionRepository(db *gorm.DB) repository.MenuItemOptionRepositor
 func (r *menuItemOptionRepository) Create(ctx context.Context, itemOption *entity.MenuItemOption) (*entity.MenuItemOption, error) {
 	dbItemOption := r.entityToModel(itemOption)
 	db := getDB(r.db, ctx)
-	if err := db.WithContext(ctx).Create(dbItemOption).Error; err != nil {
+	if err := db.WithContext(ctx).Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "item_id"}, {Name: "option_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"is_active"}),
+	}).Create(dbItemOption).Error; err != nil {
 		return nil, err
 	}
 
