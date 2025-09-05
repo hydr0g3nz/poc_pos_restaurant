@@ -57,7 +57,7 @@ func (r *KitchenStationRepository) Delete(ctx context.Context, id int) error {
 	return r.db.WithContext(ctx).Delete(&model.KitchenStation{}, id).Error
 }
 
-func (r *KitchenStationRepository) List(ctx context.Context, limit, offset int) ([]*entity.KitchenStation, error) {
+func (r *KitchenStationRepository) List(ctx context.Context, onlyAvailable bool, limit, offset int) ([]*entity.KitchenStation, error) {
 	var dbOptions []model.KitchenStation
 
 	query := r.db.WithContext(ctx)
@@ -67,7 +67,9 @@ func (r *KitchenStationRepository) List(ctx context.Context, limit, offset int) 
 	if offset > 0 {
 		query = query.Offset(offset)
 	}
-
+	if onlyAvailable {
+		query = query.Where("is_available = ?", true)
+	}
 	if err := query.Find(&dbOptions).Error; err != nil {
 		return nil, err
 	}

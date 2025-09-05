@@ -52,7 +52,8 @@ func NewCustomerController(categoryUseCase usecase.CategoryUsecase, menuItemUseC
 
 // GetCategory handles getting category by ID
 func (c *CustomerController) ListCategory(ctx *fiber.Ctx) error {
-	response, err := c.categoryUseCase.ListCategories(ctx.Context())
+
+	response, err := c.categoryUseCase.ListCategories(ctx.Context(), true)
 	if err != nil {
 		return HandleError(ctx, err, c.errorPresenter)
 	}

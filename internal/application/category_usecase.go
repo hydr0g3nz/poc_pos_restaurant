@@ -185,10 +185,10 @@ func (u *categoryUsecase) DeleteCategory(ctx context.Context, id int) error {
 }
 
 // ListCategories retrieves all categories
-func (u *categoryUsecase) ListCategories(ctx context.Context) ([]*CategoryResponse, error) {
+func (u *categoryUsecase) ListCategories(ctx context.Context, onlyActive bool) ([]*CategoryResponse, error) {
 	u.logger.Debug("Listing categories")
 
-	categories, err := u.categoryRepo.List(ctx)
+	categories, err := u.categoryRepo.List(ctx, onlyActive)
 	if err != nil {
 		u.logger.Error("Error listing categories", "error", err)
 		return nil, fmt.Errorf("failed to list categories: %w", err)

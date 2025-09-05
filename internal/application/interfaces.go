@@ -13,7 +13,7 @@ type CategoryUsecase interface {
 	GetCategoryByName(ctx context.Context, name string) (*CategoryResponse, error)
 	UpdateCategory(ctx context.Context, id int, req *UpdateCategoryRequest) (*CategoryResponse, error)
 	DeleteCategory(ctx context.Context, id int) error
-	ListCategories(ctx context.Context) ([]*CategoryResponse, error)
+	ListCategories(ctx context.Context, onlyActive bool) ([]*CategoryResponse, error)
 }
 
 // MenuItemUsecase handles menu item business logic
@@ -155,7 +155,7 @@ type KitchenStationUsecase interface {
 	GetKitchenStation(ctx context.Context, id int) (*KitchenStationOnlyResponse, error)
 	UpdateKitchenStation(ctx context.Context, id int, req *UpdateKitchenStationRequest) (*KitchenStationOnlyResponse, error)
 	DeleteKitchenStation(ctx context.Context, id int) error
-	ListKitchenStations(ctx context.Context) ([]*KitchenStationOnlyResponse, error)
+	ListKitchenStations(ctx context.Context, onlyAvailable bool) ([]*KitchenStationOnlyResponse, error)
 }
 
 // MenuWithOptionsUsecase - รวมการจัดการ menu item พร้อม options ในที่เดียว

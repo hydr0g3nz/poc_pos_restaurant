@@ -70,10 +70,13 @@ func (r *categoryRepository) Delete(ctx context.Context, id int) error {
 	return r.db.WithContext(ctx).Delete(&model.Category{}, id).Error
 }
 
-func (r *categoryRepository) List(ctx context.Context) ([]*entity.Category, error) {
+func (r *categoryRepository) List(ctx context.Context, onlyActive bool) ([]*entity.Category, error) {
 	var dbCategories []model.Category
-
-	if err := r.db.WithContext(ctx).Find(&dbCategories).Error; err != nil {
+	query := r.db.WithContext(ctx)
+	if onlyActive {
+		query = query.Where("is_active = ?", true)
+	}
+	if err := query.WithContext(ctx).Find(&dbCategories).Error; err != nil {
 		return nil, err
 	}
 

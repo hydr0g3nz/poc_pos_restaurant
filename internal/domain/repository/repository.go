@@ -86,7 +86,7 @@ type CategoryRepository interface {
 	GetByName(ctx context.Context, name string) (*entity.Category, error)
 	Update(ctx context.Context, category *entity.Category) (*entity.Category, error)
 	Delete(ctx context.Context, id int) error
-	List(ctx context.Context) ([]*entity.Category, error)
+	List(ctx context.Context, onlyActive bool) ([]*entity.Category, error)
 	HasMenuItems(ctx context.Context, categoryID int) (bool, error)
 }
 
@@ -171,7 +171,7 @@ type KitchenStationRepository interface {
 	GetByType(ctx context.Context, optionType string) ([]*entity.KitchenStation, error)
 	Update(ctx context.Context, option *entity.KitchenStation) (*entity.KitchenStation, error)
 	Delete(ctx context.Context, id int) error
-	List(ctx context.Context, limit, offset int) ([]*entity.KitchenStation, error)
+	List(ctx context.Context, onlyAvailable bool, limit, offset int) ([]*entity.KitchenStation, error)
 }
 type TxManager interface {
 	BeginTx(ctx context.Context) (context.Context, error) // Begin tx และ return ctx ใหม่ที่มี tx embed

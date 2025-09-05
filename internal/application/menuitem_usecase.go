@@ -263,14 +263,15 @@ func (u *menuItemUsecase) SearchMenuItems(ctx context.Context, query string, lim
 // toMenuItemResponse converts entity to response
 func (u *menuItemUsecase) toMenuItemResponse(menuItem *entity.MenuItem) *MenuItemResponse {
 	response := &MenuItemResponse{
-		ID:            menuItem.ID,
-		CategoryID:    menuItem.CategoryID,
-		Name:          menuItem.Name,
-		Description:   menuItem.Description,
-		Price:         menuItem.Price.AmountBaht(),
-		IsActive:      menuItem.IsActive,
-		IsRecommended: menuItem.IsRecommended,
-		DisplayOrder:  menuItem.DisplayOrder,
+		ID:               menuItem.ID,
+		CategoryID:       menuItem.CategoryID,
+		KitchenStationID: menuItem.KitchenID,
+		Name:             menuItem.Name,
+		Description:      menuItem.Description,
+		Price:            menuItem.Price.AmountBaht(),
+		IsActive:         menuItem.IsActive,
+		IsRecommended:    menuItem.IsRecommended,
+		DisplayOrder:     menuItem.DisplayOrder,
 		// CreatedAt:   menuItem.CreatedAt,
 	}
 

@@ -171,7 +171,8 @@ func (c *KitchenController) CreateKitchenStatation(ctx *fiber.Ctx) error {
 	}
 
 	response, err := c.kitchenStationUsecase.CreateKitchenStation(ctx.Context(), &usecase.CreateKitchenStationRequest{
-		Name: req.Name,
+		Name:        req.Name,
+		IsAvailable: req.IsAvailable,
 	})
 	if err != nil {
 		return HandleError(ctx, err, c.errorPresenter)
@@ -229,7 +230,8 @@ func (c *KitchenController) UpdateKitchenStatation(ctx *fiber.Ctx) error {
 	}
 
 	response, err := c.kitchenStationUsecase.UpdateKitchenStation(ctx.Context(), optionID, &usecase.UpdateKitchenStationRequest{
-		Name: req.Name,
+		Name:        req.Name,
+		IsAvailable: req.IsAvailable,
 	})
 	if err != nil {
 		return HandleError(ctx, err, c.errorPresenter)
@@ -264,7 +266,8 @@ func (c *KitchenController) DeleteKitchenStatation(ctx *fiber.Ctx) error {
 }
 
 func (c *KitchenController) ListKitchenStatations(ctx *fiber.Ctx) error {
-	response, err := c.kitchenStationUsecase.ListKitchenStations(ctx.Context())
+	onlyAvailableParam := ctx.Query("only_available", "false")
+	response, err := c.kitchenStationUsecase.ListKitchenStations(ctx.Context(), onlyAvailableParam == "true")
 	if err != nil {
 		return HandleError(ctx, err, c.errorPresenter)
 	}

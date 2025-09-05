@@ -154,7 +154,8 @@ func (c *CategoryController) DeleteCategory(ctx *fiber.Ctx) error {
 
 // ListCategories handles getting all categories
 func (c *CategoryController) ListCategories(ctx *fiber.Ctx) error {
-	response, err := c.categoryUseCase.ListCategories(ctx.Context())
+	onlyActiveParam := ctx.Query("only_active", "false")
+	response, err := c.categoryUseCase.ListCategories(ctx.Context(), onlyActiveParam == "true")
 	if err != nil {
 		return HandleError(ctx, err, c.errorPresenter)
 	}

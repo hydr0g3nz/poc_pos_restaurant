@@ -153,9 +153,9 @@ func (c *KitchenController) RegisterRoutes(router fiber.Router) {
 	kitchenGroup := router.Group("/kitchen")
 
 	// Kitchen routes
-	kitchenGroup.Get("/", c.GetKitchenStatation)
+	kitchenGroup.Get("/", c.ListKitchenStatations)
 	kitchenGroup.Post("/", c.CreateKitchenStatation)
-	kitchenGroup.Put("/", c.UpdateKitchenStatation)
+	kitchenGroup.Put("/:id", c.UpdateKitchenStatation)
 	kitchenGroup.Delete("/", c.DeleteKitchenStatation)
 
 	kitchenGroup.Get("/queue", c.GetKitchenQueue)                           // GET /kitchen/queue

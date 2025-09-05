@@ -103,12 +103,13 @@ type MenuItemResponse struct {
 	Description string  `json:"description"`
 	Price       float64 `json:"price"`
 	// CreatedAt      time.Time                   `json:"created_at"`
-	Category       string                   `json:"category"`
-	KitchenStation string                   `json:"kitchen_station"`
-	IsActive       bool                     `json:"is_active"`
-	IsRecommended  bool                     `json:"is_recommended"`
-	DisplayOrder   int                      `json:"display_order"`
-	MenuOption     []*entity.MenuItemOption `json:"menu_option"`
+	Category         string                   `json:"category"`
+	KitchenStation   string                   `json:"kitchen_station"`
+	KitchenStationID int                      `json:"kitchen_station_id"`
+	IsActive         bool                     `json:"is_active"`
+	IsRecommended    bool                     `json:"is_recommended"`
+	DisplayOrder     int                      `json:"display_order"`
+	MenuOption       []*entity.MenuItemOption `json:"menu_option"`
 	// DiscountPercent float64 `json:"discount_percent"`
 	// IsDiscounted    bool    `json:"is_discounted"`
 	// Category       *CategoryResponse           `json:"category,omitempty"`

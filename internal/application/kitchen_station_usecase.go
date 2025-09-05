@@ -89,7 +89,7 @@ func (u *kitchenStationUsecase) UpdateKitchenStation(ctx context.Context, id int
 
 	// Update fields
 	currentStation.Name = req.Name
-
+	currentStation.IsAvailable = req.IsAvailable
 	// Update kitchen station
 	updatedStation, err := u.kitchenStationRepo.Update(ctx, currentStation)
 	if err != nil {
@@ -126,10 +126,10 @@ func (u *kitchenStationUsecase) DeleteKitchenStation(ctx context.Context, id int
 }
 
 // ListKitchenStations retrieves all kitchen stations
-func (u *kitchenStationUsecase) ListKitchenStations(ctx context.Context) ([]*KitchenStationOnlyResponse, error) {
+func (u *kitchenStationUsecase) ListKitchenStations(ctx context.Context, onlyAvailable bool) ([]*KitchenStationOnlyResponse, error) {
 	u.logger.Debug("Listing kitchen stations")
 
-	kitchenStations, err := u.kitchenStationRepo.List(ctx, 1000, 0) // Get all stations
+	kitchenStations, err := u.kitchenStationRepo.List(ctx, onlyAvailable, 1000, 0) // Get all stations
 	if err != nil {
 		u.logger.Error("Error listing kitchen stations", "error", err)
 		return nil, fmt.Errorf("failed to list kitchen stations: %w", err)
@@ -143,8 +143,9 @@ func (u *kitchenStationUsecase) ListKitchenStations(ctx context.Context) ([]*Kit
 // toKitchenStationResponse converts entity to response
 func (u *kitchenStationUsecase) toKitchenStationResponse(station *entity.KitchenStation) *KitchenStationOnlyResponse {
 	return &KitchenStationOnlyResponse{
-		ID:   station.ID,
-		Name: station.Name,
+		ID:          station.ID,
+		Name:        station.Name,
+		IsAvailable: station.IsAvailable,
 	}
 }
 
