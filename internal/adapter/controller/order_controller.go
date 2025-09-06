@@ -562,3 +562,19 @@ func (c *OrderController) PrintOrderQRCode(ctx *fiber.Ctx) error {
 
 	return SuccessResp(ctx, fiber.StatusOK, "Order receipt printed successfully", nil)
 }
+func (c *OrderController) GetOrderIDFromQRCode(ctx *fiber.Ctx) error {
+	qrCode := ctx.Params("qr_code")
+	if qrCode == "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Status:  fiber.StatusBadRequest,
+			Message: "QR code is required",
+		})
+	}
+
+	orderID, err := c.orderUseCase.GetOrderIDFromQRCode(ctx.Context(), qrCode)
+	if err != nil {
+		return HandleError(ctx, err, c.errorPresenter)
+	}
+
+	return SuccessResp(ctx, fiber.StatusOK, "Order ID retrieved successfully", orderID)
+}

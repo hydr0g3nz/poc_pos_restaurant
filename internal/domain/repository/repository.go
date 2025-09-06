@@ -131,6 +131,7 @@ type OrderRepository interface {
 	CountByStatus(ctx context.Context, status string) (int, error)
 	CountByTable(ctx context.Context, tableID int) (int, error)
 	CountByDateRange(ctx context.Context, startDate, endDate time.Time) (int, error)
+	GetOrderIDByQRCode(ctx context.Context, qrCode string) (int, error)
 }
 
 // OrderItemRepository handles order item operations

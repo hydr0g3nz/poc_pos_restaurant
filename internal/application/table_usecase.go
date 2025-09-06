@@ -216,12 +216,23 @@ func (u *tableUsecase) ListTables(ctx context.Context) ([]*TableResponse, error)
 
 // toTableResponse converts entity to response
 func (u *tableUsecase) toTableResponse(table *entity.Table) *TableResponse {
-	return &TableResponse{
+	t := TableResponse{
 		ID:          table.ID,
 		TableNumber: table.TableNumber,
 		Seating:     table.Seating,
 		IsAvailable: table.IsActive,
 	}
+	if table.CurrentOrder != nil {
+		t.CurrentOrder = &OrderTableDetails{
+			OrderID:     table.CurrentOrder.OrderID,
+			OrderNumber: table.CurrentOrder.OrderNumber,
+			Status:      table.CurrentOrder.Status,
+			QRCode:      table.CurrentOrder.QRCode,
+			CreatedAt:   table.CurrentOrder.CreatedAt,
+		}
+	}
+	fmt.Println("table resp:", t)
+	return &t
 }
 
 // toTableResponses converts slice of entities to responses

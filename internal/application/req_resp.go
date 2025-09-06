@@ -138,10 +138,18 @@ type UpdateTableRequest struct {
 }
 
 type TableResponse struct {
-	ID          int  `json:"id"`
-	TableNumber int  `json:"table_number"`
-	Seating     int  `json:"seating"`
-	IsAvailable bool `json:"is_available"`
+	ID           int                `json:"id"`
+	TableNumber  int                `json:"table_number"`
+	Seating      int                `json:"seating"`
+	IsAvailable  bool               `json:"is_available"`
+	CurrentOrder *OrderTableDetails `json:"current_order,omitempty"`
+}
+type OrderTableDetails struct {
+	OrderID     int    `json:"order_id"`
+	OrderNumber int    `json:"order_number"`
+	Status      string `json:"status"`
+	QRCode      string `json:"qr_code"`
+	CreatedAt   string `json:"created_at"`
 }
 
 // internal/application/dto/order_dto.go

@@ -112,7 +112,8 @@ type Table struct {
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
 
 	// Relationships
-	Orders []Order `gorm:"foreignKey:TableID"`
+	Orders       []Order `gorm:"foreignKey:TableID"`
+	CurrentOrder Order   `gorm:"foreignKey:TableID"`
 }
 
 type Order struct {
@@ -135,9 +136,13 @@ type Order struct {
 	DeletedAt           gorm.DeletedAt `gorm:"index"`
 
 	// Relationships
-	Table      Table       `gorm:"foreignKey:TableID"`
+	// Table      Table       `gorm:"foreignKey:TableID"`
 	OrderItems []OrderItem `gorm:"foreignKey:OrderID"`
 	Payments   []Payment   `gorm:"foreignKey:OrderID"`
+}
+
+func (*Order) TableName() string {
+	return "orders"
 }
 
 type OrderItem struct {

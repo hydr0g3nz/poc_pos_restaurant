@@ -7,6 +7,7 @@ import (
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/adapter/repository/gorm/model"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/entity"
 	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/repository"
+	"github.com/hydr0g3nz/poc_pos_restuarant/internal/domain/vo"
 	"gorm.io/gorm"
 )
 
@@ -66,7 +67,7 @@ func (r *tableRepository) GetByQRCode(ctx context.Context, qrCode string) (*enti
 		return nil, err
 	}
 
-	return r.modelToEntity(&dbOrder.Table), nil
+	return nil, nil
 }
 
 func (r *tableRepository) Update(ctx context.Context, table *entity.Table) (*entity.Table, error) {
@@ -86,7 +87,7 @@ func (r *tableRepository) Delete(ctx context.Context, id int) error {
 func (r *tableRepository) List(ctx context.Context) ([]*entity.Table, error) {
 	var dbTables []model.Table
 
-	if err := r.db.WithContext(ctx).Find(&dbTables).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("CurrentOrder", "order_status IN (?)", []string{vo.OrderStatusOpen.String(), vo.OrderStatusOrdered.String()}).Find(&dbTables).Error; err != nil {
 		return nil, err
 	}
 
@@ -119,6 +120,18 @@ func (r *tableRepository) modelToEntity(dbTable *model.Table) *entity.Table {
 		TableNumber: dbTable.TableNumber,
 		Seating:     dbTable.Seating,
 		IsActive:    dbTable.IsActive,
+		CurrentOrder: func() *entity.OrderTableDetails {
+			if dbTable.CurrentOrder.ID == 0 {
+				return nil
+			}
+			return &entity.OrderTableDetails{
+				OrderID:     dbTable.CurrentOrder.ID,
+				OrderNumber: dbTable.CurrentOrder.OrderNumber,
+				Status:      dbTable.CurrentOrder.OrderStatus,
+				QRCode:      dbTable.CurrentOrder.QRCode,
+				CreatedAt:   dbTable.CurrentOrder.CreatedAt.Format("2006-01-02 15:04:05"),
+			}
+		}(),
 	}
 }
 

@@ -390,3 +390,16 @@ func (r *orderRepository) Count(ctx context.Context) (int, error) {
 	}
 	return int(count), nil
 }
+func (r *orderRepository) GetOrderIDByQRCode(ctx context.Context, qrCode string) (int, error) {
+	var dbOrder model.Order
+
+	db := getDB(r.db, ctx)
+	if err := db.WithContext(ctx).Select("id").Where("qr_code = ?", qrCode).First(&dbOrder).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return 0, nil
+		}
+		return 0, err
+	}
+
+	return dbOrder.ID, nil
+}

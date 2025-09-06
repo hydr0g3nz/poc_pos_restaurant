@@ -38,6 +38,7 @@ func (c *OrderController) RegisterRoutes(router fiber.Router) {
 	// Order routes
 	orderGroup.Post("/", c.CreateOrder)
 	orderGroup.Get("/", c.ListOrders)
+	orderGroup.Get("/qr-code/:qr_code", c.GetOrderIDFromQRCode) // GET /orders/qr?code=some-qr-code
 	orderGroup.Get("/items", c.ListOrdersWithItems)
 	orderGroup.Get("/search", c.GetOrdersByStatus)        // GET /orders/search?status=open
 	orderGroup.Get("/date-range", c.GetOrdersByDateRange) // GET /orders/date-range?start_date=2024-01-01&end_date=2024-01-31

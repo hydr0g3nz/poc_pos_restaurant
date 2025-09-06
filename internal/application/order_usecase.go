@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"strings"
@@ -77,14 +76,14 @@ func (u *orderUsecase) CreateOrder(ctx context.Context, req *CreateOrderRequest)
 		u.logger.Error("Error creating order entity", "error", err, "tableID", req.TableID)
 		return nil, "", err
 	}
-	qrCode := u.qrCodeService.GenerateQRCodeForOrder(ctx, order.ID)
-	order.QRCode = qrCode
-	qrCodeImageBytes, err := u.qrCodeService.GenerateQRCodeImage(ctx, qrCode)
-	if err != nil {
-		u.logger.Error("Error generating QR code image", "error", err, "qrCode", qrCode)
-		return nil, "", fmt.Errorf("failed to generate QR code image: %w", err)
-	}
-	qrcodeImageBase64 := base64.StdEncoding.EncodeToString(qrCodeImageBytes)
+	qrCode, raw := u.qrCodeService.GenerateQRCodeForOrder(ctx, order.ID)
+	order.QRCode = raw
+	// qrCodeImageBytes, err := u.qrCodeService.GenerateQRCodeImage(ctx, qrCode)
+	// if err != nil {
+	// 	u.logger.Error("Error generating QR code image", "error", err, "qrCode", qrCode)
+	// 	return nil, "", fmt.Errorf("failed to generate QR code image: %w", err)
+	// }
+	// qrcodeImageBase64 := base64.StdEncoding.EncodeToString(qrCodeImageBytes)
 
 	// Save to database
 	createdOrder, err := u.orderRepo.Create(ctx, order)
@@ -95,7 +94,7 @@ func (u *orderUsecase) CreateOrder(ctx context.Context, req *CreateOrderRequest)
 
 	u.logger.Info("Order created successfully", "orderID", createdOrder.ID, "tableID", createdOrder.TableID)
 
-	return u.toOrderResponse(createdOrder), qrcodeImageBase64, nil
+	return u.toOrderResponse(createdOrder), qrCode, nil
 }
 
 // GetOrder retrieves order by ID
@@ -1576,6 +1575,16 @@ func (u *orderUsecase) filterOrdersBySearch(orders []*entity.Order, search strin
 	}
 
 	return filtered
+}
+func (u *orderUsecase) GetOrderIDFromQRCode(ctx context.Context, qrCode string) (int, error) {
+	u.logger.Debug("Getting order ID from QR code", "qrCode", qrCode)
+
+	orderID, err := u.orderRepo.GetOrderIDByQRCode(ctx, qrCode)
+	if err != nil {
+		u.logger.Error("Error getting order by QR code", "error", err, "qrCode", qrCode)
+		return 0, fmt.Errorf("failed to get order by QR code: %w", err)
+	}
+	return orderID, nil
 }
 
 // toOrderDetailResponse converts entity to detailed response
