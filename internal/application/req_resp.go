@@ -167,6 +167,7 @@ type OrderResponse struct {
 	ID        int            `json:"id"`
 	TableID   int            `json:"table_id"`
 	Status    string         `json:"status"`
+	QRcode    string         `json:"qr_code,omitempty"`
 	CreatedAt time.Time      `json:"created_at"`
 	ClosedAt  *time.Time     `json:"closed_at,omitempty"`
 	Table     *TableResponse `json:"table,omitempty"`
@@ -577,6 +578,7 @@ type OrderDetailResponse struct {
 	TableID             int                        `json:"table_id"`
 	TableNumber         int                        `json:"table_number,omitempty"`
 	Status              string                     `json:"status"`
+	QRcode              string                     `json:"qr_code,omitempty"`
 	PaymentStatus       string                     `json:"payment_status,omitempty"`
 	Notes               string                     `json:"notes,omitempty"`
 	SpecialInstructions string                     `json:"special_instructions,omitempty"`

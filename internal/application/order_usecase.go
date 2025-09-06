@@ -542,6 +542,7 @@ func (u *orderUsecase) toOrderResponse(order *entity.Order) *OrderResponse {
 		ID:        order.ID,
 		TableID:   order.TableID,
 		Status:    order.OrderStatus.String(),
+		QRcode:    order.QRCode,
 		CreatedAt: order.CreatedAt,
 	}
 
@@ -1595,6 +1596,7 @@ func (u *orderUsecase) toOrderDetailResponse(order *entity.Order, table *entity.
 		TableID:             order.TableID,
 		Status:              order.OrderStatus.String(),
 		Notes:               order.Notes,
+		QRcode:              order.QRCode,
 		SpecialInstructions: order.SpecialInstructions,
 		Items:               u.toOrderItemDetailResponses(order.Items),
 		ItemCount:           order.GetItemCount(),
