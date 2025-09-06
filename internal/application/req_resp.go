@@ -126,20 +126,22 @@ type MenuItemListResponse struct {
 // internal/application/dto/table_dto.go
 
 type CreateTableRequest struct {
-	TableNumber int `json:"table_number" validate:"required,gt=0"`
-	Seating     int `json:"seating" validate:"gte=0"`
+	TableNumber int  `json:"table_number" validate:"required,gt=0"`
+	Seating     int  `json:"seating" validate:"gte=0"`
+	IsAvailable bool `json:"is_available"` // default true
 }
 
 type UpdateTableRequest struct {
-	TableNumber int `json:"table_number" validate:"required,gt=0"`
-	Seating     int `json:"seating" validate:"gte=0"`
+	TableNumber int  `json:"table_number" validate:"required,gt=0"`
+	Seating     int  `json:"seating" validate:"gte=0"`
+	IsAvailable bool `json:"is_available"`
 }
 
 type TableResponse struct {
-	ID          int    `json:"id"`
-	TableNumber int    `json:"table_number"`
-	QRCode      string `json:"qr_code"`
-	Seating     int    `json:"seating"`
+	ID          int  `json:"id"`
+	TableNumber int  `json:"table_number"`
+	Seating     int  `json:"seating"`
+	IsAvailable bool `json:"is_available"`
 }
 
 // internal/application/dto/order_dto.go

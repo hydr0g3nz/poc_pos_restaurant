@@ -152,7 +152,7 @@ func (u *tableUsecase) UpdateTable(ctx context.Context, id int, req *UpdateTable
 
 	// Update seating
 	currentTable.Seating = req.Seating
-
+	currentTable.IsActive = req.IsAvailable
 	// Update table
 	updatedTable, err := u.tableRepo.Update(ctx, currentTable)
 	if err != nil {
@@ -220,6 +220,7 @@ func (u *tableUsecase) toTableResponse(table *entity.Table) *TableResponse {
 		ID:          table.ID,
 		TableNumber: table.TableNumber,
 		Seating:     table.Seating,
+		IsAvailable: table.IsActive,
 	}
 }
 

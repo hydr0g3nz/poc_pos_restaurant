@@ -207,19 +207,5 @@ func (c *TableController) ListTables(ctx *fiber.Ctx) error {
 		return HandleError(ctx, err, c.errorPresenter)
 	}
 
-	tableListResponse := &dto.TableListResponse{
-		Tables: make([]*dto.TableResponse, len(response)),
-		Total:  len(response),
-	}
-
-	for i, table := range response {
-		tableListResponse.Tables[i] = &dto.TableResponse{
-			ID:          table.ID,
-			TableNumber: table.TableNumber,
-			QRCode:      table.QRCode,
-			Seating:     table.Seating,
-		}
-	}
-
-	return SuccessResp(ctx, fiber.StatusOK, "Tables retrieved successfully", tableListResponse)
+	return SuccessResp(ctx, fiber.StatusOK, "Tables retrieved successfully", response)
 }
